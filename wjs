@@ -1,0 +1,1149 @@
+--[[
+    Irving Hub - Brookhaven RP (Sin Kills, Sin IDs, Sin Teleports)
+    Versión adaptada para Rayfield
+    By: CoronaCorona
+]]
+
+print("[IRVING HUB] Iniciando carga del script...")
+print("[IRVING HUB] Versión: 2.1.1.1 (V2)")
+print("[IRVING HUB] Modo: Sin Kills, Sin IDs, Sin Teleports")
+
+-- Cargar Rayfield
+local success, Rayfield = pcall(function()
+    return loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+end)
+
+if not success then
+    print("[IRVING HUB] ERROR: No se pudo cargar Rayfield")
+    warn("[IRVING HUB] ERROR: No se pudo cargar Rayfield")
+    return
+end
+
+print("[IRVING HUB] Rayfield cargado correctamente")
+
+-- Crear ventana
+local Window = Rayfield:CreateWindow({
+    Name = "Irving Hub : Brookhaven RP | Versión: 2.1.1.1 (V2)",
+    LoadingTitle = "Irving Hub",
+    LoadingSubtitle = "By: CoronaCorona",
+    ConfigurationSaving = {
+       Enabled = true,
+       FolderName = "Irving Hub",
+       FileName = "Config"
+    },
+    Discord = {
+       Enabled = false,
+       Invite = "xPEH4U8SQ2",
+       RememberJoins = true
+    },
+    KeySystem = false,
+    KeySettings = {
+       Title = "Irving Hub",
+       Subtitle = "Clave requerida",
+       Note = "Únete al Discord para la clave",
+       FileName = "Key",
+       SaveKey = true,
+       GrabKeyFromSite = false,
+       Key = {"123456"}
+    }
+})
+
+print("[IRVING HUB] Ventana creada correctamente")
+
+-- Eliminar pantalla de carga si existe
+local _LoadingScreen = game.CoreGui:FindFirstChild('LoadingScreen')
+if _LoadingScreen then 
+    _LoadingScreen:Destroy() 
+    print("[IRVING HUB] Pantalla de carga eliminada")
+else
+    print("[IRVING HUB] No se encontró pantalla de carga")
+end
+
+-- Configurar RP Name/Bio
+print("[IRVING HUB] Configurando RP Name/Bio...")
+local _RE = game:GetService('ReplicatedStorage'):FindFirstChild('RE')
+if _RE then
+    local function FireRE(p3, p4)
+        local u5 = _RE:FindFirstChild(p3)
+        if u5 then
+            pcall(function() u5:FireServer(unpack(p4)) end)
+        end
+    end
+    FireRE('1RPNam1eTex1t', {'RolePlayName', 'Usuario de Irving Hub'})
+    FireRE('1RPNam1eColo1r', {'PickingRPNameColor', Color3.fromRGB(0,0,0)})
+    FireRE('1RPNam1eTex1t', {'RolePlayBio', 'Irving Hub on 🔝'})
+    FireRE('1RPNam1eColo1r', {'PickingRPBioColor', Color3.fromRGB(255,255,255)})
+    print("[IRVING HUB] RP Name/Bio configurado correctamente")
+else
+    print("[IRVING HUB] ADVERTENCIA: RE no encontrado en ReplicatedStorage")
+end
+
+-- Variables globales
+local Players = game:GetService('Players')
+local TweenService = game:GetService('TweenService')
+local LP = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local RunService = game:GetService('RunService')
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+getgenv().Target = nil
+
+print("[IRVING HUB] Variables globales inicializadas")
+print("[IRVING HUB] Jugador Local: " .. LP.Name)
+
+-- ============ CREAR TABS ============
+print("[IRVING HUB] Creando Tabs...")
+
+-- Tab Principal
+local MainTab = Window:CreateTab("Menú", 4483362458)
+MainTab:CreateSection("Información del Hub")
+print("[IRVING HUB] Tab 'Menú' creada")
+
+MainTab:CreateParagraph({
+    Title = "Fundadores",
+    Content = "CoronaCorona"
+})
+MainTab:CreateParagraph({
+    Title = "Desarrolladores",
+    Content = "CoronaCorona"
+})
+MainTab:CreateParagraph({
+    Title = "INFORMACIÓN:",
+    Content = "Versión sin kills, sin IDs y sin teleports."
+})
+
+print("[IRVING HUB] Información del Hub cargada")
+
+-- Tab Trolleo (Sin Kills)
+local TrollTab = Window:CreateTab("Trolleo", 4483362458)
+TrollTab:CreateSection("TP y Vista")
+print("[IRVING HUB] Tab 'Trolleo' creada")
+
+-- Variables para ver
+local viewing = false
+local viewTarget = nil
+local viewConnection = nil
+
+function stopViewing()
+    viewing = false
+    viewTarget = nil
+    if viewConnection then
+        viewConnection:Disconnect()
+        viewConnection = nil
+        print("[IRVING HUB] Vista detenida")
+    end
+    if LP.Character then
+        Camera.CameraSubject = LP.Character
+    end
+end
+
+function setViewTarget(name)
+    local player = Players:FindFirstChild(name)
+    if player then
+        viewTarget = player
+        print("[IRVING HUB] Viendo a: " .. player.Name)
+        if viewConnection then
+            viewConnection:Disconnect()
+        end
+        viewConnection = player.CharacterAdded:Connect(function(char)
+            task.wait(0.1)
+            local root = char:FindFirstChild('HumanoidRootPart')
+            if root and viewing then
+                local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+                local pos = root.CFrame + root.CFrame.LookVector * -10 + Vector3.new(0,5,0)
+                TweenService:Create(Camera, tweenInfo, {
+                    CFrame = CFrame.new(pos.Position, root.Position)
+                }):Play()
+                pcall(function() Camera.CameraSubject = char end)
+            end
+        end)
+        local root = player.Character and player.Character:FindFirstChild('HumanoidRootPart')
+        if root then
+            local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+            local pos = root.CFrame + root.CFrame.LookVector * -10 + Vector3.new(0,5,0)
+            TweenService:Create(Camera, tweenInfo, {
+                CFrame = CFrame.new(pos.Position, root.Position)
+            }):Play()
+            pcall(function() Camera.CameraSubject = player.Character end)
+        end
+    else
+        print("[IRVING HUB] ADVERTENCIA: Jugador no encontrado: " .. name)
+    end
+end
+
+RunService.RenderStepped:Connect(function()
+    if viewing and viewTarget then
+        if not viewTarget:IsDescendantOf(game) then
+            stopViewing()
+            return
+        end
+        if viewTarget.Character and Camera.CameraSubject ~= viewTarget.Character then
+            pcall(function() Camera.CameraSubject = viewTarget.Character end)
+        end
+    end
+end)
+print("[IRVING HUB] Sistema de vista inicializado")
+
+TrollTab:CreateInput({
+    Name = "Seleccionar jugador",
+    PlaceholderText = "Escribe parte del nombre",
+    RemoveTextListener = false,
+    Callback = function(text)
+        if type(text) == 'string' and #text > 0 then
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= LP and (
+                    player.Name:lower():sub(1, #text) == text:lower() or 
+                    player.DisplayName:lower():sub(1, #text) == text:lower()
+                ) then
+                    getgenv().Target = player.Name
+                    print('[IRVING HUB] Objetivo definido: ' .. player.Name)
+                    if viewing then
+                        setViewTarget(player.Name)
+                    end
+                    return
+                end
+            end
+            print('[IRVING HUB] ADVERTENCIA: Ningún jugador encontrado con: ' .. text)
+        end
+    end
+})
+
+TrollTab:CreateToggle({
+    Name = "Ver",
+    CurrentValue = false,
+    Callback = function(value)
+        viewing = value
+        print("[IRVING HUB] Ver: " .. tostring(value))
+        if value and getgenv().Target then
+            setViewTarget(getgenv().Target)
+        else
+            stopViewing()
+        end
+    end
+})
+
+TrollTab:CreateButton({
+    Name = "Ir a",
+    Callback = function()
+        print("[IRVING HUB] Ejecutando Ir a...")
+        local root = LP.Character and LP.Character:FindFirstChild('HumanoidRootPart')
+        if root and getgenv().Target then
+            local target = Players:FindFirstChild(getgenv().Target)
+            if target and target.Character then
+                local targetRoot = target.Character:FindFirstChild('HumanoidRootPart')
+                if targetRoot then
+                    TweenService:Create(root, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                        CFrame = targetRoot.CFrame + Vector3.new(2,0,2)
+                    }):Play()
+                    print("[IRVING HUB] Teletransportado a: " .. target.Name)
+                end
+            else
+                print("[IRVING HUB] ADVERTENCIA: Objetivo no válido o sin personaje")
+            end
+        else
+            print("[IRVING HUB] ADVERTENCIA: RootPart no encontrado o objetivo no definido")
+        end
+    end
+})
+
+local loopGotoConnection = nil
+TrollTab:CreateToggle({
+    Name = "Loop Ir a",
+    CurrentValue = false,
+    Callback = function(value)
+        print("[IRVING HUB] Loop Ir a: " .. tostring(value))
+        if value then
+            loopGotoConnection = RunService.Stepped:Connect(function()
+                local target = Players:FindFirstChild(getgenv().Target)
+                if target and target.Character and target.Character:FindFirstChild('HumanoidRootPart') then
+                    local root = LP.Character and LP.Character:FindFirstChild('HumanoidRootPart')
+                    if root then
+                        root.CFrame = target.Character.HumanoidRootPart.CFrame + Vector3.new(2,0,2)
+                    end
+                end
+            end)
+            print("[IRVING HUB] Loop Ir a activado")
+        elseif loopGotoConnection then
+            loopGotoConnection:Disconnect()
+            loopGotoConnection = nil
+            print("[IRVING HUB] Loop Ir a desactivado")
+        end
+    end
+})
+
+-- Tab Items
+local ItemsTab = Window:CreateTab("Items", 4483362458)
+ItemsTab:CreateSection("Items")
+print("[IRVING HUB] Tab 'Items' creada")
+
+local itemsList = {
+    "PowerKeyCard",
+    "Crystal",
+    "Crystals",
+    "OldKey",
+    "SwordGold",
+    "KeyCardDarkGreen",
+    "FireHose",
+    "AgencyBook",
+    "KeyCardWhite",
+    "DuffleBagDiamonds",
+    "BankGateKey",
+    "Couch"
+}
+
+for _, item in pairs(itemsList) do
+    ItemsTab:CreateButton({
+        Name = "Obtener " .. item,
+        Callback = function()
+            local tool = ReplicatedStorage.RE:FindFirstChild('1Too1l')
+            if tool then
+                tool:InvokeServer('PickingTools', item)
+                print("[IRVING HUB] Obteniendo item: " .. item)
+            else
+                print("[IRVING HUB] ADVERTENCIA: Remote 1Too1l no encontrado")
+            end
+        end
+    })
+end
+print("[IRVING HUB] " .. #itemsList .. " items agregados")
+
+-- Tab Others
+local OthersTab = Window:CreateTab("Others", 4483362458)
+print("[IRVING HUB] Tab 'Others' creada")
+
+OthersTab:CreateSection("Remover House Ban")
+OthersTab:CreateButton({
+    Name = "Remover Ban",
+    Description = "Remover automáticamente ban de todas las casas",
+    Callback = function()
+        print("[IRVING HUB] Removiendo bans de casas...")
+        local success = 0
+        local failed = 0
+        for _, desc in pairs(workspace:GetDescendants()) do
+            if desc.Name:match('BannedBlock') then
+                local ok, err = pcall(function() desc:Destroy() end)
+                if ok then 
+                    success = success + 1 
+                else 
+                    failed = failed + 1 
+                end
+            end
+        end
+        print("[IRVING HUB] Bans removidos: " .. success .. ", Fallos: " .. failed)
+        if success > 0 then
+            game.StarterGui:SetCore('SendNotification', {
+                Title = 'Éxito',
+                Text = 'Bans removidos de ' .. success .. ' casas!',
+                Duration = 5
+            })
+        end
+        if failed > 0 then
+            game.StarterGui:SetCore('SendNotification', {
+                Title = 'Aviso',
+                Text = 'Fallo al remover bans de ' .. failed .. ' casas.',
+                Duration = 5
+            })
+        end
+        if success == 0 and failed == 0 then
+            game.StarterGui:SetCore('SendNotification', {
+                Title = 'Aviso',
+                Text = 'Ningún ban encontrado para remover.',
+                Duration = 5
+            })
+        end
+    end
+})
+
+OthersTab:CreateSection("Copiar Outfit")
+local remotes = ReplicatedStorage:WaitForChild('Remotes')
+local selectedPlayer = nil
+
+function getPlayerList()
+    local list = {}
+    for _, player in pairs(Players:GetPlayers()) do
+        table.insert(list, player.Name)
+    end
+    return list
+end
+
+OthersTab:CreateDropdown({
+    Name = "Seleccionar jugador",
+    Options = getPlayerList(),
+    CurrentOption = "",
+    Callback = function(option)
+        selectedPlayer = option
+        print("[IRVING HUB] Jugador seleccionado para copiar: " .. (option or "Ninguno"))
+    end
+})
+
+OthersTab:CreateButton({
+    Name = "Copiar Avatar",
+    Callback = function()
+        if not selectedPlayer then 
+            print("[IRVING HUB] ADVERTENCIA: No hay jugador seleccionado")
+            return 
+        end
+        print("[IRVING HUB] Copiando avatar de: " .. selectedPlayer)
+        local target = Players:FindFirstChild(selectedPlayer)
+        if target and target.Character then
+            local humanoid = LP.Character and LP.Character:FindFirstChildOfClass('Humanoid')
+            local tHumanoid = target.Character:FindFirstChildOfClass('Humanoid')
+            if humanoid and tHumanoid then
+                local desc = humanoid:GetAppliedDescription()
+                for _, acc in pairs(desc:GetAccessories(true)) do
+                    if acc.AssetId and tonumber(acc.AssetId) then
+                        remotes.Wear:InvokeServer(tonumber(acc.AssetId))
+                        task.wait(0.2)
+                    end
+                end
+                if tonumber(desc.Shirt) then remotes.Wear:InvokeServer(tonumber(desc.Shirt)); task.wait(0.2) end
+                if tonumber(desc.Pants) then remotes.Wear:InvokeServer(tonumber(desc.Pants)); task.wait(0.2) end
+                if tonumber(desc.Face) then remotes.Wear:InvokeServer(tonumber(desc.Face)); task.wait(0.2) end
+                
+                local tDesc = tHumanoid:GetAppliedDescription()
+                remotes.ChangeCharacterBody:InvokeServer(tDesc.Torso, tDesc.RightArm, tDesc.LeftArm, tDesc.RightLeg, tDesc.LeftLeg, tDesc.Head)
+                task.wait(0.5)
+                
+                if tonumber(tDesc.Shirt) then remotes.Wear:InvokeServer(tonumber(tDesc.Shirt)); task.wait(0.3) end
+                if tonumber(tDesc.Pants) then remotes.Wear:InvokeServer(tonumber(tDesc.Pants)); task.wait(0.3) end
+                if tonumber(tDesc.Face) then remotes.Wear:InvokeServer(tonumber(tDesc.Face)); task.wait(0.3) end
+                
+                for _, acc in pairs(tDesc:GetAccessories(true)) do
+                    if acc.AssetId and tonumber(acc.AssetId) then
+                        remotes.Wear:InvokeServer(tonumber(acc.AssetId))
+                        task.wait(0.3)
+                    end
+                end
+                
+                local bodyColors = target.Character:FindFirstChild('Body Colors')
+                if bodyColors then remotes.ChangeBodyColor:FireServer(tostring(bodyColors.HeadColor)); task.wait(0.3) end
+                if tonumber(tDesc.IdleAnimation) then remotes.Wear:InvokeServer(tonumber(tDesc.IdleAnimation)); task.wait(0.3) end
+                
+                local bag = target:FindFirstChild('PlayersBag')
+                if bag then
+                    if bag:FindFirstChild('RPName') and bag.RPName.Value ~= '' then
+                        remotes.RPNameText:FireServer('RolePlayName', bag.RPName.Value)
+                        task.wait(0.3)
+                    end
+                    if bag:FindFirstChild('RPBio') and bag.RPBio.Value ~= '' then
+                        remotes.RPNameText:FireServer('RolePlayBio', bag.RPBio.Value)
+                        task.wait(0.3)
+                    end
+                    if bag:FindFirstChild('RPNameColor') then
+                        remotes.RPNameColor:FireServer('PickingRPNameColor', bag.RPNameColor.Value)
+                        task.wait(0.3)
+                    end
+                    if bag:FindFirstChild('RPBioColor') then
+                        remotes.RPNameColor:FireServer('PickingRPBioColor', bag.RPBioColor.Value)
+                        task.wait(0.3)
+                    end
+                end
+                print("[IRVING HUB] Avatar copiado correctamente de: " .. selectedPlayer)
+            else
+                print("[IRVING HUB] ADVERTENCIA: Humanoid no encontrado en el jugador objetivo")
+            end
+        else
+            print("[IRVING HUB] ADVERTENCIA: Jugador objetivo no encontrado o sin personaje")
+        end
+    end
+})
+
+-- Apariencia del Personaje
+OthersTab:CreateSection("Apariencia del Personaje")
+
+local smokeLoopConnection = nil
+OthersTab:CreateToggle({
+    Name = "Loop Humo Avatar",
+    CurrentValue = false,
+    Callback = function(value)
+        print("[IRVING HUB] Loop Humo Avatar: " .. tostring(value))
+        if value then
+            smokeLoopConnection = RunService.Stepped:Connect(function()
+                local fire = workspace:WaitForChild('WorkspaceCom'):WaitForChild('001_Mall'):WaitForChild('001_Pizza'):FindFirstChild('CatchFire')
+                if fire and fire:FindFirstChild('TouchInterest') and LP.Character then
+                    firetouchinterest(LP.Character.HumanoidRootPart, fire, 0)
+                    wait()
+                    firetouchinterest(LP.Character.HumanoidRootPart, fire, 1)
+                end
+            end)
+            print("[IRVING HUB] Loop Humo Avatar activado")
+        elseif smokeLoopConnection then
+            smokeLoopConnection:Disconnect()
+            smokeLoopConnection = nil
+            print("[IRVING HUB] Loop Humo Avatar desactivado")
+        end
+    end
+})
+
+local fireLoopConnection = nil
+OthersTab:CreateToggle({
+    Name = "Loop Fuego Avatar",
+    CurrentValue = false,
+    Callback = function(value)
+        print("[IRVING HUB] Loop Fuego Avatar: " .. tostring(value))
+        if value then
+            fireLoopConnection = RunService.Stepped:Connect(function()
+                local house = workspace:WaitForChild('001_Lots'):FindFirstChild(LP.Name .. 'House')
+                if house then
+                    local fire = house:WaitForChild('HousePickedByPlayer'):WaitForChild('HouseModel'):WaitForChild('001_BBQ'):FindFirstChild('CatchFire')
+                    if fire and fire:FindFirstChild('TouchInterest') and LP.Character then
+                        firetouchinterest(LP.Character.HumanoidRootPart, fire, 0)
+                        wait()
+                        firetouchinterest(LP.Character.HumanoidRootPart, fire, 1)
+                    end
+                end
+            end)
+            print("[IRVING HUB] Loop Fuego Avatar activado")
+        elseif fireLoopConnection then
+            fireLoopConnection:Disconnect()
+            fireLoopConnection = nil
+            print("[IRVING HUB] Loop Fuego Avatar desactivado")
+        end
+    end
+})
+
+OthersTab:CreateButton({
+    Name = "Obtener Rastro",
+    Callback = function()
+        print("[IRVING HUB] Obteniendo rastro...")
+        local char = LP.Character
+        local humanoid = char:FindFirstChildOfClass('Humanoid')
+        local root = char:FindFirstChild('HumanoidRootPart')
+        local originalCFrame = root.CFrame
+        local poolClick = workspace.WorkspaceCom['001_Hospital']:FindFirstChild('PoolClick')
+        
+        if poolClick and poolClick:FindFirstChild('ClickDetector') and humanoid then
+            local oldSpeed = humanoid.WalkSpeed
+            local oldJump = humanoid.JumpPower
+            humanoid.WalkSpeed = 0
+            humanoid.JumpPower = 0
+            root.CFrame = CFrame.new(-349, 5, 98)
+            task.wait(1)
+            root.CFrame = poolClick.CFrame
+            fireclickdetector(poolClick.ClickDetector)
+            task.wait(2)
+            root.CFrame = originalCFrame
+            humanoid.WalkSpeed = oldSpeed
+            humanoid.JumpPower = oldJump
+            print("[IRVING HUB] Rastro obtenido correctamente")
+        else
+            print("[IRVING HUB] ADVERTENCIA: PoolClick no encontrado")
+        end
+    end
+})
+
+-- Nombre Colorido Section
+OthersTab:CreateSection("Nombre Colorido")
+
+local rgbColors = {
+    Color3.new(1, 0, 0),
+    Color3.new(0, 1, 0),
+    Color3.new(0, 0, 1),
+    Color3.new(1, 1, 0),
+    Color3.new(1, 0, 1),
+    Color3.new(0, 1, 1),
+    Color3.new(1, 0.5, 0),
+    Color3.new(0.5, 0, 1)
+}
+
+local function fireColorEvent(event, args)
+    local RE = ReplicatedStorage:FindFirstChild('RE')
+    if RE then
+        local remote = RE:FindFirstChild(event)
+        if remote then
+            pcall(function() remote:FireServer(unpack(args)) end)
+        end
+    end
+end
+
+local rgbSyncConnection = nil
+OthersTab:CreateToggle({
+    Name = "Nombre y Bio RGB Sincronizado",
+    Description = "Activa colores RGB sincronizados para Nombre y Bio",
+    CurrentValue = false,
+    Callback = function(value)
+        print("[IRVING HUB] RGB Sincronizado: " .. tostring(value))
+        if value then
+            rgbSyncConnection = RunService.Stepped:Connect(function()
+                local color = rgbColors[math.random(1, #rgbColors)]
+                fireColorEvent('1RPNam1eColo1r', {'PickingRPNameColor', color})
+                fireColorEvent('1RPNam1eColo1r', {'PickingRPBioColor', color})
+            end)
+            print("[IRVING HUB] RGB Sincronizado activado")
+        elseif rgbSyncConnection then
+            rgbSyncConnection:Disconnect()
+            rgbSyncConnection = nil
+            print("[IRVING HUB] RGB Sincronizado desactivado")
+        end
+    end
+})
+
+local rgbNameConnection = nil
+OthersTab:CreateToggle({
+    Name = "Nombre RGB",
+    Description = "Activa colores RGB para el Nombre",
+    CurrentValue = false,
+    Callback = function(value)
+        print("[IRVING HUB] Nombre RGB: " .. tostring(value))
+        if value then
+            rgbNameConnection = RunService.Stepped:Connect(function()
+                fireColorEvent('1RPNam1eColo1r', {'PickingRPNameColor', rgbColors[math.random(1, #rgbColors)]})
+            end)
+            print("[IRVING HUB] Nombre RGB activado")
+        elseif rgbNameConnection then
+            rgbNameConnection:Disconnect()
+            rgbNameConnection = nil
+            print("[IRVING HUB] Nombre RGB desactivado")
+        end
+    end
+})
+
+local rgbBioConnection = nil
+OthersTab:CreateToggle({
+    Name = "Bio RGB",
+    Description = "Activa colores RGB aleatorios en tu bio",
+    CurrentValue = false,
+    Callback = function(value)
+        print("[IRVING HUB] Bio RGB: " .. tostring(value))
+        if value then
+            rgbBioConnection = RunService.Stepped:Connect(function()
+                fireColorEvent('1RPNam1eColo1r', {'PickingRPBioColor', rgbColors[math.random(1, #rgbColors)]})
+            end)
+            print("[IRVING HUB] Bio RGB activado")
+        elseif rgbBioConnection then
+            rgbBioConnection:Disconnect()
+            rgbBioConnection = nil
+            print("[IRVING HUB] Bio RGB desactivado")
+        end
+    end
+})
+
+-- Parte del Personaje Section
+OthersTab:CreateSection("Parte del Personaje")
+
+OthersTab:CreateInput({
+    Name = "Establecer JumpPower",
+    Description = "Define el poder del salto",
+    PlaceholderText = "Ej: 100",
+    RemoveTextListener = false,
+    Callback = function(text)
+        local char = LP.Character
+        local humanoid = char and char:FindFirstChildOfClass('Humanoid')
+        local value = tonumber(text)
+        if humanoid and value then
+            humanoid.JumpPower = value
+            print("[IRVING HUB] JumpPower establecido a: " .. value)
+        else
+            print("[IRVING HUB] ADVERTENCIA: No se pudo establecer JumpPower")
+        end
+    end
+})
+
+OthersTab:CreateInput({
+    Name = "Establecer Velocidad",
+    Description = "Define la velocidad de caminar",
+    PlaceholderText = "Ej: 16",
+    RemoveTextListener = false,
+    Callback = function(text)
+        local char = LP.Character
+        local humanoid = char and char:FindFirstChildOfClass('Humanoid')
+        local value = tonumber(text)
+        if humanoid and value then
+            humanoid.WalkSpeed = value
+            print("[IRVING HUB] Velocidad establecida a: " .. value)
+        else
+            print("[IRVING HUB] ADVERTENCIA: No se pudo establecer Velocidad")
+        end
+    end
+})
+
+OthersTab:CreateInput({
+    Name = "Establecer Gravedad",
+    Description = "Define la gravedad del mundo",
+    PlaceholderText = "Ej: 196.2",
+    RemoveTextListener = false,
+    Callback = function(text)
+        local value = tonumber(text)
+        if value then
+            workspace.Gravity = value
+            print("[IRVING HUB] Gravedad establecida a: " .. value)
+        else
+            print("[IRVING HUB] ADVERTENCIA: No se pudo establecer Gravedad")
+        end
+    end
+})
+
+OthersTab:CreateButton({
+    Name = "Resetear Física (Predeterminado)",
+    Callback = function()
+        print("[IRVING HUB] Restaurando física predeterminada...")
+        local char = LP.Character
+        local humanoid = char and char:FindFirstChildOfClass('Humanoid')
+        if humanoid then
+            humanoid.WalkSpeed = 16
+            humanoid.JumpPower = 50
+        end
+        workspace.Gravity = 196.2
+        game.StarterGui:SetCore('SendNotification', {
+            Title = 'Reiniciado',
+            Text = 'Velocidad, salto y gravedad restaurados.',
+            Duration = 5
+        })
+        print("[IRVING HUB] Física restaurada correctamente")
+    end
+})
+
+local noclipConnection = nil
+OthersTab:CreateToggle({
+    Name = "Noclip",
+    CurrentValue = false,
+    Callback = function(value)
+        print("[IRVING HUB] Noclip: " .. tostring(value))
+        if value then
+            noclipConnection = RunService.Stepped:Connect(function()
+                local char = LP.Character
+                if char then
+                    for _, part in pairs(char:GetDescendants()) do
+                        if part:IsA('BasePart') then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end)
+            print("[IRVING HUB] Noclip activado")
+        elseif noclipConnection then
+            noclipConnection:Disconnect()
+            noclipConnection = nil
+            print("[IRVING HUB] Noclip desactivado")
+        end
+    end
+})
+
+-- Tab Audio (Sin IDs)
+local AudioTab = Window:CreateTab("Audio", 4483362458)
+print("[IRVING HUB] Tab 'Audio' creada")
+
+AudioTab:CreateSection("Reproducir Audio")
+AudioTab:CreateParagraph({
+    Title = "Instrucciones:",
+    Content = "Para reproducir un sonido, escribe su ID en el campo de abajo y presiona Reproducir."
+})
+
+local audioId = nil
+
+AudioTab:CreateInput({
+    Name = "ID del Audio",
+    Description = "Escribe el ID del sonido que quieres reproducir",
+    PlaceholderText = "Ejemplo: 6832470734",
+    RemoveTextListener = false,
+    Callback = function(text)
+        audioId = tonumber(text)
+        if audioId then
+            print("[IRVING HUB] ID de audio establecido: " .. audioId)
+        else
+            print("[IRVING HUB] ADVERTENCIA: ID de audio no válido")
+        end
+    end
+})
+
+AudioTab:CreateButton({
+    Name = "Reproducir Sonido",
+    Description = "Reproduce el sonido con el ID ingresado",
+    Callback = function()
+        if audioId then
+            print("[IRVING HUB] Reproduciendo audio ID: " .. audioId)
+            local RE = ReplicatedStorage:FindFirstChild('RE')
+            if RE then
+                local remote = RE:FindFirstChild('1Gu1nSound1s')
+                if remote then remote:FireServer(workspace, audioId, 1) end
+            end
+            local sound = Instance.new('Sound', workspace)
+            sound.SoundId = 'rbxassetid://' .. audioId
+            sound.Looped = false
+            sound:Play()
+            print("[IRVING HUB] Audio reproducido correctamente")
+            task.wait(3)
+            sound:Destroy()
+        else
+            print("[IRVING HUB] ADVERTENCIA: No se ha establecido ningún ID de audio")
+        end
+    end
+})
+
+local audioLoopConnection = nil
+AudioTab:CreateToggle({
+    Name = "Loop",
+    Description = "Activa para poner el sonido en bucle",
+    CurrentValue = false,
+    Callback = function(value)
+        print("[IRVING HUB] Loop de audio: " .. tostring(value))
+        if value and audioId then
+            audioLoopConnection = RunService.Stepped:Connect(function()
+                local RE = ReplicatedStorage:FindFirstChild('RE')
+                if RE then
+                    local remote = RE:FindFirstChild('1Gu1nSound1s')
+                    if remote then remote:FireServer(workspace, audioId, 1) end
+                end
+                local sound = Instance.new('Sound', workspace)
+                sound.SoundId = 'rbxassetid://' .. audioId
+                sound.Looped = false
+                sound:Play()
+                task.spawn(function()
+                    task.wait(3)
+                    sound:Destroy()
+                end)
+            end)
+            print("[IRVING HUB] Loop de audio activado")
+        elseif audioLoopConnection then
+            audioLoopConnection:Disconnect()
+            audioLoopConnection = nil
+            print("[IRVING HUB] Loop de audio desactivado")
+        end
+    end
+})
+
+-- Tab ESP
+local ESPTab = Window:CreateTab("ESP", 4483362458)
+print("[IRVING HUB] Tab 'ESP' creada")
+
+local espEnabled = false
+local espColor = Color3.fromRGB(255, 255, 255)
+local espRainbow = false
+local espConnections = {}
+
+function createESP(player)
+    if not player.Character or not player.Character:FindFirstChild('HumanoidRootPart') then 
+        print("[IRVING HUB] ADVERTENCIA: Player " .. player.Name .. " sin personaje o rootpart")
+        return 
+    end
+    if player.Character:FindFirstChild('ESP_Info') then 
+        print("[IRVING HUB] ESP ya existente para: " .. player.Name)
+        return 
+    end
+    
+    print("[IRVING HUB] Creando ESP para: " .. player.Name)
+    
+    local highlight = Instance.new('Highlight')
+    highlight.Name = 'ESP_Highlight'
+    highlight.Adornee = player.Character
+    highlight.FillColor = espColor
+    highlight.FillTransparency = 0.5
+    highlight.OutlineColor = Color3.fromRGB(0,0,0)
+    highlight.OutlineTransparency = 0
+    highlight.Parent = player.Character
+    
+    local billboard = Instance.new('BillboardGui')
+    billboard.Name = 'ESP_Info'
+    billboard.Adornee = player.Character:FindFirstChild('HumanoidRootPart')
+    billboard.Size = UDim2.new(0, 150, 0, 50)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.AlwaysOnTop = true
+    billboard.Parent = player.Character
+    
+    local nameLabel = Instance.new('TextLabel')
+    nameLabel.Size = UDim2.new(1, 0, 0.2, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = player.Name
+    nameLabel.TextColor3 = espColor
+    nameLabel.TextStrokeTransparency = 0
+    nameLabel.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+    nameLabel.TextScaled = true
+    nameLabel.Font = Enum.Font.Code
+    nameLabel.Parent = billboard
+    
+    local distLabel = Instance.new('TextLabel')
+    distLabel.Size = UDim2.new(1, 0, 0.2, 0)
+    distLabel.Position = UDim2.new(0, 0, 0.2, 0)
+    distLabel.BackgroundTransparency = 1
+    distLabel.Text = 'Distancia: 0'
+    distLabel.TextColor3 = espColor
+    distLabel.TextStrokeTransparency = 0
+    distLabel.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+    distLabel.TextScaled = true
+    distLabel.Font = Enum.Font.Code
+    distLabel.Parent = billboard
+    
+    local ageLabel = Instance.new('TextLabel')
+    ageLabel.Size = UDim2.new(1, 0, 0.2, 0)
+    ageLabel.Position = UDim2.new(0, 0, 0.4, 0)
+    ageLabel.BackgroundTransparency = 1
+    ageLabel.Text = 'Edad: ' .. player.AccountAge .. ' días'
+    ageLabel.TextColor3 = espColor
+    ageLabel.TextStrokeTransparency = 0
+    ageLabel.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+    ageLabel.TextScaled = true
+    ageLabel.Font = Enum.Font.Code
+    ageLabel.Parent = billboard
+    
+    local healthLabel = Instance.new('TextLabel')
+    healthLabel.Size = UDim2.new(1, 0, 0.2, 0)
+    healthLabel.Position = UDim2.new(0, 0, 0.6, 0)
+    healthLabel.BackgroundTransparency = 1
+    healthLabel.Text = 'Vida: 0'
+    healthLabel.TextColor3 = espColor
+    healthLabel.TextStrokeTransparency = 0
+    healthLabel.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+    healthLabel.TextScaled = true
+    healthLabel.Font = Enum.Font.Code
+    healthLabel.Parent = billboard
+    
+    local sitLabel = Instance.new('TextLabel')
+    sitLabel.Size = UDim2.new(1, 0, 0.2, 0)
+    sitLabel.Position = UDim2.new(0, 0, 0.8, 0)
+    sitLabel.BackgroundTransparency = 1
+    sitLabel.Text = 'Sentado: No'
+    sitLabel.TextColor3 = espColor
+    sitLabel.TextStrokeTransparency = 0
+    sitLabel.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+    sitLabel.TextScaled = true
+    sitLabel.Font = Enum.Font.Code
+    sitLabel.Parent = billboard
+    
+    local conn = RunService.Stepped:Connect(function()
+        if not espEnabled or not player.Character or not player.Character:FindFirstChild('HumanoidRootPart') then
+            if billboard then billboard:Destroy() end
+            if highlight then highlight:Destroy() end
+            conn:Disconnect()
+            return
+        end
+        
+        local humanoid = player.Character:FindFirstChildOfClass('Humanoid')
+        local root = player.Character.HumanoidRootPart
+        local lpRoot = LP.Character and LP.Character:FindFirstChild('HumanoidRootPart')
+        
+        if root and lpRoot then
+            local dist = (root.Position - lpRoot.Position).Magnitude
+            distLabel.Text = string.format('Distancia: %.2f', dist)
+        end
+        
+        if humanoid then
+            healthLabel.Text = 'Vida: ' .. math.floor(humanoid.Health)
+            sitLabel.Text = humanoid.Sit and 'Sentado: Si' or 'Sentado: No'
+        end
+        
+        if espRainbow then
+            local color = Color3.fromHSV(tick() * 0.05 % 1, 1, 1)
+            highlight.FillColor = color
+            nameLabel.TextColor3 = color
+            distLabel.TextColor3 = color
+            ageLabel.TextColor3 = color
+            healthLabel.TextColor3 = color
+            sitLabel.TextColor3 = color
+        else
+            highlight.FillColor = espColor
+            nameLabel.TextColor3 = espColor
+            distLabel.TextColor3 = espColor
+            ageLabel.TextColor3 = espColor
+            healthLabel.TextColor3 = espColor
+            sitLabel.TextColor3 = espColor
+        end
+    end)
+    
+    table.insert(espConnections, conn)
+end
+
+ESPTab:CreateToggle({
+    Name = "ESP",
+    CurrentValue = false,
+    Callback = function(value)
+        espEnabled = value
+        print("[IRVING HUB] ESP: " .. tostring(value))
+        if value then
+            print("[IRVING HUB] Activando ESP para todos los jugadores...")
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= LP then
+                    createESP(player)
+                end
+            end
+            Players.PlayerAdded:Connect(function(player)
+                player.CharacterAdded:Connect(function()
+                    if espEnabled and player ~= LP then
+                        createESP(player)
+                    end
+                end)
+            end)
+            print("[IRVING HUB] ESP activado correctamente")
+        else
+            print("[IRVING HUB] Desactivando ESP...")
+            for _, conn in pairs(espConnections) do
+                conn:Disconnect()
+            end
+            espConnections = {}
+            for _, player in pairs(Players:GetPlayers()) do
+                if player.Character then
+                    if player.Character:FindFirstChild('ESP_Info') then
+                        player.Character.ESP_Info:Destroy()
+                    end
+                    if player.Character:FindFirstChild('ESP_Highlight') then
+                        player.Character.ESP_Highlight:Destroy()
+                    end
+                end
+            end
+            print("[IRVING HUB] ESP desactivado correctamente")
+        end
+    end
+})
+
+ESPTab:CreateDropdown({
+    Name = "Colores del ESP",
+    Options = {"Azul", "Rojo", "Verde", "Amarillo", "Morado", "Gris", "Negro", "Blanco", "Naranja", "Rosa", "Marrón", "Arcoíris"},
+    CurrentOption = "Blanco",
+    Callback = function(option)
+        print("[IRVING HUB] Color ESP seleccionado: " .. option)
+        local colors = {
+            Azul = Color3.fromRGB(0,0,255),
+            Rojo = Color3.fromRGB(255,0,0),
+            Verde = Color3.fromRGB(0,255,0),
+            Amarillo = Color3.fromRGB(255,255,0),
+            Morado = Color3.fromRGB(128,0,128),
+            Gris = Color3.fromRGB(128,128,128),
+            Negro = Color3.fromRGB(0,0,0),
+            Blanco = Color3.fromRGB(255,255,255),
+            Naranja = Color3.fromRGB(255,165,0),
+            Rosa = Color3.fromRGB(255,192,203),
+            Marrón = Color3.fromRGB(139,69,19)
+        }
+        
+        if option == "Arcoíris" then
+            espRainbow = true
+            print("[IRVING HUB] Modo Arcoíris activado")
+        else
+            espRainbow = false
+            espColor = colors[option] or Color3.fromRGB(255,255,255)
+            print("[IRVING HUB] Color ESP establecido")
+        end
+    end
+})
+
+-- Tab Scripts
+local ScriptsTab = Window:CreateTab("Scripts", 4483362458)
+ScriptsTab:CreateSection("Scripts")
+print("[IRVING HUB] Tab 'Scripts' creada")
+
+ScriptsTab:CreateButton({
+    Name = "Infinite Yield",
+    Description = "Universal",
+    Callback = function()
+        print("[IRVING HUB] Cargando Infinite Yield...")
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source', true))()
+        print("[IRVING HUB] Infinite Yield cargado")
+    end
+})
+
+ScriptsTab:CreateButton({
+    Name = "Roships",
+    Description = "Universal",
+    Callback = function()
+        print("[IRVING HUB] Cargando Roships...")
+        loadstring(game:HttpGet('https://rawscripts.net/raw/Universal-Script-rochips-universal-18294'))()
+        print("[IRVING HUB] Roships cargado")
+    end
+})
+
+ScriptsTab:CreateButton({
+    Name = "Sander X",
+    Description = "Solo para Brookhaven",
+    Callback = function()
+        print("[IRVING HUB] Cargando Sander X...")
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/kigredns/SanderXV4.2.2/refs/heads/main/New.lua'))()
+        print("[IRVING HUB] Sander X cargado")
+    end
+})
+
+ScriptsTab:CreateButton({
+    Name = "System Broock",
+    Description = "Universal",
+    Callback = function()
+        print("[IRVING HUB] Cargando System Broock...")
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/H20CalibreYT/SystemBroken/main/script'))()
+        print("[IRVING HUB] System Broock cargado")
+    end
+})
+
+ScriptsTab:CreateButton({
+    Name = "Ant Lag V2",
+    Description = "Universal",
+    Callback = function()
+        print("[IRVING HUB] Cargando Ant Lag V2...")
+        loadstring(game:HttpGet('https://pastebin.com/raw/ureZEHue'))()
+        print("[IRVING HUB] Ant Lag V2 cargado")
+    end
+})
+
+ScriptsTab:CreateButton({
+    Name = "Fly Gui",
+    Description = "Universal",
+    Callback = function()
+        print("[IRVING HUB] Cargando Fly Gui...")
+        loadstring(game:HttpGet('https://scriptblox.com/raw/Universal-Script-Fly-v3-7412'))()
+        print("[IRVING HUB] Fly Gui cargado")
+    end
+})
+
+print("[IRVING HUB] ========================================")
+print("[IRVING HUB] Irving Hub cargado correctamente!")
+print("[IRVING HUB] Versión: 2.1.1.1 (V2)")
+print("[IRVING HUB] Modo: Sin Kills, Sin IDs, Sin Teleports")
+print("[IRVING HUB] By: CoronaCorona")
+print("[IRVING HUB] ========================================")
+print("[IRVING HUB] Tabs disponibles:")
+print("[IRVING HUB] - Menú")
+print("[IRVING HUB] - Trolleo")
+print("[IRVING HUB] - Items")
+print("[IRVING HUB] - Others")
+print("[IRVING HUB] - Audio")
+print("[IRVING HUB] - ESP")
+print("[IRVING HUB] - Scripts")
+print("[IRVING HUB] ========================================")
+```
+
+---
+
+📦 Cómo descargarlo:
+
+1. Copia todo el código de arriba.
+2. Pégalo en un bloc de notas o editor de texto.
+3. Guárdalo como IrvingHub.lua.
+4. Ejecútalo en tu exploit favorito.
+
+---
+
+🟢 Logs que verás en consola:
+
+```
+[IRVING HUB] Iniciando carga del script...
+[IRVING HUB] Versión: 2.1.1.1 (V2)
+[IRVING HUB] Modo: Sin Kills, Sin IDs, Sin Teleports
+[IRVING HUB] Rayfield cargado correctamente
+[IRVING HUB] Ventana creada correctamente
+[IRVING HUB] Pantalla de carga eliminada
+[IRVING HUB] Configurando RP Name/Bio...
+[IRVING HUB] RP Name/Bio configurado correctamente
+[IRVING HUB] Variables globales inicializadas
+[IRVING HUB] Jugador Local: [TuNombre]
+[IRVING HUB] Creando Tabs...
+[IRVING HUB] Tab 'Menú' creada
+[IRVING HUB] Información del Hub cargada
+[IRVING HUB] Tab 'Trolleo' creada
+[IRVING HUB] Sistema de vista inicializado
+[IRVING HUB] Tab 'Items' creada
+[IRVING HUB] 12 items agregados
+[IRVING HUB] Tab 'Others' creada
+[IRVING HUB] Tab 'Audio' creada
+[IRVING HUB] Tab 'ESP' creada
+[IRVING HUB] Tab 'Scripts' creada
+[IRVING HUB] ========================================
+[IRVING HUB] Irving Hub cargado correctamente!
+[IRVING HUB] Versión: 2.1.1.1 (V2)
+[IRVING HUB] Modo: Sin Kills, Sin IDs, Sin Teleports
+[IRVING HUB] By: CoronaCorona
+[IRVING HUB] ========================================
+[IRVING HUB] Tabs disponibles:
+[IRVING HUB] - Menú
+[IRVING HUB] - Trolleo
+[IRVING HUB] - Items
+[IRVING HUB] - Others
+[IRVING HUB] - Audio
+[IRVING HUB] - ESP
+[IRVING HUB] - Scripts
+[IRVING HUB] ========================================
+```
