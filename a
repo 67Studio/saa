@@ -1,0 +1,2162 @@
+--// Irving Hub \\--
+
+--==[[ Ban System ]]==--
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+
+local bannedUsers = {
+    -- LISTA VACÍA - NADIE BANEADO
+}
+
+if bannedUsers[player.Name] then
+    
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "Irving_BanScreen"
+    gui.IgnoreGuiInset = true
+    gui.ResetOnSpawn = false
+    gui.Parent = game:GetService("CoreGui")
+
+    local frame = Instance.new("Frame")
+    frame.Parent = gui
+    frame.Size = UDim2.new(1,0,1,0)
+    frame.Position = UDim2.new(0,0,0,0)
+    frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
+    frame.BorderSizePixel = 0
+
+    local text = Instance.new("TextLabel")
+    text.Parent = frame
+    text.AnchorPoint = Vector2.new(0.5,0.5)
+    text.Position = UDim2.new(0.5,0,0.5,0)
+    text.Size = UDim2.new(0,600,0,100)
+    text.BackgroundTransparency = 1
+    text.Text = "‼️ SCRIPT HAS BEEN SHUT-DOWN PERMANENTLY ‼️"
+    text.TextColor3 = Color3.fromRGB(255,0,0)
+    text.TextScaled = true
+    text.Font = Enum.Font.GothamBold
+    text.TextTransparency = 1
+
+    local fadeIn = TweenService:Create(text,TweenInfo.new(1.5),{
+        TextTransparency = 0
+    })
+    fadeIn:Play()
+
+    task.spawn(function()
+        while true do
+            local tween1 = TweenService:Create(text,TweenInfo.new(1),{
+                TextColor3 = Color3.fromRGB(255,80,80)
+            })
+            local tween2 = TweenService:Create(text,TweenInfo.new(1),{
+                TextColor3 = Color3.fromRGB(255,0,0)
+            })
+            tween1:Play()
+            tween1.Completed:Wait()
+            tween2:Play()
+            tween2.Completed:Wait()
+        end
+    end)
+    
+    task.wait(8)
+player:Kick("Talk to owner to get back.")
+   task.wait(999999999999999999)
+    return
+end
+--===[[ End ]]===--
+
+--===[[ Updates UI ]]===--
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local ProblemText = Instance.new("TextLabel")
+local ExitBtn = Instance.new("TextButton")
+local UICorner = Instance.new("UICorner")
+
+local DevTitle = Instance.new("TextLabel")
+local DevFrame = Instance.new("Frame")
+local DevIcon = Instance.new("ImageLabel")
+local DevName = Instance.new("TextLabel")
+local DevUser = Instance.new("TextLabel")
+local DevDiscord = Instance.new("TextLabel")
+local IconCorner = Instance.new("UICorner")
+
+local TARGET_USERNAME = "Hiimnew928289alt2" 
+local DISPLAY_NAME = "Irving"
+local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"
+
+ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.Name = "Irving_Maintenance"
+
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -140)
+MainFrame.Size = UDim2.new(0, 300, 0, 280)
+MainFrame.Active = true
+MainFrame.Draggable = true 
+
+UICorner.CornerRadius = UDim.new(0, 15)
+UICorner.Parent = MainFrame
+
+Title.Parent = MainFrame
+Title.Size = UDim2.new(1, 0, 0, 45)
+Title.Text = "🎵 Irving Hub"
+Title.TextColor3 = Color3.fromRGB(0, 150, 255)
+Title.TextSize = 22
+Title.Font = Enum.Font.GothamBold
+Title.BackgroundTransparency = 1
+
+ProblemText.Parent = MainFrame
+ProblemText.Position = UDim2.new(0, 15, 0, 50)
+ProblemText.Size = UDim2.new(0, 270, 0, 40)
+ProblemText.Text = "¡Bienvenido a Irving Hub! Disfruta de la mejor experiencia."
+ProblemText.TextColor3 = Color3.fromRGB(220, 220, 220)
+ProblemText.TextWrapped = true
+ProblemText.TextSize = 14
+ProblemText.Font = Enum.Font.GothamMedium
+ProblemText.BackgroundTransparency = 1
+
+DevTitle.Parent = MainFrame
+DevTitle.Position = UDim2.new(0, 15, 0, 95)
+DevTitle.Size = UDim2.new(0, 270, 0, 20)
+DevTitle.Text = "Desarrollador 👑"
+DevTitle.TextColor3 = Color3.fromRGB(255, 215, 0)
+DevTitle.TextSize = 16
+DevTitle.Font = Enum.Font.GothamBold
+DevTitle.TextXAlignment = Enum.TextXAlignment.Left
+DevTitle.BackgroundTransparency = 1
+
+DevFrame.Name = "DevFrame"
+DevFrame.Parent = MainFrame
+DevFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+DevFrame.Position = UDim2.new(0, 15, 0, 120)
+DevFrame.Size = UDim2.new(0, 270, 0, 85)
+
+local devCorner = Instance.new("UICorner")
+devCorner.CornerRadius = UDim.new(0, 10)
+devCorner.Parent = DevFrame
+
+local Success, TargetUserId = pcall(function()
+    return game.Players:GetUserIdFromNameAsync(TARGET_USERNAME)
+end)
+
+if Success then
+    local content, isReady = game.Players:GetUserThumbnailAsync(TargetUserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+    DevIcon.Image = content
+else
+    DevIcon.Image = "rbxassetid://0" 
+end
+
+DevIcon.Parent = DevFrame
+DevIcon.Size = UDim2.new(0, 60, 0, 60)
+DevIcon.Position = UDim2.new(0, 10, 0, 12)
+DevIcon.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+IconCorner.CornerRadius = UDim.new(1, 0)
+IconCorner.Parent = DevIcon
+
+DevName.Parent = DevFrame
+DevName.Position = UDim2.new(0, 80, 0, 12)
+DevName.Size = UDim2.new(0, 180, 0, 20)
+DevName.Text = DISPLAY_NAME
+DevName.TextColor3 = Color3.fromRGB(255, 255, 255)
+DevName.TextSize = 17
+DevName.Font = Enum.Font.GothamBold
+DevName.TextXAlignment = Enum.TextXAlignment.Left
+DevName.BackgroundTransparency = 1
+
+DevUser.Parent = DevFrame
+DevUser.Position = UDim2.new(0, 80, 0, 32)
+DevUser.Size = UDim2.new(0, 180, 0, 20)
+DevUser.Text = "@" .. TARGET_USERNAME
+DevUser.TextColor3 = Color3.fromRGB(180, 180, 180)
+DevUser.TextSize = 13
+DevUser.Font = Enum.Font.Gotham
+DevUser.TextXAlignment = Enum.TextXAlignment.Left
+DevUser.BackgroundTransparency = 1
+
+DevDiscord.Parent = DevFrame
+DevDiscord.Position = UDim2.new(0, 80, 0, 52)
+DevDiscord.Size = UDim2.new(0, 180, 0, 20)
+DevDiscord.Text = "Discord: " .. DISCORD_INVITE
+DevDiscord.TextColor3 = Color3.fromRGB(88, 101, 242)
+DevDiscord.TextSize = 12
+DevDiscord.Font = Enum.Font.GothamMedium
+DevDiscord.TextXAlignment = Enum.TextXAlignment.Left
+DevDiscord.BackgroundTransparency = 1
+
+ExitBtn.Parent = MainFrame
+ExitBtn.Position = UDim2.new(0.5, -70, 0, 220)
+ExitBtn.Size = UDim2.new(0, 140, 0, 40)
+ExitBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+ExitBtn.Text = "Comenzar"
+ExitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExitBtn.Font = Enum.Font.GothamBold
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.Parent = ExitBtn
+ExitBtn.MouseButton1Click:Wait() 
+ScreenGui:Destroy()
+--===[[ End ]]===--
+
+--===[[ Loading TextScreen ]]===--
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "IrvingLoadingScreen"
+gui.Parent = CoreGui
+gui.IgnoreGuiInset = true
+
+local bg = Instance.new("Frame", gui)
+bg.Size = UDim2.new(1,0,1,0)
+bg.BackgroundColor3 = Color3.fromRGB(10,10,10)
+
+local textLabel = Instance.new("TextLabel", bg)
+textLabel.Size = UDim2.new(1,0,0,60)
+textLabel.Position = UDim2.new(0,0,0.5,-30)
+textLabel.BackgroundTransparency = 1
+textLabel.TextColor3 = Color3.fromRGB(255,255,255)
+textLabel.TextStrokeTransparency = 0.5
+textLabel.Font = Enum.Font.GothamBold
+textLabel.TextSize = 40
+textLabel.TextTransparency = 1
+textLabel.Text = ""
+
+TweenService:Create(bg, TweenInfo.new(1), {
+    BackgroundTransparency = 0
+}):Play()
+
+TweenService:Create(textLabel, TweenInfo.new(1), {
+    TextTransparency = 0
+}):Play()
+
+local message = "🎵 Irving Hub 🎵"
+for i = 1, #message do
+    textLabel.Text = string.sub(message, 1, i)
+    task.wait(0.08)
+end
+
+task.wait(2)
+
+local fadeOut = TweenService:Create(bg, TweenInfo.new(1.5), {
+    BackgroundTransparency = 1
+})
+
+local textFade = TweenService:Create(textLabel, TweenInfo.new(1.5), {
+    TextTransparency = 1
+})
+
+fadeOut:Play()
+textFade:Play()
+
+fadeOut.Completed:Wait()
+gui:Destroy()
+--===[[ End ]]===--
+
+--===[[ AutoSetBioName ]]===--
+local function SetDefaultNameAndBio()
+    local player = game.Players.LocalPlayer
+    local displayName = player.DisplayName 
+    local RE = game:GetService("ReplicatedStorage"):WaitForChild("RE")
+    
+    local nameTextRemote = RE:WaitForChild("1RPNam1eTex1t")
+    local nameColorRemote = RE:WaitForChild("1RPNam1eColo1r")
+
+    pcall(function()
+        nameTextRemote:FireServer("RolePlayName", "[ Usuario de Irving Hub Music ]")
+        
+        nameColorRemote:FireServer("PickingRPNameColor", Color3.new(0, 0.5, 1))
+
+        nameTextRemote:FireServer("RolePlayBio", "Irving Hub on top")
+        
+        nameColorRemote:FireServer("PickingRPBioColor", Color3.new(0.128381, 0, 1))
+    end)
+end
+
+SetDefaultNameAndBio()
+--===[[ End ]]===--
+
+--===[[ DevCrown ]]===--
+local Players = game:GetService("Players")
+
+local DEV_USERS = {"Hiimnew928289alt2"}
+
+local function addCrown(character)
+
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+
+    if head:FindFirstChild("DevCrown") then return end
+
+    local crown = Instance.new("BillboardGui")
+    crown.Name = "DevCrown"
+    crown.Size = UDim2.new(0,60,0,60)
+    crown.StudsOffset = Vector3.new(0,2.5,0)
+    crown.AlwaysOnTop = true
+    crown.Parent = head
+
+    local img = Instance.new("ImageLabel")
+    img.Parent = crown
+    img.Size = UDim2.new(1,0,1,0)
+    img.BackgroundTransparency = 1
+    img.Image = "rbxassetid://11835491319"
+
+end
+
+local function watchPlayer(plr)
+
+    local allowed = false
+for _,v in pairs(DEV_USERS) do
+    if plr.Name == v then
+        allowed = true
+        break
+    end
+end
+if not allowed then return end
+
+    task.spawn(function()
+
+        while plr.Parent do
+
+            local char = plr.Character
+            if char then
+                addCrown(char)
+            end
+
+            task.wait(1)
+
+        end
+
+    end)
+
+end
+
+for _,plr in pairs(Players:GetPlayers()) do
+    watchPlayer(plr)
+end
+
+Players.PlayerAdded:Connect(watchPlayer)
+--===[[ End ]]===--
+
+--===[[ DevCrownLogo ]]===---
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+
+local DEV_USER = "Hiimnew928289alt2"
+
+local crownGui
+
+local function showDevCrown()
+
+    if crownGui then return end
+
+    crownGui = Instance.new("ScreenGui")
+    crownGui.Name = "DevCrownUI"
+    crownGui.ResetOnSpawn = false
+    crownGui.Parent = game:GetService("CoreGui")
+
+    local crown = Instance.new("ImageLabel")
+    crown.Parent = crownGui
+    crown.BackgroundTransparency = 1
+    crown.Image = "rbxassetid://11835491319"
+    
+    crown.Size = UDim2.new(0,140,0,140)
+    crown.Position = UDim2.new(0.5,-70,0.5,-70)
+
+    TweenService:Create(
+        crown,
+        TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        {
+            Size = UDim2.new(0,40,0,40),
+            Position = UDim2.new(1,-60,0,-50)
+        }
+    ):Play()
+
+end
+
+local function removeDevCrown()
+    if crownGui then
+        crownGui:Destroy()
+        crownGui = nil
+    end
+end
+
+Players.PlayerAdded:Connect(function(plr)
+    if plr.Name == DEV_USER then
+        showDevCrown()
+    end
+end)
+
+Players.PlayerRemoving:Connect(function(plr)
+    if plr.Name == DEV_USER then
+        removeDevCrown()
+    end
+end)
+
+for _,p in pairs(Players:GetPlayers()) do
+    if p.Name == DEV_USER then
+        showDevCrown()
+    end
+end
+--===[[ End ]]===--
+
+--===[[ Rayfield WindowCreation ]]===--
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "🎵 Irving Hub",
+   LoadingTitle = "Irving Hub",
+   LoadingSubtitle = "Discord: " .. DISCORD_INVITE,
+   ConfigurationSaving = {
+      Enabled = false
+   },
+   Discord = {Enabled = false},
+   KeySystem = false
+})
+
+Rayfield:Notify({
+    Title = "¡Bienvenido a Irving Hub!",
+    Content = "Únete a nuestro Discord: " .. DISCORD_INVITE,
+    Duration = 10,
+    Image = 4483362458,
+})
+--===[[ End ]]===--
+
+--===[[ Button press sound ]]===--
+local function ButtonPSound()
+local welcomeSound = Instance.new("Sound")
+welcomeSound.Name = "WelcomeSound"
+welcomeSound.SoundId = "rbxassetid://1673280232"
+welcomeSound.Volume = 5
+welcomeSound.Parent = game:GetService("SoundService")
+welcomeSound:Play()
+game:GetService("Debris"):AddItem(welcomeSound, 10)
+end
+--===[[ End ]]===--
+
+--===[[ Irving Music GUI ]]===--
+task.spawn(function()
+    task.wait(1)
+
+    local CoreGui = game:GetService("CoreGui")
+
+    for _,v in pairs(CoreGui:GetDescendants()) do
+        if v:IsA("TextLabel") or v:IsA("TextButton") then
+            if string.find(v.Text, "Show") then
+                v.Text = "Irving Music GUI"
+            end
+        end
+    end
+end)
+--===[[ End ]]===--
+
+--===[[ AdminAbuse ]]===--
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local DEV_USERS = {"Hiimnew928289alt2"}
+getgenv().IRVING_SCRIPT_USER = true
+
+local function findPlayerByName(partial)
+
+    partial = partial:lower()
+
+    for _,plr in pairs(Players:GetPlayers()) do
+        
+        local username = plr.Name:lower()
+        local display = plr.DisplayName:lower()
+
+        if username:find(partial,1,true) or display:find(partial,1,true) then
+            return plr
+        end
+
+    end
+
+end
+
+local function handleMessage(plr, msg)
+
+    local function isDev(name)
+    for _,dev in pairs(DEV_USERS) do
+        if dev ~= "" and name == dev then
+            return true
+        end
+    end
+    return false
+end
+
+    msg = msg:lower()
+
+    local targetName = msg:match("^kick%s+(.+)")
+
+    if targetName then
+
+        local target = findPlayerByName(targetName)
+
+        if target and target == LocalPlayer then
+            if getgenv().IRVING_SCRIPT_USER then
+                LocalPlayer:Kick("Expulsado por el desarrollador")
+            end
+        end
+
+    end
+
+end
+
+for _,plr in pairs(Players:GetPlayers()) do
+    plr.Chatted:Connect(function(msg)
+        handleMessage(plr, msg)
+    end)
+end
+
+Players.PlayerAdded:Connect(function(plr)
+    plr.Chatted:Connect(function(msg)
+        handleMessage(plr, msg)
+    end)
+end)
+---===[[ End ]]===--
+
+--===[[ IntroSound ]]===--
+--[[
+local args = {"SkateBoard"}
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+local welcomeSound = Instance.new("Sound")
+welcomeSound.Name = "WelcomeSound"
+welcomeSound.SoundId = "rbxassetid://117909139728666"
+welcomeSound.Volume = 5
+welcomeSound.Parent = game:GetService("SoundService")
+welcomeSound:Play()
+game:GetService("Debris"):AddItem(welcomeSound, 10)
+local args = {
+	"PickingScooterMusicText",
+	"117909139728666",
+	[4] = true
+}
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+task.wait(4)
+local args = {
+	"Delete NoMotorVehicle"
+}
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+]]
+--===[[ End ]]===--
+
+--===[[ Variables ChatCommand ]]===--
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+local RunService = game:GetService("RunService")
+local antifling = false
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local noclip = false
+local spin = false
+local spinSpeed = 30
+local antisitsystem = false
+local sitConnection = nil
+local espEnabled = false
+local espObjects = {}
+local banging = false
+local bangAnim = nil
+local bangTrack = nil
+local banging2 = false
+local bang2Target = nil
+local bang2Connection = nil
+local bang2Anim = nil
+local bang2Track = nil
+local jerkTool = nil
+local jerkLoop = nil
+local jerkTrack = nil
+local jerking = false
+local lowGraphicsEnabled = false
+local antiAFKConnection = nil
+local flying = false
+local flySpeed = 1
+local flyBV, flyBG, flyConnection
+local normalWalkSpeed = 16
+local AntiSitConnections = AntiSitConnections or {}
+local AntiSitEnabled = false
+--===[[ End ]]===--
+
+--===[[ AntiSit/Sit ]]===--
+local function ClearAntiSit()
+
+    AntiSitEnabled = false
+
+    for _, conn in ipairs(AntiSitConnections) do
+        if conn then
+            pcall(function()
+                conn:Disconnect()
+            end)
+        end
+    end
+
+    table.clear(AntiSitConnections)
+
+    local character = player.Character
+    if character then
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+
+            humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+            humanoid:ChangeState(Enum.HumanoidStateType.Running)
+
+        end
+    end
+
+end
+
+local function EnableAntiSit()
+
+    ClearAntiSit()
+    AntiSitEnabled = true
+
+    local function ApplyToCharacter(character)
+
+        local humanoid = character:WaitForChild("Humanoid", 5)
+        if not humanoid then return end
+
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+
+        table.insert(AntiSitConnections,
+            humanoid.StateChanged:Connect(function(_, state)
+                if AntiSitEnabled and state == Enum.HumanoidStateType.Seated then
+                    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                end
+            end)
+        )
+
+    end
+
+    if player.Character then
+        ApplyToCharacter(player.Character)
+    end
+
+    table.insert(AntiSitConnections,
+        player.CharacterAdded:Connect(function(char)
+            if AntiSitEnabled then
+                ApplyToCharacter(char)
+            end
+        end)
+    )
+
+    table.insert(AntiSitConnections,
+        runService.Heartbeat:Connect(function()
+
+            if not AntiSitEnabled then return end
+
+            local character = player.Character
+            if not character then return end
+
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+            if humanoid then
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+            end
+
+        end)
+    )
+
+end
+
+local function SetAntiSit(state)
+
+    if state then
+        EnableAntiSit()
+    else
+        ClearAntiSit()
+    end
+
+end
+--===[[ End ]]===--
+
+--===[[ ExitGui ]]===--
+game.Players.LocalPlayer.Chatted:Connect(function(msg)
+    if msg:lower() == "exitih" or msg:lower() == "exih" then
+        local s = Instance.new("Sound")
+        s.Name = "DestroySoundEffect"
+        s.SoundId = "rbxassetid://104269922408932"
+        s.Volume = 10
+        s.Parent = game:GetService("SoundService")
+        s:Play()
+        Rayfield:Notify({
+            Title = "Sistema",
+            Content = "Destruyendo GUI...",
+            Duration = 2
+        })
+        
+        task.wait(0.5)
+        Rayfield:Destroy()
+        game:GetService("Debris"):AddItem(s, 5)
+    end
+end)
+--===[[ End ]]===---
+
+--==[[ ChatDetectionAntiSit/Sit ]]===--
+player.Chatted:Connect(function(msg)
+
+    msg = msg:lower()
+
+    if msg == "nosit" or msg == "antisit" then
+
+        SetAntiSit(true)
+
+        if AntiSitToggleObject then
+            AntiSitToggleObject:Set(true)
+        end
+
+        Rayfield:Notify({
+            Title = "AntiSit",
+            Content = "AntiSit Activado",
+            Duration = 3
+        })
+
+    elseif msg == "sit" or msg == "unnosit" then
+
+        SetAntiSit(false)
+
+        if AntiSitToggleObject then
+            AntiSitToggleObject:Set(false)
+        end
+
+        Rayfield:Notify({
+            Title = "AntiSit",
+            Content = "AntiSit Desactivado",
+            Duration = 3
+        })
+
+    end
+
+end)
+--===[[ End ]]===--
+
+-- refresh character
+player.CharacterAdded:Connect(function(char)
+    character = char
+    humanoid = char:WaitForChild("Humanoid")
+end)
+
+-- Noclip loop
+RunService.Stepped:Connect(function()
+    if noclip and character then
+        for _, v in pairs(character:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.CanCollide = false
+            end
+        end
+    end
+end)
+
+-- Spin loop
+RunService.RenderStepped:Connect(function()
+    if spin and character and character:FindFirstChild("HumanoidRootPart") then
+        character.HumanoidRootPart.CFrame =
+            character.HumanoidRootPart.CFrame *
+            CFrame.Angles(0, math.rad(spinSpeed), 0)
+    end
+end)
+
+-- Smart Player Finder
+local function findPlayer(name)
+    name = name:lower()
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr.Name:lower():find(name) or plr.DisplayName:lower():find(name) then
+            return plr
+        end
+    end
+end
+
+RunService.Stepped:Connect(function()
+
+    if antifling and character and character:FindFirstChild("HumanoidRootPart") then
+
+        local root = character.HumanoidRootPart
+
+        root.Velocity = Vector3.zero
+        root.RotVelocity = Vector3.zero
+
+        for _, v in pairs(character:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.Velocity = Vector3.zero
+                v.RotVelocity = Vector3.zero
+            end
+        end
+
+    end
+
+end)
+
+local function createESP(plr)
+
+    if plr == player then return end
+    if not plr.Character then return end
+    if espObjects[plr] then return end
+
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "IrvingESP"
+    highlight.FillColor = Color3.fromRGB(0, 150, 255)
+    highlight.OutlineColor = Color3.fromRGB(255,255,255)
+    highlight.FillTransparency = 0.5
+    highlight.Parent = plr.Character
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "IrvingESPName"
+    billboard.Size = UDim2.new(0,200,0,50)
+    billboard.AlwaysOnTop = true
+    billboard.StudsOffset = Vector3.new(0,3,0)
+
+    local text = Instance.new("TextLabel")
+    text.Size = UDim2.new(1,0,1,0)
+    text.BackgroundTransparency = 1
+    text.Text = plr.DisplayName
+    text.TextColor3 = Color3.fromRGB(255,255,255)
+    text.TextStrokeTransparency = 0
+    text.TextScaled = true
+    text.Parent = billboard
+
+    if plr.Character:FindFirstChild("Head") then
+        billboard.Parent = plr.Character.Head
+    end
+
+    espObjects[plr] = {
+        Highlight = highlight,
+        Billboard = billboard
+    }
+
+end
+
+local function removeESP(plr)
+
+    if espObjects[plr] then
+
+        if espObjects[plr].Highlight then
+            espObjects[plr].Highlight:Destroy()
+        end
+
+        if espObjects[plr].Billboard then
+            espObjects[plr].Billboard:Destroy()
+        end
+
+        espObjects[plr] = nil
+
+    end
+
+end
+
+local function updateESP()
+
+    for _, plr in pairs(Players:GetPlayers()) do
+
+        if espEnabled then
+            createESP(plr)
+        else
+            removeESP(plr)
+        end
+
+    end
+
+end
+
+Players.PlayerAdded:Connect(function(plr)
+
+    plr.CharacterAdded:Connect(function()
+        task.wait(1)
+        if espEnabled then
+            createESP(plr)
+        end
+    end)
+
+end)
+
+local function startBang(target)
+
+    if not target or not target.Character then return end
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+
+    stopBang()
+
+    banging = true
+    bangTarget = target
+
+    local root = character.HumanoidRootPart
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+    local isR15 = humanoid.RigType == Enum.HumanoidRigType.R15
+
+    bangAnim = Instance.new("Animation")
+
+    if isR15 then
+        bangAnim.AnimationId = "rbxassetid://5918726674"
+    else
+        bangAnim.AnimationId = "rbxassetid://148840371"
+    end
+
+    bangTrack = humanoid:LoadAnimation(bangAnim)
+    bangTrack:Play(0.1, 1, 1)
+    bangTrack:AdjustSpeed(3)
+
+    bangConnection = RunService.Stepped:Connect(function()
+
+        if not banging then return end
+        if not bangTarget then return end
+        if not bangTarget.Character then return end
+
+        local targetRoot = bangTarget.Character:FindFirstChild("HumanoidRootPart")
+
+        if targetRoot then
+
+            root.CFrame =
+                targetRoot.CFrame *
+                CFrame.new(0,0,1.1)
+
+        end
+
+    end)
+
+end
+
+function stopBang()
+
+    banging = false
+    bangTarget = nil
+
+    if bangConnection then
+        bangConnection:Disconnect()
+        bangConnection = nil
+    end
+
+    if bangTrack then
+        bangTrack:Stop()
+        bangTrack = nil
+    end
+
+    if bangAnim then
+        bangAnim:Destroy()
+        bangAnim = nil
+    end
+
+end
+
+local function startBang2(target)
+
+    if not target or not target.Character then return end
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+
+    stopBang2()
+
+    banging2 = true
+    bang2Target = target
+
+    local root = character.HumanoidRootPart
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+    local isR15 = humanoid.RigType == Enum.HumanoidRigType.R15
+
+    bang2Anim = Instance.new("Animation")
+
+    if isR15 then
+        bang2Anim.AnimationId = "rbxassetid://5918726674"
+    else
+        bang2Anim.AnimationId = "rbxassetid://148840371"
+    end
+
+    bang2Track = humanoid:LoadAnimation(bang2Anim)
+    bang2Track:Play(0.1, 1, 1)
+    bang2Track:AdjustSpeed(3)
+
+    bang2Connection = game:GetService("RunService").Stepped:Connect(function()
+
+        if not banging2 then return end
+        if not bang2Target then return end
+        if not bang2Target.Character then return end
+
+        local targetRoot = bang2Target.Character:FindFirstChild("HumanoidRootPart")
+
+        if targetRoot then
+
+            root.CFrame =
+                targetRoot.CFrame *
+                CFrame.new(0,0,-1.1) *
+                CFrame.Angles(0, math.rad(180), 0)
+
+        end
+
+    end)
+
+end
+
+function stopBang2()
+
+    banging2 = false
+    bang2Target = nil
+
+    if bang2Connection then
+        bang2Connection:Disconnect()
+        bang2Connection = nil
+    end
+
+    if bang2Track then
+        bang2Track:Stop()
+        bang2Track = nil
+    end
+
+    if bang2Anim then
+        bang2Anim:Destroy()
+        bang2Anim = nil
+    end
+
+end
+
+local function createJerkTool()
+
+    if jerkTool then
+        jerkTool:Destroy()
+    end
+
+    local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+    local backpack = player:FindFirstChildWhichIsA("Backpack")
+
+    if not humanoid or not backpack then return end
+
+    jerkTool = Instance.new("Tool")
+    jerkTool.Name = "Jerk Off"
+    jerkTool.RequiresHandle = false
+    jerkTool.CanBeDropped = false
+    jerkTool.Parent = backpack
+
+    jerkTool.Equipped:Connect(function()
+        jerking = true
+    end)
+
+    jerkTool.Unequipped:Connect(function()
+        jerking = false
+        if jerkTrack then
+            jerkTrack:Stop()
+            jerkTrack = nil
+        end
+    end)
+
+    jerkLoop = task.spawn(function()
+
+        while jerkTool and jerkTool.Parent do
+
+            task.wait()
+
+            if not jerking then continue end
+
+            local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+            if not humanoid then continue end
+
+            local isR15 = humanoid.RigType == Enum.HumanoidRigType.R15
+
+            if not jerkTrack then
+
+                local anim = Instance.new("Animation")
+
+                anim.AnimationId =
+                    (not isR15)
+                    and "rbxassetid://72042024"
+                    or "rbxassetid://698251653"
+
+                jerkTrack = humanoid:LoadAnimation(anim)
+
+            end
+
+            jerkTrack:Play()
+
+            jerkTrack:AdjustSpeed(
+                isR15 and 0.7 or 0.65
+            )
+
+            jerkTrack.TimePosition = 0.6
+
+            task.wait(0.1)
+
+            while jerkTrack and jerkTrack.TimePosition <
+                (not isR15 and 0.65 or 0.7) do
+                task.wait(0.1)
+            end
+
+            if jerkTrack then
+                jerkTrack:Stop()
+                jerkTrack = nil
+            end
+
+        end
+
+    end)
+
+end
+
+local function removeJerkTool()
+
+    jerking = false
+
+    if jerkTrack then
+        jerkTrack:Stop()
+        jerkTrack = nil
+    end
+
+    if jerkTool then
+        jerkTool:Destroy()
+        jerkTool = nil
+    end
+
+end
+
+local function enableLowGraphics()
+
+    lowGraphicsEnabled = true
+
+    local lighting = game:GetService("Lighting")
+    lighting.GlobalShadows = false
+    lighting.FogEnd = 9e9
+    lighting.Brightness = 1
+
+    settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+
+    for _, v in pairs(workspace:GetDescendants()) do
+
+        if v:IsA("BasePart") then
+            v.Material = Enum.Material.Plastic
+            v.Reflectance = 0
+        end
+
+        if v:IsA("Decal")
+        or v:IsA("Texture")
+        or v:IsA("ParticleEmitter")
+        or v:IsA("Trail") then
+            v:Destroy()
+        end
+
+    end
+
+end
+
+local function disableLowGraphics()
+
+    lowGraphicsEnabled = false
+    settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
+
+    Rayfield:Notify({
+        Title="Sistema",
+        Content="Gráficos Restaurados",
+        Duration=2
+    })
+
+end
+
+local function enableAntiAFK()
+
+    if antiAFKConnection then return end
+
+    local vu = game:GetService("VirtualUser")
+
+    antiAFKConnection =
+        player.Idled:Connect(function()
+
+            vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+            task.wait(1)
+            vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+
+        end)
+
+end
+
+local function disableAntiAFK()
+
+    if antiAFKConnection then
+        antiAFKConnection:Disconnect()
+        antiAFKConnection = nil
+    end
+
+end
+
+local function startFly(speed)
+
+    if flying then return end
+    flying = true
+    flySpeed = tonumber(speed) or 1
+
+    character = player.Character or player.CharacterAdded:Wait()
+    local root = character:WaitForChild("HumanoidRootPart")
+    local humanoid = character:WaitForChild("Humanoid")
+
+    flyBV = Instance.new("BodyVelocity")
+    flyBV.MaxForce = Vector3.new(9e9,9e9,9e9)
+    flyBV.Velocity = Vector3.zero
+    flyBV.Parent = root
+
+    flyBG = Instance.new("BodyGyro")
+    flyBG.MaxTorque = Vector3.new(9e9,9e9,9e9)
+    flyBG.CFrame = root.CFrame
+    flyBG.Parent = root
+
+    flyConnection = game:GetService("RunService").RenderStepped:Connect(function()
+
+        if not flying then return end
+
+        local cam = workspace.CurrentCamera
+        local moveDir = humanoid.MoveDirection
+
+        local move =
+            (cam.CFrame.LookVector * -moveDir.Z) +
+            (cam.CFrame.RightVector * moveDir.X)
+
+        flyBV.Velocity = move * (flySpeed * 70)
+        flyBG.CFrame = cam.CFrame
+
+    end)
+
+end
+
+local function stopFly()
+
+    flying = false
+
+    if flyBV then flyBV:Destroy() flyBV = nil end
+    if flyBG then flyBG:Destroy() flyBG = nil end
+    if flyConnection then flyConnection:Disconnect() flyConnection = nil end
+
+end
+
+local function setSpeed(value)
+
+    character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+
+    humanoid.WalkSpeed = value
+
+end
+
+local function resetSpeed()
+
+    character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+
+    humanoid.WalkSpeed = normalWalkSpeed
+
+end
+
+function OpenCommandsUI()
+
+    if game.CoreGui:FindFirstChild("IrvingCommandsUI") then
+        game.CoreGui.IrvingCommandsUI:Destroy()
+    end
+    
+    Rayfield:Notify({
+        Title = "Irving Hub",
+        Content = "Puedes escribir estos comandos en el chat",
+        Duration = 6
+    })
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "IrvingCommandsUI"
+    gui.Parent = game.CoreGui
+
+    local frame = Instance.new("Frame", gui)
+    frame.Size = UDim2.new(0, 500, 0, 400)
+    frame.Position = UDim2.new(0.5, -250, 0.5, -200)
+    frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    frame.BorderSizePixel = 0
+    frame.Active = true
+    frame.Draggable = true
+
+    local title = Instance.new("TextLabel", frame)
+    title.Size = UDim2.new(1, 0, 0, 40)
+    title.BackgroundTransparency = 1
+    title.Text = "Irving Hub - Lista de Comandos"
+    title.TextColor3 = Color3.fromRGB(0, 150, 255)
+    title.Font = Enum.Font.SourceSansBold
+    title.TextSize = 26
+
+    local close = Instance.new("TextButton", frame)
+    close.Size = UDim2.new(0, 40, 0, 40)
+    close.Position = UDim2.new(1, -40, 0, 0)
+    close.Text = "X"
+    close.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    close.TextColor3 = Color3.new(1,1,1)
+    close.TextSize = 20
+
+    close.MouseButton1Click:Connect(function()
+        gui:Destroy()
+    end)
+
+    local scroll = Instance.new("ScrollingFrame", frame)
+    scroll.Size = UDim2.new(1, -10, 1, -50)
+    scroll.Position = UDim2.new(0, 5, 0, 45)
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 1200)
+    scroll.BackgroundTransparency = 1
+    scroll.BorderSizePixel = 0
+
+    local layout = Instance.new("UIListLayout", scroll)
+    layout.Padding = UDim.new(0, 5)
+
+    local function AddCommand(name, info)
+
+        local holder = Instance.new("Frame", scroll)
+        holder.Size = UDim2.new(1, -5, 0, 50)
+        holder.BackgroundColor3 = Color3.fromRGB(35,35,35)
+
+        local cmd = Instance.new("TextLabel", holder)
+        cmd.Size = UDim2.new(1, 0, 0, 25)
+        cmd.BackgroundTransparency = 1
+        cmd.Text = name
+        cmd.TextColor3 = Color3.fromRGB(0,150,255)
+        cmd.Font = Enum.Font.SourceSansBold
+        cmd.TextSize = 18
+
+        local desc = Instance.new("TextLabel", holder)
+        desc.Size = UDim2.new(1, 0, 0, 25)
+        desc.Position = UDim2.new(0, 0, 0, 25)
+        desc.BackgroundTransparency = 1
+        desc.Text = info
+        desc.TextColor3 = Color3.fromRGB(200,200,200)
+        desc.Font = Enum.Font.SourceSans
+        desc.TextSize = 16
+
+    end
+
+    AddCommand("ExitIH / ExIH", "Destruye la interfaz Rayfield")
+    AddCommand("AntiSit / Nosit", "Evita que tu personaje se siente")
+    AddCommand("UnnoSit / Sit", "Permite sentarte normalmente")
+    AddCommand("Noclip / Clip", "Atraviesa paredes ON/OFF")
+    AddCommand("Spin / Unspin", "Gira tu personaje ON/OFF")
+    AddCommand("Rejoin / Rj", "Reconecta al servidor")
+    AddCommand("Goto / To", "Teletransporta a otro jugador")
+    AddCommand("View / Unview", "Ver cámara de otro jugador")
+    AddCommand("Antifling / Fling", "Previene o permite el lanzamiento")
+    AddCommand("Esp / Unesp", "Muestra u oculta ESP")
+    AddCommand("Bang / Unbang", "Animación detrás del jugador")
+    AddCommand("Bang2 / Unbang2", "Animación frente al jugador")
+    AddCommand("Jerk / Unjerk", "Herramienta de animación")
+    AddCommand("Antilag / FPSBoost / Lowgraphics", "Optimiza FPS")
+    AddCommand("Unantilag", "Restaura gráficos")
+    AddCommand("AntiAfk / AFK", "Evita AFK")
+    AddCommand("UnAntiAfk", "Desactiva Anti AFK")
+    AddCommand("Fly / Unfly", "Modo vuelo ON/OFF")
+    AddCommand("Speed / Unspeed", "Cambia o reinicia velocidad")
+
+end
+
+-- Chat Commands
+player.Chatted:Connect(function(msg)
+
+    local args = msg:lower():split(" ")
+
+if args[1] == "antisit" or args[1] == "nosit" then
+
+    antisitsystem = true
+    applyAntiSit()
+
+    Rayfield:Notify({
+        Title = "Sistema",
+        Content = "AntiSit Activado",
+        Duration = 2
+    })
+
+end
+
+    if args[1] == "noclip" then
+        noclip = true
+        Rayfield:Notify({Title="Sistema",Content="Noclip Activado",Duration=2})
+    end
+
+    if args[1] == "clip" then
+        noclip = false
+        Rayfield:Notify({Title="Sistema",Content="Noclip Desactivado",Duration=2})
+    end
+
+    if args[1] == "spin" then
+        spin = true
+        spinSpeed = tonumber(args[2]) or 30
+        Rayfield:Notify({Title="Sistema",Content="Spin Activado",Duration=2})
+    end
+
+    if args[1] == "unspin" then
+        spin = false
+        Rayfield:Notify({Title="Sistema",Content="Spin Desactivado",Duration=2})
+    end
+
+    if args[1] == "rejoin" or args[1] == "rj" then
+        TeleportService:Teleport(game.PlaceId, player)
+    end
+
+    if args[1] == "goto" or args[1] == "to" then
+        local target = findPlayer(args[2])
+        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+            character:MoveTo(target.Character.HumanoidRootPart.Position)
+        end
+    end
+
+    if args[1] == "view" then
+        local target = findPlayer(args[2])
+        if target and target.Character and target.Character:FindFirstChild("Humanoid") then
+            workspace.CurrentCamera.CameraSubject = target.Character.Humanoid
+        end
+    end
+
+    if args[1] == "unview" then
+        workspace.CurrentCamera.CameraSubject = humanoid
+    end
+    
+if args[1] == "antifling" then
+
+    antifling = true
+
+    Rayfield:Notify({
+        Title = "Sistema",
+        Content = "AntiFling Activado",
+        Duration = 2
+    })
+
+end
+
+if args[1] == "fling" then
+
+    antifling = false
+
+    Rayfield:Notify({
+        Title = "Sistema",
+        Content = "AntiFling Desactivado",
+        Duration = 2
+    })
+
+end
+
+if args[1] == "esp" then
+
+    espEnabled = true
+    updateESP()
+
+    Rayfield:Notify({
+        Title = "Sistema",
+        Content = "ESP Activado",
+        Duration = 2
+    })
+
+end
+
+if args[1] == "unesp" then
+
+    espEnabled = false
+    updateESP()
+
+    Rayfield:Notify({
+        Title = "Sistema",
+        Content = "ESP Desactivado",
+        Duration = 2
+    })
+
+end
+
+if args[1] == "bang" then
+
+    local target = findPlayer(args[2])
+
+    if target then
+
+        startBang(target)
+
+        Rayfield:Notify({
+            Title = "Sistema",
+            Content = "Banging "..target.DisplayName,
+            Duration = 2
+        })
+
+    end
+
+end
+
+if args[1] == "unbang" then
+
+    stopBang()
+
+    Rayfield:Notify({
+        Title = "Sistema",
+        Content = "Bang Detenido",
+        Duration = 2
+    })
+
+end
+
+if args[1] == "bang2" then
+
+    local target = findPlayer(args[2])
+
+    if target then
+
+        startBang2(target)
+
+        Rayfield:Notify({
+            Title = "Sistema",
+            Content = "Bang2 Frente: "..target.DisplayName,
+            Duration = 2
+        })
+
+    end
+
+end
+
+if args[1] == "unbang2" then
+
+    stopBang2()
+
+    Rayfield:Notify({
+        Title = "Sistema",
+        Content = "Bang2 Detenido",
+        Duration = 2
+    })
+
+end
+
+if args[1] == "jerk" then
+
+    createJerkTool()
+
+    Rayfield:Notify({
+        Title = "Sistema",
+        Content = "Jerk Tool Añadido",
+        Duration = 2
+    })
+
+end
+
+if args[1] == "unjerk" then
+
+    removeJerkTool()
+
+    Rayfield:Notify({
+        Title = "Sistema",
+        Content = "Jerk Tool Eliminado",
+        Duration = 2
+    })
+
+end
+
+if args[1] == "antilag"
+or args[1] == "fpsboost"
+or args[1] == "lowgraphics" then
+
+    enableLowGraphics()
+
+    Rayfield:Notify({
+        Title="Sistema",
+        Content="Gráficos Bajos Activados",
+        Duration=2
+    })
+
+end
+
+if args[1] == "unantilag" then
+    disableLowGraphics()
+end
+
+if args[1] == "antiafk" 
+or args[1] == "afk" then
+
+    enableAntiAFK()
+
+    Rayfield:Notify({
+        Title="Sistema",
+        Content="AntiAFK Activado",
+        Duration=2
+    })
+
+end
+
+if args[1] == "unantiafk" then
+
+    disableAntiAFK()
+
+    Rayfield:Notify({
+        Title="Sistema",
+        Content="AntiAFK Desactivado",
+        Duration=2
+    })
+
+end
+
+if args[1] == "fly" then
+
+    local speed = tonumber(args[2]) or 1
+
+    startFly(speed)
+
+    Rayfield:Notify({
+        Title="Sistema",
+        Content="Vuelo Activado (Velocidad "..speed..")",
+        Duration=2
+    })
+
+end
+
+if args[1] == "unfly" then
+
+    stopFly()
+
+    Rayfield:Notify({
+        Title="Sistema",
+        Content="Vuelo Desactivado",
+        Duration=2
+    })
+
+end
+
+if args[1] == "speed" then
+
+    local value = tonumber(args[2]) or 16
+
+    setSpeed(value)
+
+    Rayfield:Notify({
+        Title = "Sistema",
+        Content = "WalkSpeed ajustado a "..value,
+        Duration = 2
+    })
+
+end
+
+if args[1] == "unspeed"
+or args[1] == "normalspeed" then
+
+    resetSpeed()
+
+    Rayfield:Notify({
+        Title = "Sistema",
+        Content = "WalkSpeed reiniciado",
+        Duration = 2
+    })
+
+end
+
+if args[1] == "help"
+or args[1] == "info" then
+OpenCommandsUI()
+end
+
+end)
+--===[[ NewIntroSound ]]===--
+local welcomeSound = Instance.new("Sound")
+welcomeSound.Name = "WelcomeSound"
+welcomeSound.SoundId = "rbxassetid://9094546337"
+welcomeSound.Volume = 2
+welcomeSound.Parent = game:GetService("SoundService")
+welcomeSound:Play()
+game:GetService("Debris"):AddItem(welcomeSound, 10)
+--===[[ End ]]===--
+
+--===[[ 🎵 Irving Intro ]]===--
+local TweenService = game:GetService("TweenService")
+local gui = Instance.new("ScreenGui")
+gui.Name = "IrvingIntro"
+gui.Parent = game:GetService("CoreGui")
+
+gui.DisplayOrder = 9999
+
+local label = Instance.new("TextLabel")
+label.Parent = gui
+label.BackgroundTransparency = 1
+
+label.Size = UDim2.new(0,200,0,200)
+label.Position = UDim2.new(0.5,0,0.5,0)
+label.AnchorPoint = Vector2.new(0.5,0.5)
+
+label.Text = "🎵"
+label.TextScaled = true
+label.Font = Enum.Font.GothamBold
+label.TextTransparency = 1
+label.ZIndex = 9999
+
+local fadeIn = TweenService:Create(
+    label,
+    TweenInfo.new(0.5, Enum.EasingStyle.Quad),
+    {TextTransparency = 0}
+)
+
+local zoom = TweenService:Create(
+    label,
+    TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    {Size = UDim2.new(0,260,0,260)}
+)
+
+fadeIn:Play()
+zoom:Play()
+
+task.wait(1.2)
+
+local fadeOut = TweenService:Create(
+    label,
+    TweenInfo.new(0.8, Enum.EasingStyle.Quad),
+    {TextTransparency = 1}
+)
+
+fadeOut:Play()
+
+task.wait(0.8)
+gui:Destroy()
+--===[[ End ]]===--
+
+-- Services & Remotes
+local AntiSitEnabled = false
+local AntiSitConnections = {}
+local vehicleRgb = false
+local hueValue = 0 
+local animSpeed = 0.005 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RE = ReplicatedStorage:WaitForChild("RE")
+local player = game.Players.LocalPlayer
+local HouseRemote = RE:WaitForChild("1Player1sHous1e")
+local CarRemote = RE:WaitForChild("1Player1sCa1r")
+local NameRemote = RE:WaitForChild("1RPNam1eColo1r")
+local rgbEnabled = false
+local colors = { "Bright red", "Lime green", "Bright blue", "Bright yellow", "Bright cyan", "Hot pink", "Royal purple" }
+local vehicleRemote = RE:WaitForChild("1NoMoto1rVehicle1s")
+task.spawn(function()
+    while true do
+        hueValue = hueValue + animSpeed
+        if hueValue > 1 then hueValue = 0 end
+        task.wait(0.05)
+    end
+end)
+
+-- Universal Play Function
+local function UniversalPlay(id)
+    if not id or id == "" then return end
+    pcall(function()
+        local h = RE:FindFirstChild("1Player1sHous1e")
+        if h then h:FireServer("PickHouseMusicText", tostring(id), nil, true) end
+        
+        local c = RE:FindFirstChild("1Player1sCa1r")
+        if c then 
+            c:FireServer("Music", tostring(id), nil, true) 
+            c:FireServer("VehicleMusicText", tostring(id), nil, true)
+        end
+        
+        local s = RE:FindFirstChild("1NoMoto1rVehicle1s")
+        if s then s:FireServer("PickingScooterMusicText", tostring(id), nil, true) end
+        
+        local pt = RE:FindFirstChild("PlayerToolEvent")
+        if pt then pt:FireServer("ToolMusicText", tostring(id), nil, true) end
+
+        local p = RE:FindFirstChild("Props")
+        if p then 
+            p:FireServer("PropMusicText", tostring(id), nil, true) 
+        end
+
+        local hr = RE:FindFirstChild("1Hors1eRemot1e")
+        if hr then 
+            hr:FireServer("HorseMusicText", tostring(id), nil, true) 
+        end
+    end)
+end
+
+local function StopMusic()
+    local soundService = game:GetService("SoundService")
+    for _, v in pairs(soundService:GetChildren()) do
+        if v:IsA("Sound") and v.Name == "WelcomeSound" then
+            v:Stop()
+            v:Destroy()
+        end
+    end
+end
+
+local function UniversalStop()
+    UniversalPlay("0") 
+end
+
+local currentSound
+local function NoGamePass(id)
+    if currentSound then
+        currentSound:Stop()
+        currentSound:Destroy()
+    end
+
+    local welcomeSound = Instance.new("Sound")
+    welcomeSound.Name = "WelcomeSound"
+    welcomeSound.SoundId = "rbxassetid://"..id
+    welcomeSound.Volume = 3
+    welcomeSound.Looped = true
+    welcomeSound.Parent = game:GetService("SoundService")
+    welcomeSound:Play()
+    currentSound = welcomeSound
+end
+
+MusicPassMode = true
+local function AddSong(tab, name, id)
+    tab:CreateSection("🎵 " .. name)
+    tab:CreateButton({
+        Name = "▶️ PLAY",
+        Callback = function()
+            ButtonPSound()
+            if MusicPassMode == true then
+                UniversalPlay(id)
+            elseif MusicPassMode == false then
+                NoGamePass(id)
+            end
+            Rayfield:Notify({
+                Title = name,
+                Content = "¡Reproduciendo en todos lados!",
+                Duration = 2
+            })
+        end
+    })
+end
+
+local function GetChar()
+    local player = game.Players.LocalPlayer
+    local char = player.Character or player.CharacterAdded:Wait()
+    local humanoid = char:WaitForChild("Humanoid")
+    local hrp = char:WaitForChild("HumanoidRootPart")
+    return char, humanoid, hrp
+end
+
+local PlaysTb = Window:CreateTab("▶️ Play", 4483362458) 
+local SongsTb = Window:CreateTab("🎶 Songs", 4483362458) 
+
+PlaysTb:CreateSection("Elige si quieres reproducir música con o sin Music Pass.")
+local ToggleMusicPass = PlaysTb:CreateToggle({
+   Name = "Con Music Pass ✅",
+   CurrentValue = true,
+   Flag = "MusicPassToggle",
+   Callback = function(Value)
+      ButtonPSound()
+      MusicPassMode = Value
+      if Value then
+         Rayfield:Notify({
+            Title = "Modo Música",
+            Content = "Con Music Pass Activado",
+            Duration = 2
+         })
+      else
+         Rayfield:Notify({
+            Title = "Modo Música",
+            Content = "Sin Music Pass Activado",
+            Duration = 2
+         })
+      end
+   end,
+})
+
+PlaysTb:CreateSection("Introduce ID Personalizada")
+local customID = ""
+PlaysTb:CreateInput({
+   Name = "Song ID",
+   PlaceholderText = "Pega aquí...",
+   Callback = function(t) ButtonPSound() customID = t end,
+})
+PlaysTb:CreateButton({
+   Name = "▶️ Reproducir ID Manual",
+   Callback = function() ButtonPSound() UniversalPlay(customID) end,
+})
+
+PlaysTb:CreateButton({
+   Name = "⏹️ Detener Música",
+   Callback = function() 
+       ButtonPSound()
+       UniversalStop() 
+       StopMusic()
+   end,
+})
+
+local VolumeRemote = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("MainGUIHandler"):WaitForChild("MainAudio"):WaitForChild("Catalog"):WaitForChild("Header"):WaitForChild("VolumeContainer"):WaitForChild("VolumeChangeRequest")
+
+local VolumeSlider = PlaysTb:CreateSlider({
+   Name = "🔊 Control de Volumen",
+   Range = {1, 100},
+   Increment = 5,
+   CurrentValue = 50,
+   Suffix = "%",
+   Flag = "VolumeSlider",
+   Callback = function(Value)
+      ButtonPSound()
+      pcall(function()
+          VolumeRemote:FireServer(Value)
+      end)
+   end,
+})
+
+PlaysTb:CreateSection("Elige tu vehículo para música")
+PlaysTb:CreateButton({
+    Name = "💎 Premium: SegwaySmall",
+    Callback = function()
+        ButtonPSound()
+        vehicleRemote:FireServer("SegwaySmall")
+        task.wait(1)
+        local args = {"ShockWave"}
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("SetUnderglow"):InvokeServer(unpack(args))
+        local args2 = {1.5, 1.5}
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("SetUnderglowSize"):InvokeServer(unpack(args2))
+        Rayfield:Notify({Title = "Sistema", Content = "Segway Premium Glitcheado!", Duration = 2})
+    end
+})
+
+PlaysTb:CreateButton({
+    Name = "🛹 Normal: Skateboard",
+    Callback = function()
+        ButtonPSound()
+        vehicleRemote:FireServer("SkateBoard")
+        task.wait(1)
+        local args = {"ShockWave"}
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("SetUnderglow"):InvokeServer(unpack(args))
+        local args2 = {1.6, 1.5}
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("SetUnderglowSize"):InvokeServer(unpack(args2))
+        Rayfield:Notify({Title = "Sistema", Content = "Skateboard Glitcheado!", Duration = 2})
+    end
+})
+
+PlaysTb:CreateButton({
+    Name = "❌ Eliminar Vehículo & Reiniciar",
+    Callback = function()
+        ButtonPSound()
+        vehicleRemote:FireServer("Delete NoMotorVehicle")
+        pcall(function()
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Running)
+            end
+        end)
+        Rayfield:Notify({Title = "Sistema", Content = "Vehículo Eliminado!", Duration = 2})
+    end
+})
+
+PlaysTb:CreateToggle({
+   Name = "🌈 Vehicle RGB ",
+   CurrentValue = false,
+   Callback = function(Value)
+      ButtonPSound()
+      vehicleRgb = Value
+      if vehicleRgb then
+          task.spawn(function()
+              while vehicleRgb do
+                  hueValue = (hueValue + 0.02) % 1
+                  local smoothColor = Color3.fromHSV(hueValue, 1, 1)
+                  pcall(function()
+                      CarRemote:FireServer("NoMotorColor", smoothColor)
+                  end)
+                  pcall(function()
+                      game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("SetUnderglowColor"):InvokeServer(1, smoothColor)
+                  end)
+                  task.wait(0.05) 
+              end
+          end)
+      end
+   end,
+})
+
+local AntiSitToggleObject = PlaysTb:CreateToggle({
+    Name = "⭕Anti-Sit",
+    CurrentValue = false,
+    Flag = "AntiSitToggle",
+    Callback = function(Value)
+        ButtonPSound()
+        SetAntiSit(Value)
+    end
+})
+
+PlaysTb:CreateButton({
+    Name = "Irving Spammer",
+    Callback = function()
+    ButtonPSound()
+    loadstring(game:HttpGet("https://pastebin.com/raw/bPnmeDGz"))()
+    end
+})
+    
+PlaysTb:CreateButton({
+    Name = "Irving Emote Gui",
+    Callback = function()
+    ButtonPSound()
+    loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Emote-Gui-75782"))()
+    end
+})
+
+PlaysTb:CreateParagraph({
+    Title = "¿Cómo funciona?",
+    Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
+})
+
+-- ====== TUS CANCIONES AQUÍ ======
+AddSong(SongsTb, "Clarent Buenas", 125201047725056)
+AddSong(SongsTb, "YOVNGCHIMI DJ Khaled Dei V HVRACAN", 107633120512382)
+AddSong(SongsTb, "Anuel aa Donde Hubo Fuego Cenizas Quedan", 104274011253531)
+AddSong(SongsTb, "King Nassir", 76650356472656)
+AddSong(SongsTb, "Rosones Tito DP", 85519580819833)
+AddSong(SongsTb, "PsMvfiv Zumbandola Victor Mendivil", 75760491748269)
+AddSong(SongsTb, "KLK Victor Mendivil", 109613437074353)
+AddSong(SongsTb, "Hades66 Botonazo", 113269872401718)
+AddSong(SongsTb, "En Una Chevrolet 4x4 Me Han Visto Llegar", 80106590266274)
+AddSong(SongsTb, "Que Linda Esa Mini Mini Mama", 114063807484467)
+AddSong(SongsTb, "Me Paseo - Victor Mendivil", 140415010676865)
+AddSong(SongsTb, "Cris Mj - Gata Only", 113644922585691)
+AddSong(SongsTb, "FloyyMenor X Oscar Maydon - Pastillita de color", 82201176290322)
+AddSong(SongsTb, "Hades66 Yo Soy El Que Eh", 125385799696269)
+AddSong(SongsTb, "Juhn Fanny Pack", 132605807379581)
+AddSong(SongsTb, "Slayter evilshxt", 86568274989506)
+AddSong(SongsTb, "Alaska - Victor Mendivil", 74571477512695)
+AddSong(SongsTb, "Luis Carillo Contando", 97702334227645)
+AddSong(SongsTb, "El Mayor De Las Ranas", 98857200095314)
+-- ====== FIN CANCIONES ======
+
+--===[[ Configuración ]]===--
+local Settings = Window:CreateTab("⚙️ Settings", 4483362458) 
+
+Settings:CreateSlider({
+    Name = "WalkSpeed",
+    Range = {16, 500},
+    Increment = 1,
+    CurrentValue = 16,
+    Callback = function(Value)
+        local _, humanoid = GetChar()
+        humanoid.WalkSpeed = Value
+    end
+})
+
+Settings:CreateSlider({
+    Name = "JumpPower",
+    Range = {50, 300},
+    Increment = 1,
+    CurrentValue = 50,
+    Callback = function(Value)
+        local _, humanoid = GetChar()
+        humanoid.JumpPower = Value
+    end
+})
+
+local force
+Settings:CreateSlider({
+    Name = "No Gravity",
+    Range = {0, 500},
+    Increment = 1,
+    CurrentValue = 0,
+    Callback = function(Value)
+        local _, _, hrp = GetChar()
+        if not force then
+            force = Instance.new("BodyForce")
+            force.Name = "Irving_NoGravity"
+            force.Parent = hrp
+        end
+        force.Force = Vector3.new(0, hrp.AssemblyMass * workspace.Gravity * (Value / 500), 0)
+    end
+})
+
+Settings:CreateButton({
+    Name = "Reset Speed",
+    Callback = function()
+        ButtonPSound()
+        local _, humanoid = GetChar()
+        humanoid.WalkSpeed = 16
+    end
+})
+
+Settings:CreateButton({
+    Name = "Reset Jump",
+    Callback = function()
+        ButtonPSound()
+        local _, humanoid = GetChar()
+        humanoid.JumpPower = 50
+    end
+})
+
+Settings:CreateButton({
+    Name = "Reset Gravity",
+    Callback = function()
+        ButtonPSound()
+        if force then force.Force = Vector3.new(0, 0, 0) end
+    end
+})
+
+Settings:CreateSection("RGB")
+Settings:CreateToggle({
+   Name = "Smooth RGB Name & Bio",
+   CurrentValue = false,
+   Callback = function(Value)
+      ButtonPSound()
+      nameRgb = Value
+      if nameRgb then
+          task.spawn(function()
+              while nameRgb do
+                  local smoothColor = Color3.fromHSV(hueValue, 1, 1)
+                  pcall(function()
+                      NameRemote:FireServer("PickingRPNameColor", smoothColor)
+                      NameRemote:FireServer("PickingRPBioColor", smoothColor)
+                  end)
+                  task.wait(0.8)
+              end
+          end)
+      end
+   end,
+})
+
+Settings:CreateToggle({
+   Name = "RGB Avatar",
+   CurrentValue = false,
+   Flag = "RGB_Toggle",
+   Callback = function(Value)
+      ButtonPSound()
+      rgbEnabled = Value
+      if rgbEnabled then
+          task.spawn(function()
+              while rgbEnabled do
+                  for _, color in ipairs(colors) do
+                      if not rgbEnabled then break end
+                      local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ChangeBodyColor")
+                      remote:FireServer(color)
+                      task.wait(0.5)
+                  end
+              end
+          end)
+      end
+   end,
+})
+
+Settings:CreateToggle({
+   Name = "Smooth House RGB",
+   CurrentValue = false,
+   Callback = function(Value)
+      ButtonPSound()
+      houseRgb = Value
+      if houseRgb then
+          task.spawn(function()
+              while houseRgb do
+                  local smoothColor = Color3.fromHSV(hueValue, 1, 1)
+                  pcall(function()
+                      HouseRemote:FireServer("ColorPickHouse", smoothColor)
+                  end)
+                  task.wait(1.1)
+              end
+          end)
+      end
+   end,
+})
+
+-- Server Options
+Settings:CreateSection("Server Option")
+Settings:CreateButton({
+    Name = "🔁 Rejoin Server",
+    Callback = function()
+        ButtonPSound()
+        local TeleportService = game:GetService("TeleportService")
+        TeleportService:Teleport(game.PlaceId, game.Players.LocalPlayer)
+    end
+})
+
+Settings:CreateButton({
+    Name = "❌ Destroy GUI",
+    Callback = function()
+        ButtonPSound()
+        local s = Instance.new("Sound")
+        s.Name = "DestroySoundEffect"
+        s.SoundId = "rbxassetid://104269922408932"
+        s.Volume = 10 
+        s.Parent = game:GetService("SoundService")
+        s:Play()
+        Rayfield:Destroy()
+        game:GetService("Debris"):AddItem(s, 5)
+    end
+})
+
+Settings:CreateParagraph({
+    Title = "Creditos",
+    Content = "Irving Hub\nDesarrollado por Hiimnew928289alt2"
+})
+
+print("🎵 Irving Hub cargado correctamente!")
+print("📱 Discord: " .. DISCORD_INVITE)
