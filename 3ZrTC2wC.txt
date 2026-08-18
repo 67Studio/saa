@@ -1,9 +1,3 @@
-local _LoadingScreen = game.CoreGui:FindFirstChild('LoadingScreen')
-
-if _LoadingScreen then
-    _LoadingScreen:Destroy()
-end
-
 (function()
     local _RE = game:GetService('ReplicatedStorage'):FindFirstChild('RE')
 
