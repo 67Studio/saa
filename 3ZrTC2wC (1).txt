@@ -79,19 +79,6 @@ v8:AddParagraph({
     'En la versión 2.2.0.2 habrá más cosas..',
 })
 
-local v7 = loadstring(game:HttpGet('https://raw.githubusercontent.com/ghostzx64/star/refs/heads/main/LIBRARY%20AZUL'))():MakeWindow({
-    Title = 'Irving Hub : Brookhaven RP | Versión: 2.1.1.1 (V2) - Español',
-    SubTitle = 'By: CoronaCorona',
-    SaveFolder = 'Irving Hub',
-    Theme = {
-        Background = Color3.fromRGB(20, 20, 20),
-        Primary = Color3.fromRGB(0, 136, 255),
-        Secondary = Color3.fromRGB(30, 30, 30),
-        Accent = Color3.fromRGB(255, 80, 80),
-        Text = Color3.fromRGB(255, 255, 255),
-    },
-})
-
 v7:AddMinimizeButton({
     Button = {
         Image = 'rbxassetid://83228950584987',
