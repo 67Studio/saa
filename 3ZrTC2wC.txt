@@ -1,82 +1,44 @@
-(function()
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/UI-Libs/main/Windows%20UI%20Lib/source.lua"))()
+local OwO = library:CreateWindow("Irving Hub")
+
+local function v6(p3, p4)
     local _RE = game:GetService('ReplicatedStorage'):FindFirstChild('RE')
-
     if _RE then
-        local function v6(p3, p4)
-            local u5 = _RE:FindFirstChild(p3)
-            if u5 then
-                pcall(function()
-                    u5:FireServer(unpack(p4))
-                end)
-            end
+        local u5 = _RE:FindFirstChild(p3)
+        if u5 then
+            pcall(function()
+                u5:FireServer(unpack(p4))
+            end)
         end
-
-        v6('1RPNam1eTex1t', {
-            'RolePlayName',
-            'Usuario de Irving Hub',
-        })
-        v6('1RPNam1eColo1r', {
-            'PickingRPNameColor',
-            Color3.fromRGB(0, 0, 0),
-        })
-        v6('1RPNam1eTex1t', {
-            'RolePlayBio',
-            'Irving Hub on 🔝',
-        })
-        v6('1RPNam1eColo1r', {
-            'PickingRPBioColor',
-            Color3.fromRGB(255, 255, 255),
-        })
     end
-end)()
+end
 
-local v7 = loadstring(game:HttpGet('https://raw.githubusercontent.com/ghostzx64/star/refs/heads/main/LIBRARY%20AZUL'))():MakeWindow({
-    Title = 'Irving Hub : Brookhaven RP | Versión: 2.1.1.1 (V2) - Español',
-    SubTitle = 'By: CoronaCorona',
-    SaveFolder = 'Irving Hub',
-    Theme = {
-        Background = Color3.fromRGB(20, 20, 20),
-        Primary = Color3.fromRGB(0, 136, 255),
-        Secondary = Color3.fromRGB(30, 30, 30),
-        Accent = Color3.fromRGB(255, 80, 80),
-        Text = Color3.fromRGB(255, 255, 255),
-    },
+v6('1RPNam1eTex1t', {
+    'RolePlayName',
+    '[ Usuario de Irving Hub ]',
 })
-
-v7:AddMinimizeButton({
-    Button = {
-        Image = 'rbxassetid://83228950584987',
-        BackgroundTransparency = 0,
-    },
-    Corner = {
-        CornerRadius = UDim.new(0, 1000),
-    },
+v6('1RPNam1eColo1r', {
+    'PickingRPNameColor',
+    Color3.fromRGB(0, 0, 0),
+})
+v6('1RPNam1eTex1t', {
+    'RolePlayBio',
+    'Irving Hub en la cima',
+})
+v6('1RPNam1eColo1r', {
+    'PickingRPBioColor',
+    Color3.fromRGB(255, 255, 255),
 })
 
-local v8 = v7:MakeTab({
-    'Menú',
-    'rbxassetid://138700382840270',
-})
+local v8 = OwO:CreateTab("Menú")
 
-v8:AddSection('Información del Hub')
-v8:AddDiscordInvite({
-    Name = 'Irving Hub - Servidor',
-    Description = 'https://discord.gg/xPEH4U8SQ2',
-    Logo = 'rbxassetid://83228950584987',
-    Invite = 'https://discord.gg/xPEH4U8SQ2',
-})
-v8:AddParagraph({
-    'Fundadores',
-    'CoronaCorona',
-})
-v8:AddParagraph({
-    'Desarrolladores',
-    'CoronaCorona',
-})
-v8:AddParagraph({
-    'INFORMACIÓN:',
-    'En la versión 2.2.0.2 habrá más cosas..',
-})
+v8:CreateLabel("Información del Hub")
+v8:CreateButton("Irving Hub - Servidor", function()
+    print("https://discord.gg/xPEH4U8SQ2")
+end)
+v8:CreateLabel("Fundadores: CoronaCorona")
+v8:CreateLabel("Desarrolladores: CoronaCorona")
+v8:CreateLabel("INFORMACIÓN: En la versión 2.2.0.2 habrá más cosas..")
 
 local v9 = v7:MakeTab({
     'Trolleo',
