@@ -4,7 +4,6 @@
     if _RE then
         local function v6(p3, p4)
             local u5 = _RE:FindFirstChild(p3)
-
             if u5 then
                 pcall(function()
                     u5:FireServer(unpack(p4))
