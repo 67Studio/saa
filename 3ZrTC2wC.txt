@@ -1,5 +1,3 @@
--- file was generated at discord.gg/25ms
-
 local _LoadingScreen = game.CoreGui:FindFirstChild('LoadingScreen')
 
 if _LoadingScreen then
