@@ -1,0 +1,430 @@
+--// Irvinglz1 Spammer \\--
+
+-- Loading screen
+task.wait(3)
+local function StartLoading()
+    local p = game:GetService("Players").LocalPlayer
+    local pGui = p:WaitForChild("PlayerGui")
+    
+    if pGui:FindFirstChild("Irvinglz1LoadingScreen") then pGui.Irvinglz1LoadingScreen:Destroy() end
+
+    local loadGui = Instance.new("ScreenGui")
+    loadGui.Name = "Irvinglz1LoadingScreen"
+    loadGui.Parent = pGui
+    loadGui.DisplayOrder = 1000
+
+    local bg = Instance.new("Frame")
+    bg.Size = UDim2.new(1, 0, 1, 0)
+    bg.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+    bg.BackgroundTransparency = 0.2
+    bg.Parent = loadGui
+
+    local main = Instance.new("Frame")
+    main.Size = UDim2.new(0, 300, 0, 150)
+    main.Position = UDim2.new(0.5, -150, 0.5, -75)
+    main.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    main.Parent = bg
+    Instance.new("UICorner", main)
+
+    local stroke = Instance.new("UIStroke", main)
+    stroke.Thickness = 3
+    task.spawn(function()
+        while main.Parent do
+            stroke.Color = Color3.fromHSV(tick() % 4 / 4, 1, 1)
+            task.wait()
+        end
+    end)
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 0, 50)
+    title.Text = "⚡ Irvinglz1 Spammer ⚡"
+    title.Font = Enum.Font.LuckiestGuy
+    title.TextColor3 = Color3.fromRGB(0, 200, 255)
+    title.TextSize = 22
+    title.BackgroundTransparency = 1
+    title.Parent = main
+
+    local status = Instance.new("TextLabel")
+    status.Size = UDim2.new(1, 0, 0, 30)
+    status.Position = UDim2.new(0, 0, 0, 100)
+    status.Text = "Starting..."
+    status.Font = Enum.Font.GothamMedium
+    status.TextColor3 = Color3.fromRGB(200, 200, 200)
+    status.TextSize = 14
+    status.BackgroundTransparency = 1
+    status.Parent = main
+
+    local barBg = Instance.new("Frame")
+    barBg.Size = UDim2.new(0, 250, 0, 10)
+    barBg.Position = UDim2.new(0.5, -125, 0, 85)
+    barBg.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    barBg.Parent = main
+    Instance.new("UICorner", barBg)
+
+    local barFill = barBg:Clone()
+    barFill.Size = UDim2.new(0, 0, 1, 0)
+    barFill.Position = UDim2.new(0, 0, 0, 0)
+    barFill.BackgroundColor3 = Color3.new(1, 1, 1)
+    barFill.Parent = barBg
+
+    task.spawn(function()
+        while barFill.Parent do
+            barFill.BackgroundColor3 = Color3.fromHSV(tick() % 4 / 4, 1, 1)
+            task.wait()
+        end
+    end)
+
+    local stages = {"Loading Assets...", "Setting Up Functions...", "Connecting Remotes...", "Ready!"}
+    for i = 1, #stages do
+        status.Text = stages[i]
+        barFill:TweenSize(UDim2.new(i / #stages, 0, 1, 0), "Out", "Linear", 0.8, true)
+        task.wait(1)
+    end
+
+    task.wait(0.5)
+    loadGui:Destroy()
+end
+
+StartLoading()
+
+local Players = game:GetService("Players")
+local TextChatService = game:GetService("TextChatService")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TeleportService = game:GetService("TeleportService")
+local player = Players.LocalPlayer
+local displayName = player.DisplayName
+
+-- 1. Auto Load Message
+local loadMsg = [[ _/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/ Irvinglz1 Spammer Loaded... \__ ]]
+pcall(function()
+    TextChatService.TextChannels.RBXGeneral:SendAsync(loadMsg)
+end)
+
+-- 2. RGB Name & Bio Setup
+local RE = game:GetService("ReplicatedStorage"):WaitForChild("RE")
+local nameTextRemote = RE:WaitForChild("1RPNam1eTex1t")
+local nameColorRemote = RE:WaitForChild("1RPNam1eColo1r")
+
+task.spawn(function()
+    pcall(function()
+        nameTextRemote:FireServer("RolePlayName", "💬 Irvinglz1 Spammer 💬")
+        nameTextRemote:FireServer("RolePlayBio", "Welcome Dear " .. displayName)
+    end)
+    local h = 0
+    while task.wait(0.1) do
+        h = (h + 0.01) % 1
+        local c = Color3.fromHSV(h, 1, 1)
+        pcall(function()
+            nameColorRemote:FireServer("PickingRPNameColor", c)
+            nameColorRemote:FireServer("PickingRPBioColor", c)
+        end)
+    end
+end)
+
+local welcomeSound = Instance.new("Sound")
+welcomeSound.Name = "WelcomeSound"
+welcomeSound.SoundId = "rbxassetid://9079004979"
+welcomeSound.Volume = 10
+welcomeSound.Parent = game:GetService("SoundService")
+welcomeSound:Play()
+game:GetService("Debris"):AddItem(welcomeSound, 10)
+
+-- Notification 
+local function RayfieldNotif(title, msg, duration)
+    local p = game:GetService("Players").LocalPlayer
+    local pGui = p:WaitForChild("PlayerGui")
+    
+    if pGui:FindFirstChild("Irvinglz1Notif") then
+        pGui.Irvinglz1Notif:Destroy()
+    end
+
+    local notifGui = Instance.new("ScreenGui")
+    notifGui.Name = "Irvinglz1Notif"
+    notifGui.Parent = pGui
+    notifGui.DisplayOrder = 999
+
+    local mainNotif = Instance.new("Frame")
+    mainNotif.Size = UDim2.new(0, 260, 0, 70)
+    mainNotif.Position = UDim2.new(1, 30, 0.85, 0)
+    mainNotif.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    mainNotif.BorderSizePixel = 0
+    mainNotif.Parent = notifGui
+    Instance.new("UICorner", mainNotif).CornerRadius = UDim.new(0, 6)
+
+    local sideBar = Instance.new("Frame")
+    sideBar.Size = UDim2.new(0, 4, 1, 0)
+    sideBar.Position = UDim2.new(0, 0, 0, 0)
+    sideBar.BorderSizePixel = 0
+    sideBar.Parent = mainNotif
+    Instance.new("UICorner", sideBar).CornerRadius = UDim.new(0, 6)
+
+    task.spawn(function()
+        while mainNotif and mainNotif.Parent do
+            local hue = tick() % 4 / 4
+            sideBar.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
+            task.wait()
+        end
+    end)
+
+    local tLabel = Instance.new("TextLabel")
+    tLabel.Size = UDim2.new(1, -30, 0, 30)
+    tLabel.Position = UDim2.new(0, 15, 0, 8)
+    tLabel.Text = title or "Notification"
+    tLabel.TextColor3 = Color3.new(1, 1, 1)
+    tLabel.Font = Enum.Font.GothamBold
+    tLabel.TextSize = 16
+    tLabel.TextXAlignment = Enum.TextXAlignment.Left
+    tLabel.BackgroundTransparency = 1
+    tLabel.Parent = mainNotif
+
+    local mLabel = tLabel:Clone()
+    mLabel.Size = UDim2.new(1, -30, 0, 30)
+    mLabel.Position = UDim2.new(0, 15, 0, 32)
+    mLabel.Text = msg or "Message here"
+    mLabel.Font = Enum.Font.Gotham
+    mLabel.TextSize = 13
+    mLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    mLabel.Parent = mainNotif
+
+    mainNotif:TweenPosition(UDim2.new(1, -280, 0.10, 0), "Out", "Quint", 0.6, true)
+
+    task.delay(duration or 5, function()
+        if mainNotif then
+            mainNotif:TweenPosition(UDim2.new(1, 30, 0.85, 0), "In", "Quint", 0.6, true)
+            task.wait(0.6)
+            notifGui:Destroy()
+        end
+    end)
+end
+
+-- Notificación CORREGIDA
+RayfieldNotif("Irvinglz1 Spammer 👑", "Welcome! Have a great spam!", 5)
+
+-- 3. GUI Setup
+local gui = Instance.new("ScreenGui")
+gui.Name = "Irvinglz1Spammer"
+gui.Parent = player:WaitForChild("PlayerGui")
+gui.ResetOnSpawn = false
+
+-- 🔘 MOVEABLE BUTTON
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 60, 0, 60)
+toggleBtn.Position = UDim2.new(0, 20, 0.5, -30)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+toggleBtn.Text = "IS"
+toggleBtn.Font = Enum.Font.LuckiestGuy
+toggleBtn.TextSize = 30
+toggleBtn.Parent = gui
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
+local btnStroke = Instance.new("UIStroke", toggleBtn)
+btnStroke.Thickness = 3
+
+local dragToggle, dStart, sPos
+toggleBtn.InputBegan:Connect(function(i) 
+    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then 
+        dragToggle = true dStart = i.Position sPos = toggleBtn.Position 
+    end 
+end)
+UserInputService.InputChanged:Connect(function(i) 
+    if dragToggle and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then 
+        local delta = i.Position - dStart 
+        toggleBtn.Position = UDim2.new(sPos.X.Scale, sPos.X.Offset + delta.X, sPos.Y.Scale, sPos.Y.Offset + delta.Y) 
+    end 
+end)
+UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragToggle = false end end)
+
+-- 🔲 MAIN FRAME
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 275, 0, 375)
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.Position = UDim2.new(0.5, 0, 0.45, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+mainFrame.Visible = false
+mainFrame.Parent = gui
+local mainStroke = Instance.new("UIStroke", mainFrame)
+mainStroke.Thickness = 2
+Instance.new("UICorner", mainFrame)
+
+RunService.RenderStepped:Connect(function()
+    local hue = tick() % 4 / 4
+    local color = Color3.fromHSV(hue, 1, 1)
+    mainStroke.Color = color
+    btnStroke.Color = color
+    toggleBtn.TextColor3 = color
+    if mainFrame:FindFirstChild("Title") then mainFrame.Title.TextColor3 = color end
+end)
+
+local title = Instance.new("TextLabel")
+title.Name = "Title"
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Position = UDim2.new(0, 0, 0, 10)
+title.Text = "IRVINGLZ1 SPAMMER"
+title.Font = Enum.Font.FredokaOne
+title.TextSize = 24
+title.BackgroundTransparency = 1
+title.Parent = mainFrame
+
+local function createTabBtn(n, p)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(0.3, 0, 0, 30)
+    b.Position = p
+    b.Text = n
+    b.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    b.TextColor3 = Color3.new(1,1,1)
+    b.Font = Enum.Font.Gotham
+    b.Parent = mainFrame
+    Instance.new("UICorner", b)
+    return b
+end
+
+local sTab = createTabBtn("Spam", UDim2.new(0.05, 0, 0, 60))
+local stTab = createTabBtn("Sett", UDim2.new(0.35, 0, 0, 60))
+local dTab = createTabBtn("Exit", UDim2.new(0.65, 0, 0, 60))
+
+local spamPanel = Instance.new("Frame")
+spamPanel.Size = UDim2.new(1, -20, 0, 200)
+spamPanel.Position = UDim2.new(0, 10, 0, 100)
+spamPanel.BackgroundTransparency = 1
+spamPanel.Parent = mainFrame
+
+local settPanel = spamPanel:Clone()
+settPanel.Visible = false
+settPanel.Parent = mainFrame
+
+local pattern = "-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-(Hater Name) "
+local words = {
+    "CUD()","Tmr🤡","Tmkx😝","Pgl🤢","CXUD👍","6kka😂","Marja☠️","TML🌋","MC😝","Bkl🤡",
+    "Tmkb🤮","Lole🥴","Lwde😎","Hijda🤓","Chalka🧐","Gnd😮","Lan😖","Beti😩","Xud😣",
+    "Gmdu💩","Ma Xuda👹","Ro🙉","Khtm👻","Nanga👽","Irvinglz1 Spammer👑","Rand1e💃","S@le🤬",
+    "Kxutte🐕","B@dk🥴","Tmkx👻","Mxdrxd💀","N@lle🤡","G@ndu👺","ChupBh3n😵‍💫","L@ndu🤏",
+    "B@ndri🐒","Cxutiya🤡","Pxdxe🤢","Tmkcx🥵","KutteKiMxt💦","Bh3nKxL0de🔥","GndM@r🍑",
+    "Chxkk@🦾","RandKiAulxd📉","L@ntu🥴","Maderxud🤡"
+}
+
+local spamming = false
+local COOLDOWN_DELAY = 3
+
+local box = Instance.new("TextBox")
+box.Size = UDim2.new(1, 0, 0, 40)
+box.PlaceholderText = "Type Hater Name"
+box.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+box.TextColor3 = Color3.new(1,1,1)
+box.Parent = spamPanel
+Instance.new("UICorner", box)
+
+local delayBox = box:Clone()
+delayBox.Position = UDim2.new(0, 0, 0, 45)
+delayBox.PlaceholderText = "Normal Delay (e.g. 1.1)"
+delayBox.Text = "1.1"
+delayBox.Parent = spamPanel
+
+local delay5Box = box:Clone()
+delay5Box.Position = UDim2.new(0, 0, 0, 90)
+delay5Box.PlaceholderText = "Delay after 5 msgs (s)"
+delay5Box.Text = "8"
+delay5Box.Parent = spamPanel
+
+local startBtn = Instance.new("TextButton")
+startBtn.Size = UDim2.new(1, 0, 0, 40)
+startBtn.Position = UDim2.new(0, 0, 0, 135)
+startBtn.Text = "START"
+startBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 70)
+startBtn.TextColor3 = Color3.new(1,1,1)
+startBtn.Font = Enum.Font.GothamBold
+startBtn.Parent = spamPanel
+Instance.new("UICorner", startBtn)
+
+startBtn.MouseButton1Click:Connect(function()
+    spamming = not spamming
+    startBtn.Text = spamming and "STOP" or "START"
+    startBtn.BackgroundColor3 = spamming and Color3.fromRGB(150, 0, 0) or Color3.fromRGB(0, 150, 70)
+    
+    task.spawn(function()
+        local sentCount = 0
+        while spamming do
+            for i = 1, #words do
+                if not spamming then break end
+                local sent = false
+                local message = pattern:gsub("%(Hater Name%)", box.Text) .. words[i]
+                
+                while not sent and spamming do
+                    local success = pcall(function()
+                        TextChatService.TextChannels.RBXGeneral:SendAsync(message)
+                    end)
+                    if success then
+                        sent = true
+                        sentCount = sentCount + 1
+                        if sentCount % 5 == 0 then
+                            task.wait(tonumber(delay5Box.Text) or 8)
+                        else
+                            task.wait(tonumber(delayBox.Text) or 1.1)
+                        end
+                    else
+                        task.wait(COOLDOWN_DELAY)
+                    end
+                end
+            end
+        end
+    end)
+end)
+
+local profile = Instance.new("Frame")
+profile.Size = UDim2.new(1, -20, 0, 55)
+profile.Position = UDim2.new(0, 10, 1, -65)
+profile.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+profile.Parent = mainFrame
+Instance.new("UICorner", profile)
+
+local pfp = Instance.new("ImageLabel")
+pfp.Size = UDim2.new(0, 45, 0, 45)
+pfp.Position = UDim2.new(0, 5, 0, 5)
+pfp.Image = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+pfp.Parent = profile
+Instance.new("UICorner", pfp).CornerRadius = UDim.new(1, 0)
+
+local uName = Instance.new("TextLabel")
+uName.Size = UDim2.new(1, -60, 0, 20)
+uName.Position = UDim2.new(0, 55, 0, 10)
+uName.Text = displayName
+uName.TextColor3 = Color3.new(1,1,1)
+uName.Font = Enum.Font.GothamBold
+uName.TextXAlignment = Enum.TextXAlignment.Left
+uName.BackgroundTransparency = 1
+uName.Parent = profile
+
+local uId = uName:Clone()
+uId.Position = UDim2.new(0, 55, 0, 28)
+uId.Text = "ID: " .. player.UserId
+uId.Font = Enum.Font.Gotham
+uId.TextSize = 10
+uId.Parent = profile
+
+local rejBtn = Instance.new("TextButton")
+rejBtn.Size = UDim2.new(1, 0, 0, 40)
+rejBtn.Parent = settPanel
+rejBtn.Position = UDim2.new(0,0,0,0)
+rejBtn.Text = "REJOIN SERVER"
+rejBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+rejBtn.TextColor3 = Color3.new(1,1,1)
+rejBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", rejBtn)
+rejBtn.MouseButton1Click:Connect(function() TeleportService:Teleport(game.PlaceId, player) end)
+
+local info = Instance.new("TextLabel")
+info.Size = UDim2.new(1,0,0,100)
+info.Position = UDim2.new(0,0,0,60)
+info.Text = "IRVINGLZ1 SPAMMER\n"
+info.TextColor3 = Color3.new(1,1,1)
+info.BackgroundTransparency = 1
+info.Parent = settPanel
+
+toggleBtn.MouseButton1Click:Connect(function() mainFrame.Visible = not mainFrame.Visible end)
+sTab.MouseButton1Click:Connect(function() spamPanel.Visible = true settPanel.Visible = false end)
+stTab.MouseButton1Click:Connect(function() spamPanel.Visible = false settPanel.Visible = true end)
+dTab.MouseButton1Click:Connect(function() gui:Destroy() end)
+
+local dragFrame, dSt, sP
+mainFrame.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragFrame = true dSt = i.Position sP = mainFrame.Position end end)
+UserInputService.InputChanged:Connect(function(i) if dragFrame and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then local d = i.Position - dSt mainFrame.Position = UDim2.new(sP.X.Scale, sP.X.Offset + d.X, sP.Y.Scale, sP.Y.Offset + d.Y) end end)
+UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragFrame = false end end)
