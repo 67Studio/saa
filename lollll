@@ -1009,7 +1009,7 @@ PlaysTb:CreateButton({
     Name = "Irving Spammer",
     Callback = function()
         ButtonPSound()
-        loadstring(game:HttpGet("https://pastebin.com/raw/bPnmeDGz"))()
+        loadstring(game:HttpGet("https://pastebin.com/raw/zBaumpUd"))()
     end
 })
 
