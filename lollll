@@ -1136,10 +1136,10 @@ ScriptsTb:CreateButton({
 
 ScriptsTb:CreateSection("Brookhaven Hubs")
 ScriptsTb:CreateButton({
-    Name = "Kakah Hub",
+    Name = "Dark Hub",
     Callback = function()
         ButtonPSound()
-        loadstring(game:HttpGet("https://rawscripts.net/raw/Brookhaven-RP-Kakah-Hub-75647"))()
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Brookhaven-RP-Dark-Hub-214104"))()
     end
 })
 
