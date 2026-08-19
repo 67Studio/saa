@@ -1,0 +1,258 @@
+--// Irvinglz1 Chat - Solo Owner \\--
+
+local Players = game:GetService("Players")
+local TextChatService = game:GetService("TextChatService")
+local player = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+
+-- CONFIGURACIÓN - TU USUARIO
+local OWNER_NAME = "pdritohacjel"
+local OWNER_USERNAME = "Hiimnew928289alt2"
+
+-- Verificar si eres el owner
+local isOwner = (player.DisplayName == OWNER_NAME or player.Name == OWNER_USERNAME)
+
+-- SI NO ERES EL OWNER, NO HACER NADA
+if not isOwner then
+    print("🔒 No eres el owner. El chat no se cargará.")
+    return
+end
+
+print("👑 Eres el owner. Cargando chat...")
+
+-- ===== CREAR GUI DEL CHAT =====
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "Irvinglz1Chat"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.DisplayOrder = 999
+
+local chatFrame = Instance.new("Frame")
+chatFrame.Size = UDim2.new(0, 330, 0, 250)
+chatFrame.Position = UDim2.new(1, -350, 0.45, -125)
+chatFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+chatFrame.BackgroundTransparency = 0.1
+chatFrame.Parent = ScreenGui
+Instance.new("UICorner", chatFrame).CornerRadius = UDim.new(0, 12)
+
+local stroke = Instance.new("UIStroke", chatFrame)
+stroke.Thickness = 2
+stroke.Color = Color3.fromRGB(0, 150, 255)
+stroke.Transparency = 0.3
+
+-- Título
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 35)
+title.BackgroundTransparency = 1
+title.Text = "💬 Chat Irvinglz1 Hub"
+title.TextColor3 = Color3.fromRGB(0, 150, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+title.Parent = chatFrame
+
+-- Estado
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, -10, 0, 15)
+statusLabel.Position = UDim2.new(0, 10, 0, 35)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = "👑 Modo Owner - Escribe abajo"
+statusLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.TextSize = 11
+statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+statusLabel.Parent = chatFrame
+
+-- Botón minimizar
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Size = UDim2.new(0, 28, 0, 28)
+minimizeBtn.Position = UDim2.new(1, -33, 0, 3)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+minimizeBtn.Text = "−"
+minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.TextSize = 18
+minimizeBtn.Parent = chatFrame
+Instance.new("UICorner", minimizeBtn).CornerRadius = UDim.new(1, 0)
+
+local isMinimized = false
+minimizeBtn.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    if isMinimized then
+        chatFrame.Size = UDim2.new(0, 330, 0, 35)
+        minimizeBtn.Text = "+"
+        for _, child in pairs(chatFrame:GetChildren()) do
+            if child ~= title and child ~= minimizeBtn and child ~= statusLabel then
+                child.Visible = false
+            end
+        end
+        statusLabel.Visible = false
+    else
+        chatFrame.Size = UDim2.new(0, 330, 0, 250)
+        minimizeBtn.Text = "−"
+        for _, child in pairs(chatFrame:GetChildren()) do
+            child.Visible = true
+        end
+        statusLabel.Visible = true
+    end
+end)
+
+-- Área de mensajes
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(1, -10, 1, -75)
+scroll.Position = UDim2.new(0, 5, 0, 55)
+scroll.BackgroundTransparency = 1
+scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+scroll.ScrollBarThickness = 4
+scroll.Parent = chatFrame
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0, 4)
+layout.Parent = scroll
+
+-- ===== FUNCIONES DEL CHAT =====
+
+-- Agregar mensaje
+local function AddMessage(sender, msg, isOwnerMsg)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 0, 22)
+    label.BackgroundTransparency = 1
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.TextWrapped = true
+    
+    if isOwnerMsg then
+        label.Text = "👑 " .. sender .. ": " .. msg
+        label.TextColor3 = Color3.fromRGB(255, 215, 0)
+    else
+        label.Text = "👤 " .. sender .. ": " .. msg
+        label.TextColor3 = Color3.fromRGB(200, 200, 200)
+    end
+    
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 13
+    label.Parent = scroll
+    
+    -- Limitar a 30 mensajes
+    local children = scroll:GetChildren()
+    local count = 0
+    for _, child in pairs(children) do
+        if child:IsA("TextLabel") then
+            count = count + 1
+        end
+    end
+    if count > 30 then
+        for _, child in pairs(children) do
+            if child:IsA("TextLabel") then
+                child:Destroy()
+                break
+            end
+        end
+    end
+    scroll.CanvasSize = UDim2.new(0, 0, 0, count * 26 + 10)
+    scroll.CanvasPosition = Vector2.new(0, scroll.CanvasSize.Y.Offset)
+end
+
+-- Enviar mensaje (solo owner)
+local function SendMessage(msg)
+    if msg == "" then return end
+    local displayName = player.DisplayName or player.Name
+    local message = "[👑 " .. displayName .. "]: " .. msg
+    
+    -- Enviar al chat de Roblox
+    pcall(function()
+        TextChatService.TextChannels.RBXGeneral:SendAsync(message)
+    end)
+    
+    -- Mostrar en el chat local
+    AddMessage("👑 " .. displayName, msg, true)
+end
+
+-- Procesar mensajes entrantes (solo del owner)
+local function ProcessMessage(msg)
+    if not msg then return end
+    local senderName = msg:match("%[👑 (.-)%]:")
+    if senderName then
+        local content = msg:gsub("%[👑 .-%]: ", "")
+        AddMessage("👑 " .. senderName, content, true)
+    end
+end
+
+-- ===== INPUT DEL CHAT =====
+local chatInput = Instance.new("TextBox")
+chatInput.Size = UDim2.new(1, -10, 0, 30)
+chatInput.Position = UDim2.new(0, 5, 1, -35)
+chatInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+chatInput.Font = Enum.Font.Gotham
+chatInput.TextSize = 14
+chatInput.ClearTextOnFocus = false
+chatInput.Parent = chatFrame
+Instance.new("UICorner", chatInput).CornerRadius = UDim.new(0, 8)
+
+chatInput.PlaceholderText = "✏️ Escribe un mensaje..."
+chatInput.BackgroundColor3 = Color3.fromRGB(30, 50, 40)
+
+-- Enviar al presionar Enter
+chatInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed and chatInput.Text ~= "" then
+        SendMessage(chatInput.Text)
+        chatInput.Text = ""
+    end
+end)
+
+-- También con la tecla Enter
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if input.KeyCode == Enum.KeyCode.Return and chatInput:IsFocused() then
+        if chatInput.Text ~= "" then
+            SendMessage(chatInput.Text)
+            chatInput.Text = ""
+        end
+    end
+end)
+
+-- ===== ESCUCHAR MENSAJES =====
+task.spawn(function()
+    TextChatService.MessageReceived:Connect(function(messageData)
+        if messageData.TextSource and messageData.Text then
+            local sender = messageData.TextSource.Name
+            if sender ~= player.Name then
+                ProcessMessage(messageData.Text)
+            end
+        end
+    end)
+end)
+
+-- ===== MOVER EL CHAT =====
+local dragToggle, dragStart, startPos
+
+chatFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragToggle = true
+        dragStart = input.Position
+        startPos = chatFrame.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragToggle and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        chatFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragToggle = false
+    end
+end)
+
+-- ===== MENSAJE DE BIENVENIDA =====
+task.wait(0.5)
+AddMessage("🔊 Sistema", "Chat Irvinglz1 Hub activado", false)
+AddMessage("🔊 Sistema", "👑 Eres el owner. ¡Escribe un mensaje!", false)
+
+print("✅ Chat Irvinglz1 Hub funcionando correctamente!")
