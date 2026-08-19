@@ -1134,6 +1134,15 @@ ScriptsTb:CreateButton({
     end
 })
 
+ScriptsTb:CreateSection("BlackHole")
+ScriptsTb:CreateButton({
+    Name = "Irving Agujero Negro",
+    Callback = function()
+        ButtonPSound()
+        loadstring(game:HttpGet("https://pastebin.com/raw/H4B8JfHp"))()
+    end
+})
+
 ScriptsTb:CreateSection("Brookhaven Hubs")
 ScriptsTb:CreateButton({
     Name = "Dark Hub",
