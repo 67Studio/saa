@@ -1077,7 +1077,7 @@ ScriptsTb:CreateButton({
     Name = "Irving Spammer",
     Callback = function()
         ButtonPSound()
-        loadstring(game:HttpGet("https://pastebin.com/raw/zBaumpUd"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Spammer%202"))()
     end
 })
 
