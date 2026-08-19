@@ -1086,7 +1086,7 @@ ScriptsTb:CreateButton({
     Name = "Irving Agujero Negro",
     Callback = function()
         ButtonPSound()
-        loadstring(game:HttpGet("https://pastebin.com/raw/H4B8JfHp"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Blahoule"))()
     end
 })
 
