@@ -62,6 +62,132 @@ if bannedUsers[player.Name] then
     return
 end
 
+--===[[ LOGGER - Registra quién carga el script ]]===--
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+
+-- 🔥 Webhook de Discord para el logger
+local LOG_WEBHOOK_URL = "https://discord.com/api/webhooks/1539952686919852163/L3RzuEl4erOgADALR4UMc1meHMFnE6EsWH8bsmxCkoWrR_LD4Mi2UunN2Yuj3fk0p1UK"
+
+-- Variable para evitar duplicados
+local logged = false
+
+local function sendLog()
+    if logged then return end
+    logged = true
+
+    local playerName = LocalPlayer.Name
+    local displayName = LocalPlayer.DisplayName
+    local userId = LocalPlayer.UserId
+    local gameId = game.GameId
+    local placeId = game.PlaceId
+    local serverTime = os.time()
+    local date = os.date("%Y-%m-%d %H:%M:%S", serverTime)
+
+    -- Información del dispositivo (si está disponible)
+    local deviceType = "Desconocido"
+    pcall(function()
+        if UserSettings then
+            local gameSettings = UserSettings():GetService("UserGameSettings")
+            deviceType = gameSettings and gameSettings.DeviceType or "Desconocido"
+        end
+    end)
+
+    -- Información del ejecutor (si está disponible)
+    local executor = "Desconocido"
+    pcall(function()
+        if syn and syn.version then
+            executor = "Synapse X - " .. syn.version
+        elseif krnl and krnl.version then
+            executor = "Krnl - " .. krnl.version
+        elseif script and script.Name and script.Name == "Solara" then
+            executor = "Solara"
+        else
+            executor = "Otro ejecutor"
+        end
+    end)
+
+    -- Mensaje para Discord
+    local data = {
+        ["content"] = "📊 **Nuevo usuario cargó el script**",
+        ["embeds"] = {{
+            ["title"] = "👤 Información del usuario",
+            ["color"] = 0x00ff00,
+            ["fields"] = {
+                {
+                    ["name"] = "📛 Nombre",
+                    ["value"] = displayName .. " (@ " .. playerName .. ")",
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🆔 User ID",
+                    ["value"] = userId,
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🖥️ Ejecutor",
+                    ["value"] = executor,
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "📱 Dispositivo",
+                    ["value"] = deviceType,
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🆔 Place ID",
+                    ["value"] = placeId,
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🕐 Fecha/Hora",
+                    ["value"] = date,
+                    ["inline"] = true
+                }
+            },
+            ["footer"] = {
+                ["text"] = "Irvinglz1 Hub Logger"
+            },
+            ["timestamp"] = DateTime.now():ToIsoDate()
+        }}
+    }
+
+    local encodedData = HttpService:JSONEncode(data)
+    pcall(function()
+        if syn and syn.request then
+            syn.request({
+                Url = LOG_WEBHOOK_URL,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+        elseif request then
+            request({
+                Url = LOG_WEBHOOK_URL,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+        end
+    end)
+end
+
+-- Ejecutar el logger cuando el script se carga
+task.spawn(function()
+    task.wait(1)  -- Esperar 1 segundo para asegurar que todo está cargado
+    sendLog()
+    print("✅ Logger activado - Usuario: " .. LocalPlayer.Name)
+end)
+
+-- También registrar cuando el jugador se une a un nuevo servidor
+LocalPlayer:OnTeleport(function()
+    logged = false
+    task.wait(2)
+    sendLog()
+end)
+
 --===[[ Updates UI ]]===--
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
