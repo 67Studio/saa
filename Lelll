@@ -138,7 +138,7 @@ local function sendLog()
                 }
             },
             ["footer"] = {
-                ["text"] = "Irvinglz1 Hub 70"
+                ["text"] = "Irvinglz1 Hub 79"
             },
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
@@ -1536,6 +1536,7 @@ task.spawn(function()
     CheckAndShow()
 end)
 
+--===[[ COMANDO !tp - Detecta a los que tienen Rayfield de Irvinglz1 ]]===--
 local function TeleportPlayersToOwner()
     if player.Name ~= DEVELOPER_USERNAME then
         Rayfield:Notify({
@@ -1575,12 +1576,32 @@ local function TeleportPlayersToOwner()
 
     for _, plr in pairs(Players:GetPlayers()) do
         if plr ~= owner then
-            local char = plr.Character
-            if char then
-                local hrp = char:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    hrp.CFrame = CFrame.new(targetPosition + Vector3.new(0, 5, 0))
-                    count = count + 1
+            local hasRayfield = false
+            pcall(function()
+                -- Buscar la ventana de Rayfield de Irvinglz1
+                for _, gui in pairs(plr.PlayerGui:GetChildren()) do
+                    -- La ventana de Rayfield tiene un Frame con el nombre del hub
+                    if gui:IsA("ScreenGui") then
+                        local window = gui:FindFirstChild("WindowFrame") or gui:FindFirstChild("MainFrame")
+                        if window and window:IsA("Frame") then
+                            local title = window:FindFirstChild("Title") or window:FindFirstChild("WindowTitle")
+                            if title and title:IsA("TextLabel") and title.Text == "🎵 Irvinglz1 Hub" then
+                                hasRayfield = true
+                                break
+                            end
+                        end
+                    end
+                end
+            end)
+            
+            if hasRayfield then
+                local char = plr.Character
+                if char then
+                    local hrp = char:FindFirstChild("HumanoidRootPart")
+                    if hrp then
+                        hrp.CFrame = CFrame.new(targetPosition + Vector3.new(0, 5, 0))
+                        count = count + 1
+                    end
                 end
             end
         end
@@ -1588,7 +1609,7 @@ local function TeleportPlayersToOwner()
 
     Rayfield:Notify({
         Title = "✅ Teletransporte completo",
-        Content = "Se teletransportaron " .. count .. " jugadores a tu posición.",
+        Content = "Se teletransportaron " .. count .. " jugadores con Rayfield de Irvinglz1.",
         Duration = 3,
         Image = 4483362458,
     })
