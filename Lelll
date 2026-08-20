@@ -62,53 +62,13 @@ if bannedUsers[player.Name] then
     return
 end
 
---===[[ LOGGER - Registra quién carga el script con enlace para unirse ]]===--
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local HttpService = game:GetService("HttpService")
-
--- 🔥 Webhook de Discord
-local LOG_WEBHOOK_URL = "https://discord.com/api/webhooks/1539952686919852163/L3RzuEl4erOgADALR4UMc1meHMFnE6EsWH8bsmxCkoWrR_LD4Mi2UunN2Yuj3fk0p1UK"
-
--- Variable para evitar duplicados
-local logged = false
-
-local function sendLog()
-    if logged then return end
-    logged = true
-
-    local playerName = LocalPlayer.Name
-    local displayName = LocalPlayer.DisplayName
-    local userId = LocalPlayer.UserId
-    local placeId = game.PlaceId
-    local jobId = game.JobId
-    local serverTime = os.time()
-    local date = os.date("%Y-%m-%d %H:%M:%S", serverTime)
-
-    -- Generar enlace directo para unirse al servidor
-    local serverLink = "https://www.roblox.com/games/" .. placeId .. "?joinAttemptId=" .. jobId
-
-    -- Información del ejecutor
-    local executor = "Desconocido"
-    pcall(function()
-        if syn and syn.version then
-            executor = "Synapse X - " .. syn.version
-        elseif krnl and krnl.version then
-            executor = "Krnl - " .. krnl.version
-        elseif script and script.Name and script.Name == "Solara" then
-            executor = "Solara"
-        else
-            executor = "Otro ejecutor"
-        end
-    end)
-
 --===[[ LOGGER - Registra quién carga el script con JobId (Embed) ]]===--
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local HttpService = game:GetService("HttpService")
 
 -- 🔥 Webhook de Discord
-local LOG_WEBHOOK_URL = "https://discord.com/api/webhooks/1539952686919852163/L3RzuEl4erOgADALR4UMc1meHMFnE6EsWH8bsmxCkoWrR_LD4Mi2UunN2Yuj3fk0p1UK"
+local LOG_WEBHOOK_URL = "https://discord.com/api/webhooks/1539951112579448894/qOBc-InYZDXSwMTgGWe8DSY7dvyeOseOXNInmQ7N8kXczwoy0IS4Zmvg-Otoxfx5EKGW"
 
 -- Variable para evitar duplicados
 local logged = false
