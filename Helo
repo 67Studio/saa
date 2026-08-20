@@ -207,7 +207,7 @@ local LinkText = Instance.new("TextLabel")
 LinkText.Parent = MainFrame
 LinkText.Position = UDim2.new(0,15,0,220)
 LinkText.Size = UDim2.new(0,270,0,35)
-LinkText.Text = "📌links de mi querido partner:"
+LinkText.Text = "📌 Links del Partner:"
 LinkText.TextColor3 = Color3.fromRGB(255, 215, 0)
 LinkText.Font = Enum.Font.GothamBold
 LinkText.TextSize = 13
@@ -309,7 +309,7 @@ end)
 -- ===== BOTÓN USAR =====
 BtnUse.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
-    
+
     local BlackScreen = Instance.new("ScreenGui")
     BlackScreen.Name = "Irvinglz1BlackScreen"
     BlackScreen.ResetOnSpawn = false
@@ -339,9 +339,9 @@ BtnUse.MouseButton1Click:Connect(function()
     )
     fadeIn:Play()
     fadeIn.Completed:Wait()
-    
+
     task.wait(3)
-    
+
     local fadeOut = TweenService:Create(
         BlackFrame,
         TweenInfo.new(0.5, Enum.EasingStyle.Quad),
@@ -349,88 +349,9 @@ BtnUse.MouseButton1Click:Connect(function()
     )
     fadeOut:Play()
     fadeOut.Completed:Wait()
-    
+
     BlackScreen:Destroy()
-    
-    print("🎵 Cargando Irvinglz1 Hub...")
-    loadstring(game:HttpGet(SCRIPT_URL))()
-end)
 
-print("🤷‍♂️Irvinglz1 Hub🤷‍♂️ - Presiona USAR para cargar el script")¡Copiado!"
-        task.wait(1.5)
-        BtnCopy.Text = "📋 Copiar User"
-    end
-end)
-
-local BtnDiscord = Instance.new("TextButton")
-BtnDiscord.Parent = MainFrame
-BtnDiscord.Size = UDim2.new(0, 110, 0, 30)
-BtnDiscord.Position = UDim2.new(0, 175, 0, 345)
-BtnDiscord.BackgroundColor3 = Color3.fromRGB(35,35,45)
-BtnDiscord.TextColor3 = Color3.fromRGB(255,255,255)
-BtnDiscord.Font = Enum.Font.Gotham
-BtnDiscord.TextSize = 12
-BtnDiscord.Text = "💬 Copiar Discord"
-
-local discordCorner = Instance.new("UICorner")
-discordCorner.CornerRadius = UDim.new(0, 6)
-discordCorner.Parent = BtnDiscord
-
-BtnDiscord.MouseButton1Click:Connect(function()
-    if setclipboard then
-        setclipboard(PARTNER_DISCORD)
-        BtnDiscord.Text = "✅ ¡Copiado!"
-        task.wait(1.5)
-        BtnDiscord.Text = "💬 Copiar Discord"
-    end
-end)
-
--- ===== BOTÓN USAR =====
-BtnUse.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-    
-    local BlackScreen = Instance.new("ScreenGui")
-    BlackScreen.Name = "Irvinglz1BlackScreen"
-    BlackScreen.ResetOnSpawn = false
-    BlackScreen.Parent = game:GetService("CoreGui")
-
-    local BlackFrame = Instance.new("Frame")
-    BlackFrame.Parent = BlackScreen
-    BlackFrame.Size = UDim2.new(1, 0, 1, 0)
-    BlackFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    BlackFrame.BorderSizePixel = 0
-
-    local TextLabel = Instance.new("TextLabel")
-    TextLabel.Parent = BlackFrame
-    TextLabel.Size = UDim2.new(1, 0, 1, 0)
-    TextLabel.BackgroundTransparency = 1
-    TextLabel.Text = "@iirvinglzc1\nsígueme o al privado para errores"
-    TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    TextLabel.Font = Enum.Font.GothamBold
-    TextLabel.TextSize = 40
-    TextLabel.TextScaled = true
-
-    BlackFrame.BackgroundTransparency = 1
-    local fadeIn = TweenService:Create(
-        BlackFrame,
-        TweenInfo.new(0.5, Enum.EasingStyle.Quad),
-        {BackgroundTransparency = 0}
-    )
-    fadeIn:Play()
-    fadeIn.Completed:Wait()
-    
-    task.wait(3)
-    
-    local fadeOut = TweenService:Create(
-        BlackFrame,
-        TweenInfo.new(0.5, Enum.EasingStyle.Quad),
-        {BackgroundTransparency = 1}
-    )
-    fadeOut:Play()
-    fadeOut.Completed:Wait()
-    
-    BlackScreen:Destroy()
-    
     print("🎵 Cargando Irvinglz1 Hub...")
     loadstring(game:HttpGet(SCRIPT_URL))()
 end)
