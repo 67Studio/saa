@@ -178,14 +178,6 @@ end
 task.spawn(function()
     task.wait(1)  -- Esperar 1 segundo para asegurar que todo está cargado
     sendLog()
-    print("✅ Logger activado - Usuario: " .. LocalPlayer.Name)
-end)
-
--- También registrar cuando el jugador se une a un nuevo servidor
-LocalPlayer:OnTeleport(function()
-    logged = false
-    task.wait(2)
-    sendLog()
 end)
 
 --===[[ Updates UI ]]===--
