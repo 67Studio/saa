@@ -1439,7 +1439,7 @@ Settings:CreateParagraph({
     Content = "Irvinglz1 Hub\nDesarrollado por Hiimnew928289alt2"
 })
 
---===[[ DevCrown - "👑 Owner" parpadeando sobre la cabeza (sin fondo) ]]===--
+--===[[ DevCrown - "👑 Owner" sobre la cabeza (sin fondo, sin parpadeo) ]]===--
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local DEV_USER = "Hiimnew928289alt2"
@@ -1447,7 +1447,7 @@ local DEV_USER = "Hiimnew928289alt2"
 -- 🔥 Variable global para controlar la visibilidad
 getgenv().CROWN_ENABLED = true  -- Activada por defecto
 
--- 👑 Función para crear la etiqueta "Owner" parpadeante
+-- 👑 Función para crear la etiqueta "Owner" (sin parpadeo)
 local function addOwnerLabel(character)
     if not character then return end
     local head = character:FindFirstChild("Head")
@@ -1472,16 +1472,6 @@ local function addOwnerLabel(character)
     text.TextStrokeTransparency = 0.3  -- Borde sutil para que se vea mejor
     text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
     text.Parent = label
-
-    -- 🎯 Efecto de parpadeo (transparencia del texto)
-    task.spawn(function()
-        while label and label.Parent do
-            text.TextTransparency = 0
-            task.wait(0.5)
-            text.TextTransparency = 0.6
-            task.wait(0.5)
-        end
-    end)
 end
 
 -- 🔄 Función para actualizar
@@ -1598,7 +1588,6 @@ Players.PlayerAdded:Connect(function(plr)
         end)
     end
 end)
-
 
 print("🎵 Irvinglz1 Hub cargado correctamente!")
 print("📱 Discord: " .. DISCORD_INVITE)
