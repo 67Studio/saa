@@ -1628,7 +1628,7 @@ player.Chatted:Connect(function(msg)
     end
 end)
 
---===[[ Co-Owner Label - "👑 Co-Owner" (automático, visible para todos los que tengan el script) ]]===--
+--===[[ Co-Owner Label - "👑 Co-Owner" (automático, visible para todos incluyendo el co-owner) ]]===--
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local DEV_USER = "Hiimnew928289alt2"
@@ -1654,7 +1654,7 @@ local function addCoOwnerLabel(character)
     local label = Instance.new("BillboardGui")
     label.Name = "CoOwnerLabel"
     label.Size = UDim2.new(0, 100, 0, 40)
-    label.StudsOffset = Vector3.new(0, 3, 0)
+    label.StudsOffset = Vector3.new(0, 3.5, 0)
     label.AlwaysOnTop = true
     label.Parent = head
 
@@ -1687,7 +1687,7 @@ local function updateCoOwnerLabel(character)
     end
 end
 
--- 👀 Vigilar al co-owner
+-- 👀 Vigilar al co-owner (SIN BLOQUEAR AL PROPIO CO-OWNER)
 local function watchCoOwner(plr)
     if plr.UserId ~= CO_OWNER_USER_ID then return end
 
@@ -1695,6 +1695,7 @@ local function watchCoOwner(plr)
         while plr.Parent do
             local char = plr.Character
             if char then
+                -- 👈 NO hay condición que bloquee al propio co-owner
                 updateCoOwnerLabel(char)
             end
             task.wait(1)
@@ -1727,7 +1728,7 @@ player.Chatted:Connect(function(msg)
         
         Rayfield:Notify({
             Title = "👑 Co-Owner visible",
-            Content = "El texto 'Co-Owner' ahora es visible para todos los que tienen el script.",
+            Content = "El texto 'Co-Owner' ahora es visible para todos.",
             Duration = 3,
             Image = 4483362458,
         })
@@ -1784,6 +1785,8 @@ Players.PlayerAdded:Connect(function(plr)
         end)
     end
 end)
+
+print("👑 Co-Owner Label activado automáticamente para ID: " .. CO_OWNER_USER_ID)
 
 
 
