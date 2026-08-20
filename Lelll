@@ -138,7 +138,7 @@ local function sendLog()
                 }
             },
             ["footer"] = {
-                ["text"] = "Irvinglz1 Hub 799"
+                ["text"] = "Irvinglz1 Hub 800"
             },
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
@@ -1452,8 +1452,18 @@ if player.Name ~= DEVELOPER_USERNAME then
     return
 end
 
-local OWNER_NAME = "pedritohacjel"
-local OWNER_USERNAME = "Hiimnew928289alt2"
+--===[[ Owner System - Notificación cuando el owner ejecuta el script ]]===--
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+
+local DEVELOPER_USERNAME = "Hiimnew928289alt2"
+
+-- 🔥 SOLO EL OWNER PUEDE ACTIVAR LA NOTIFICACIÓN
+if player.Name ~= DEVELOPER_USERNAME then
+    return  -- Si no eres el owner, no se ejecuta nada
+end
+
 local notificationShown = false
 
 local function ShowOwnerGUI()
@@ -1520,20 +1530,10 @@ local function ShowOwnerGUI()
     gui:Destroy()
 end
 
-local function CheckAndShow()
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr.Name == DEVELOPER_USERNAME then
-            if plr ~= player then
-                ShowOwnerGUI()
-                return
-            end
-        end
-    end
-end
-
+-- Mostrar cuando el owner ejecuta el script
 task.spawn(function()
     task.wait(2)
-    CheckAndShow()
+    ShowOwnerGUI()
 end)
 
 --===[[ GUI INVISIBLE PARA DETECTAR EL SCRIPT ]]===--
