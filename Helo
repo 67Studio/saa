@@ -8,13 +8,18 @@ local SCRIPT_URL = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/ma
 local TARGET_USERNAME = "Hiimnew928289alt2"
 local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"
 
--- 📌 PARTNER
-local PARTNER_USER_ID = 5712710685
-local PARTNER_NAME = "IIXxIrving_alhapxXII"
-local PARTNER_DISCORD = "https://discord.gg/CDNRhNguz"
-local PARTNER_TIKTOK = "@iirvinglzc1"
+-- 📌 PARTNER 1 (con links)
+local PARTNER1_USER_ID = 5712710685
+local PARTNER1_NAME = "IIXxIrving_alhapxXII"
+local PARTNER1_DISCORD = "https://discord.gg/CDNRhNguz"
+local PARTNER1_TIKTOK = "@iirvinglzc1"
 
--- ===== PANTALLA DE CARGA CON TEXTO MÁS GRANDE =====
+-- 📌 PARTNER 2 (sin links)
+local PARTNER2_USER_ID = 1990522332
+local PARTNER2_NAME = "Jqjsldllrel27"
+local PARTNER2_DISPLAY = "000i_fer"
+
+-- ===== PANTALLA DE CARGA =====
 local function ShowLoadingScreen()
     local gui = Instance.new("ScreenGui")
     gui.Name = "Irvinglz1LoadingScreen"
@@ -76,8 +81,8 @@ ScreenGui.Name = "Irvinglz1_Loader"
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Parent = ScreenGui
-MainFrame.Size = UDim2.new(0, 300, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
+MainFrame.Size = UDim2.new(0, 300, 0, 420)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -210)
 MainFrame.BackgroundColor3 = Color3.fromRGB(12,12,12)
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -159,94 +164,141 @@ DevDesc.TextSize = 12
 DevDesc.BackgroundTransparency = 1
 DevDesc.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== FRAME DEL PARTNER =====
-local PartnerFrame = Instance.new("Frame")
-PartnerFrame.Parent = MainFrame
-PartnerFrame.Position = UDim2.new(0,15,0,155)
-PartnerFrame.Size = UDim2.new(0,270,0,60)
-PartnerFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+-- ===== PARTNER 1 (con foto) =====
+local Partner1Frame = Instance.new("Frame")
+Partner1Frame.Parent = MainFrame
+Partner1Frame.Position = UDim2.new(0,15,0,155)
+Partner1Frame.Size = UDim2.new(0,270,0,60)
+Partner1Frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
 
-local partnerCorner = Instance.new("UICorner")
-partnerCorner.CornerRadius = UDim.new(0,10)
-partnerCorner.Parent = PartnerFrame
+local partner1Corner = Instance.new("UICorner")
+partner1Corner.CornerRadius = UDim.new(0,10)
+partner1Corner.Parent = Partner1Frame
 
-local PartnerIcon = Instance.new("ImageLabel")
-PartnerIcon.Parent = PartnerFrame
-PartnerIcon.Size = UDim2.new(0,40,0,40)
-PartnerIcon.Position = UDim2.new(0,10,0,10)
-PartnerIcon.BackgroundColor3 = Color3.fromRGB(40,40,40)
+local Partner1Icon = Instance.new("ImageLabel")
+Partner1Icon.Parent = Partner1Frame
+Partner1Icon.Size = UDim2.new(0,40,0,40)
+Partner1Icon.Position = UDim2.new(0,10,0,10)
+Partner1Icon.BackgroundColor3 = Color3.fromRGB(40,40,40)
 
-local partnerIconCorner = Instance.new("UICorner")
-partnerIconCorner.CornerRadius = UDim.new(1,0)
-partnerIconCorner.Parent = PartnerIcon
+local partner1IconCorner = Instance.new("UICorner")
+partner1IconCorner.CornerRadius = UDim.new(1,0)
+partner1IconCorner.Parent = Partner1Icon
 
--- 🔥 CARGA LA FOTO DEL PARTNER
 pcall(function()
-    local thumb = game.Players:GetUserThumbnailAsync(PARTNER_USER_ID, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
-    PartnerIcon.Image = thumb
+    local thumb = game.Players:GetUserThumbnailAsync(PARTNER1_USER_ID, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+    Partner1Icon.Image = thumb
 end)
 
-local PartnerName = Instance.new("TextLabel")
-PartnerName.Parent = PartnerFrame
-PartnerName.Position = UDim2.new(0,60,0,10)
-PartnerName.Size = UDim2.new(0,190,0,20)
-PartnerName.Text = PARTNER_NAME
-PartnerName.TextColor3 = Color3.fromRGB(255, 255, 255)
-PartnerName.Font = Enum.Font.GothamBold
-PartnerName.TextSize = 13
-PartnerName.BackgroundTransparency = 1
-PartnerName.TextXAlignment = Enum.TextXAlignment.Left
+local Partner1Name = Instance.new("TextLabel")
+Partner1Name.Parent = Partner1Frame
+Partner1Name.Position = UDim2.new(0,60,0,10)
+Partner1Name.Size = UDim2.new(0,190,0,20)
+Partner1Name.Text = PARTNER1_NAME
+Partner1Name.TextColor3 = Color3.fromRGB(255, 255, 255)
+Partner1Name.Font = Enum.Font.GothamBold
+Partner1Name.TextSize = 13
+Partner1Name.BackgroundTransparency = 1
+Partner1Name.TextXAlignment = Enum.TextXAlignment.Left
 
-local PartnerDesc = Instance.new("TextLabel")
-PartnerDesc.Parent = PartnerFrame
-PartnerDesc.Position = UDim2.new(0,60,0,30)
-PartnerDesc.Size = UDim2.new(0,190,0,20)
-PartnerDesc.Text = "🤝 Partner"
-PartnerDesc.TextColor3 = Color3.fromRGB(150,150,150)
-PartnerDesc.Font = Enum.Font.Gotham
-PartnerDesc.TextSize = 12
-PartnerDesc.BackgroundTransparency = 1
-PartnerDesc.TextXAlignment = Enum.TextXAlignment.Left
+local Partner1Desc = Instance.new("TextLabel")
+Partner1Desc.Parent = Partner1Frame
+Partner1Desc.Position = UDim2.new(0,60,0,30)
+Partner1Desc.Size = UDim2.new(0,190,0,20)
+Partner1Desc.Text = "🤝 Partner"
+Partner1Desc.TextColor3 = Color3.fromRGB(150,150,150)
+Partner1Desc.Font = Enum.Font.Gotham
+Partner1Desc.TextSize = 12
+Partner1Desc.BackgroundTransparency = 1
+Partner1Desc.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== LINKS DEL PARTNER =====
-local LinkText = Instance.new("TextLabel")
-LinkText.Parent = MainFrame
-LinkText.Position = UDim2.new(0,15,0,220)
-LinkText.Size = UDim2.new(0,270,0,35)
-LinkText.Text = "📌 Links del Partner:"
-LinkText.TextColor3 = Color3.fromRGB(255, 215, 0)
-LinkText.Font = Enum.Font.GothamBold
-LinkText.TextSize = 13
-LinkText.BackgroundTransparency = 1
-LinkText.TextXAlignment = Enum.TextXAlignment.Left
+-- ===== PARTNER 2 (con foto, sin links) =====
+local Partner2Frame = Instance.new("Frame")
+Partner2Frame.Parent = MainFrame
+Partner2Frame.Position = UDim2.new(0,15,0,225)
+Partner2Frame.Size = UDim2.new(0,270,0,60)
+Partner2Frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
 
-local DiscordLink = Instance.new("TextLabel")
-DiscordLink.Parent = MainFrame
-DiscordLink.Position = UDim2.new(0,15,0,245)
-DiscordLink.Size = UDim2.new(0,270,0,20)
-DiscordLink.Text = "💬 Discord: " .. PARTNER_DISCORD
-DiscordLink.TextColor3 = Color3.fromRGB(88, 101, 242)
-DiscordLink.Font = Enum.Font.GothamMedium
-DiscordLink.TextSize = 11
-DiscordLink.BackgroundTransparency = 1
-DiscordLink.TextXAlignment = Enum.TextXAlignment.Left
+local partner2Corner = Instance.new("UICorner")
+partner2Corner.CornerRadius = UDim.new(0,10)
+partner2Corner.Parent = Partner2Frame
 
-local TikTokLink = Instance.new("TextLabel")
-TikTokLink.Parent = MainFrame
-TikTokLink.Position = UDim2.new(0,15,0,265)
-TikTokLink.Size = UDim2.new(0,270,0,20)
-TikTokLink.Text = "🎵 TikTok: " .. PARTNER_TIKTOK
-TikTokLink.TextColor3 = Color3.fromRGB(255, 0, 80)
-TikTokLink.Font = Enum.Font.GothamMedium
-TikTokLink.TextSize = 11
-TikTokLink.BackgroundTransparency = 1
-TikTokLink.TextXAlignment = Enum.TextXAlignment.Left
+local Partner2Icon = Instance.new("ImageLabel")
+Partner2Icon.Parent = Partner2Frame
+Partner2Icon.Size = UDim2.new(0,40,0,40)
+Partner2Icon.Position = UDim2.new(0,10,0,10)
+Partner2Icon.BackgroundColor3 = Color3.fromRGB(40,40,40)
+
+local partner2IconCorner = Instance.new("UICorner")
+partner2IconCorner.CornerRadius = UDim.new(1,0)
+partner2IconCorner.Parent = Partner2Icon
+
+pcall(function()
+    local thumb = game.Players:GetUserThumbnailAsync(PARTNER2_USER_ID, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+    Partner2Icon.Image = thumb
+end)
+
+local Partner2Name = Instance.new("TextLabel")
+Partner2Name.Parent = Partner2Frame
+Partner2Name.Position = UDim2.new(0,60,0,10)
+Partner2Name.Size = UDim2.new(0,190,0,20)
+Partner2Name.Text = PARTNER2_DISPLAY .. " (" .. PARTNER2_NAME .. ")"
+Partner2Name.TextColor3 = Color3.fromRGB(255, 255, 255)
+Partner2Name.Font = Enum.Font.GothamBold
+Partner2Name.TextSize = 12
+Partner2Name.BackgroundTransparency = 1
+Partner2Name.TextXAlignment = Enum.TextXAlignment.Left
+
+local Partner2Desc = Instance.new("TextLabel")
+Partner2Desc.Parent = Partner2Frame
+Partner2Desc.Position = UDim2.new(0,60,0,30)
+Partner2Desc.Size = UDim2.new(0,190,0,20)
+Partner2Desc.Text = "🤝 Partner"
+Partner2Desc.TextColor3 = Color3.fromRGB(150,150,150)
+Partner2Desc.Font = Enum.Font.Gotham
+Partner2Desc.TextSize = 12
+Partner2Desc.BackgroundTransparency = 1
+Partner2Desc.TextXAlignment = Enum.TextXAlignment.Left
+
+-- ===== LINKS DEL PARTNER 1 (SOLO DEL PARTNER 1) =====
+local LinkText1 = Instance.new("TextLabel")
+LinkText1.Parent = MainFrame
+LinkText1.Position = UDim2.new(0,15,0,290)
+LinkText1.Size = UDim2.new(0,270,0,35)
+LinkText1.Text = "📌 Links del Partner:"
+LinkText1.TextColor3 = Color3.fromRGB(255, 215, 0)
+LinkText1.Font = Enum.Font.GothamBold
+LinkText1.TextSize = 13
+LinkText1.BackgroundTransparency = 1
+LinkText1.TextXAlignment = Enum.TextXAlignment.Left
+
+local DiscordLink1 = Instance.new("TextLabel")
+DiscordLink1.Parent = MainFrame
+DiscordLink1.Position = UDim2.new(0,15,0,315)
+DiscordLink1.Size = UDim2.new(0,270,0,20)
+DiscordLink1.Text = "💬 Discord: " .. PARTNER1_DISCORD
+DiscordLink1.TextColor3 = Color3.fromRGB(88, 101, 242)
+DiscordLink1.Font = Enum.Font.GothamMedium
+DiscordLink1.TextSize = 11
+DiscordLink1.BackgroundTransparency = 1
+DiscordLink1.TextXAlignment = Enum.TextXAlignment.Left
+
+local TikTokLink1 = Instance.new("TextLabel")
+TikTokLink1.Parent = MainFrame
+TikTokLink1.Position = UDim2.new(0,15,0,335)
+TikTokLink1.Size = UDim2.new(0,270,0,20)
+TikTokLink1.Text = "🎵 TikTok: " .. PARTNER1_TIKTOK
+TikTokLink1.TextColor3 = Color3.fromRGB(255, 0, 80)
+TikTokLink1.Font = Enum.Font.GothamMedium
+TikTokLink1.TextSize = 11
+TikTokLink1.BackgroundTransparency = 1
+TikTokLink1.TextXAlignment = Enum.TextXAlignment.Left
 
 -- ===== BOTÓN USAR =====
 local BtnUse = Instance.new("TextButton")
 BtnUse.Parent = MainFrame
 BtnUse.Size = UDim2.new(0, 240, 0, 35)
-BtnUse.Position = UDim2.new(0.5, -120, 0, 295)
+BtnUse.Position = UDim2.new(0.5, -120, 0, 375)
 BtnUse.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
 BtnUse.TextColor3 = Color3.fromRGB(255, 255, 255)
 BtnUse.Font = Enum.Font.GothamBold
@@ -265,54 +317,6 @@ BtnUse.MouseLeave:Connect(function()
     BtnUse.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
 end)
 
--- ===== BOTONES DE COPIA =====
-local BtnCopy = Instance.new("TextButton")
-BtnCopy.Parent = MainFrame
-BtnCopy.Size = UDim2.new(0, 110, 0, 30)
-BtnCopy.Position = UDim2.new(0, 15, 0, 345)
-BtnCopy.BackgroundColor3 = Color3.fromRGB(35,35,45)
-BtnCopy.TextColor3 = Color3.fromRGB(255,255,255)
-BtnCopy.Font = Enum.Font.Gotham
-BtnCopy.TextSize = 12
-BtnCopy.Text = "📋 Copiar User"
-
-local copyCorner = Instance.new("UICorner")
-copyCorner.CornerRadius = UDim.new(0, 6)
-copyCorner.Parent = BtnCopy
-
-BtnCopy.MouseButton1Click:Connect(function()
-    if setclipboard then
-        setclipboard(TARGET_USERNAME)
-        BtnCopy.Text = "✅ ¡Copiado!"
-        task.wait(1.5)
-        BtnCopy.Text = "📋 Copiar User"
-    end
-end)
-
-local BtnDiscord = Instance.new("TextButton")
-BtnDiscord.Parent = MainFrame
-BtnDiscord.Size = UDim2.new(0, 110, 0, 30)
-BtnDiscord.Position = UDim2.new(0, 175, 0, 345)
-BtnDiscord.BackgroundColor3 = Color3.fromRGB(35,35,45)
-BtnDiscord.TextColor3 = Color3.fromRGB(255,255,255)
-BtnDiscord.Font = Enum.Font.Gotham
-BtnDiscord.TextSize = 12
-BtnDiscord.Text = "💬 Copiar Discord"
-
-local discordCorner = Instance.new("UICorner")
-discordCorner.CornerRadius = UDim.new(0, 6)
-discordCorner.Parent = BtnDiscord
-
-BtnDiscord.MouseButton1Click:Connect(function()
-    if setclipboard then
-        setclipboard(PARTNER_DISCORD)
-        BtnDiscord.Text = "✅ ¡Copiado!"
-        task.wait(1.5)
-        BtnDiscord.Text = "💬 Copiar Discord"
-    end
-end)
-
--- ===== BOTÓN USAR =====
 BtnUse.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 
