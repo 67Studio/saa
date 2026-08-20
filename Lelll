@@ -1366,132 +1366,194 @@ Settings:CreateParagraph({
     Content = "Irvinglz1 Hub\nDesarrollado por Hiimnew928289alt2"
 })
 
---===[[ Owner System - Solo indicador cuando el owner está CERCA (sin chat) ]]===--
+--===[[ Owner System - Notificación Rayfield cuando el owner está en el servidor ]]===--
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
-local OWNER_NAME = "pedritohacjel"
+
+-- 🔥 SOLO EL DESARROLLADOR PUEDE VER ESTO
+local DEVELOPER_USERNAME = "Hiimnew928289alt2"  -- 👈 Tu usuario
+if player.Name ~= DEVELOPER_USERNAME then
+    return  -- Si no eres el desarrollador, NO se ejecuta nada
+end
+
+local OWNER_NAME = "pdritohacjel"
 local OWNER_USERNAME = "Hiimnew928289alt2"
-local PROXIMITY_DISTANCE = 50
+local notificationShown = false  -- Para evitar duplicados
 
-local indicatorGui = nil
-local indicatorLabel = nil
-local isOwnerNear = false
+-- ========== MOSTRAR NOTIFICACIÓN CON RAYFIELD ==========
+local function ShowOwnerNotification()
+    if notificationShown then return end
+    notificationShown = true
 
-local function CreateIndicator()
-    if indicatorGui then return end
-    
-    indicatorGui = Instance.new("ScreenGui")
-    indicatorGui.Name = "OwnerIndicator"
-    indicatorGui.ResetOnSpawn = false
-    indicatorGui.Parent = game:GetService("CoreGui")
-    indicatorGui.DisplayOrder = 999
+    Rayfield:Notify({
+        Title = "👑 Owner en el servidor",
+        Content = "El desarrollador está en tu servidor.",
+        Duration = 10,  -- 👈 10 segundos
+        Image = 4483362458,  -- 👈 Icono de corona
+    })
+end
 
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 220, 0, 50)
-    frame.Position = UDim2.new(0.5, -110, 0.05, 10)
-    frame.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
-    frame.BackgroundTransparency = 0.15
-    frame.Parent = indicatorGui
-    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+-- ========== DETECTAR CUANDO EL OWNER ENTRA AL SERVIDOR ==========
+local function CheckForOwner()
+    -- Verificar si el owner ya está en el servidor
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr.DisplayName == OWNER_NAME or plr.Name == OWNER_USERNAME then
+            if plr ~= player then  -- Que no sea yo mismo
+                ShowOwnerNotification()
+                return
+            end
+        end
+    end
 
-    local stroke = Instance.new("UIStroke", frame)
-    stroke.Thickness = 2
-    stroke.Color = Color3.fromRGB(255, 200, 0)
-    stroke.Transparency = 0.5
-
-    indicatorLabel = Instance.new("TextLabel")
-    indicatorLabel.Size = UDim2.new(1, 0, 1, 0)
-    indicatorLabel.BackgroundTransparency = 1
-    indicatorLabel.Text = "👑 El desarrollador está cerca"
-    indicatorLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    indicatorLabel.Font = Enum.Font.GothamBold
-    indicatorLabel.TextSize = 18
-    indicatorLabel.Parent = frame
-
-    task.spawn(function()
-        while indicatorGui and indicatorGui.Parent do
-            if isOwnerNear then
-                frame.BackgroundTransparency = 0.15
-                task.wait(0.5)
-                frame.BackgroundTransparency = 0.5
-                task.wait(0.5)
-            else
-                frame.BackgroundTransparency = 0
-                task.wait()
+    -- Escuchar cuando el owner se una
+    local connection
+    connection = Players.PlayerAdded:Connect(function(plr)
+        if plr.DisplayName == OWNER_NAME or plr.Name == OWNER_USERNAME then
+            if plr ~= player then
+                ShowOwnerNotification()
+                connection:Disconnect()  -- Desconectar después de mostrar
             end
         end
     end)
 end
 
-local function DestroyIndicator()
-    if indicatorGui then
-        indicatorGui:Destroy()
-        indicatorGui = nil
-        indicatorLabel = nil
-    end
-end
+-- Iniciar la verificación
+CheckForOwner()
 
-local function UpdateIndicator()
-    local owner = nil
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr.DisplayName == OWNER_NAME or plr.Name == OWNER_USERNAME then
-            owner = plr
-            break
-        end
-    end
-    
-    if not owner then
-        DestroyIndicator()
-        return
-    end
-    
-    if owner == player then
-        DestroyIndicator()
-        return
-    end
-    
-    local ownerChar = owner.Character
-    local myChar = player.Character
-    if not ownerChar or not myChar then
-        DestroyIndicator()
-        return
-    end
-    
-    local ownerRoot = ownerChar:FindFirstChild("HumanoidRootPart")
-    local myRoot = myChar:FindFirstChild("HumanoidRootPart")
-    if not ownerRoot or not myRoot then
-        DestroyIndicator()
-        return
-    end
-    
-    local distance = (ownerRoot.Position - myRoot.Position).Magnitude
-    
-    -- Aparece cuando el owner está CERCA (distancia < 159)
-    if distance < PROXIMITY_DISTANCE then
-        isOwnerNear = true
-        if not indicatorGui then
-            CreateIndicator()
-        end
-    else
-        isOwnerNear = false
-        if indicatorGui then
-            DestroyIndicator()
-        end
-    end
-end
+--===[[ Sistema de notificaciones globales con Webhook ]]===--
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local HttpService = game:GetService("HttpService")
 
-local function InitOwnerSystem()
-    task.spawn(function()
-        while task.wait(0.5) do
-            UpdateIndicator()
+-- 🔥 Configuración del Webhook de Discord
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1539952114946674809/9pcipCl4Hzgibt0ASLLW8i3TWVjEHoXBvTKeDfRvUU5m5vt0hzNa54FCgvyRlis3xgPn"
+
+-- Variable para controlar la última notificación recibida
+local lastMessageId = nil
+
+-- ========== ENVIAR NOTIFICACIÓN ==========
+local function handleNotificationCommand(msg)
+    local command, message = msg:match("^!(notify|anuncio)%s+(.+)$")
+    if not command then return false end
+
+    -- Solo el desarrollador puede enviar notificaciones
+    if LocalPlayer.Name ~= "Hiimnew928289alt2" then
+        Rayfield:Notify({
+            Title = "⚠️ Sin permiso",
+            Content = "Solo el desarrollador puede enviar notificaciones.",
+            Duration = 3,
+            Image = 4483362458,
+        })
+        return true
+    end
+
+    -- Enviar notificación a través del Webhook
+    local data = {
+        ["content"] = "📢 **Notificación para todos los usuarios del hub:**",
+        ["embeds"] = {{
+            ["title"] = "📨 Mensaje del desarrollador",
+            ["description"] = message,
+            ["color"] = 0x00ff00,
+            ["footer"] = {
+                ["text"] = "Enviado por " .. LocalPlayer.DisplayName
+            },
+            ["timestamp"] = DateTime.now():ToIsoDate()
+        }}
+    }
+
+    local encodedData = HttpService:JSONEncode(data)
+    local success = false
+    
+    pcall(function()
+        if syn and syn.request then
+            local response = syn.request({
+                Url = WEBHOOK_URL,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+            if response and response.StatusCode == 204 then
+                success = true
+            end
+        elseif request then
+            local response = request({
+                Url = WEBHOOK_URL,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+            if response and response.StatusCode == 204 then
+                success = true
+            end
         end
     end)
+
+    if success then
+        Rayfield:Notify({
+            Title = "✅ Notificación enviada",
+            Content = "Mensaje enviado a todos los usuarios del hub.",
+            Duration = 3,
+            Image = 4483362458,
+        })
+    else
+        Rayfield:Notify({
+            Title = "❌ Error",
+            Content = "No se pudo enviar la notificación.",
+            Duration = 3,
+            Image = 4483362458,
+        })
+    end
+    
+    return true
 end
 
-if getgenv().IRVING_SCRIPT_ACTIVE then
-    InitOwnerSystem()
+-- ========== RECIBIR NOTIFICACIONES ==========
+local function checkForNotifications()
+    while task.wait(3) do  -- Revisar cada 3 segundos
+        pcall(function()
+            local response = nil
+            if syn and syn.request then
+                response = syn.request({
+                    Url = WEBHOOK_URL,
+                    Method = "GET"
+                })
+            elseif request then
+                response = request({
+                    Url = WEBHOOK_URL,
+                    Method = "GET"
+                })
+            end
+            
+            if response and response.StatusCode == 200 then
+                local data = HttpService:JSONDecode(response.Body)
+                -- Verificar si hay un mensaje nuevo (comparar por ID)
+                if data and data.embeds and data.embeds[1] then
+                    local messageId = data.embeds[1].title or tostring(os.time())
+                    if messageId ~= lastMessageId then
+                        lastMessageId = messageId
+                        local message = data.embeds[1].description or "Mensaje sin contenido"
+                        Rayfield:Notify({
+                            Title = "📨 Mensaje del desarrollador",
+                            Content = message,
+                            Duration = 10,
+                            Image = 4483362458,
+                        })
+                    end
+                end
+            end
+        end)
+    end
 end
+
+-- ========== DETECTAR COMANDOS EN EL CHAT ==========
+LocalPlayer.Chatted:Connect(function(msg)
+    handleNotificationCommand(msg)
+end)
+
+-- ========== INICIAR EL RECEPTOR ==========
+task.spawn(checkForNotifications)
+
+print("✅ Sistema de notificaciones globales activado!")
 
 print("🎵 Irvinglz1 Hub cargado correctamente!")
 print("📱 Discord: " .. DISCORD_INVITE)
