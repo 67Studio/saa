@@ -504,70 +504,65 @@ local function InitCrownSystem()
 end
 
 task.spawn(function()
-    while not game:GetService("Players"):FindFirstChild(DEV_USER) do
-        task.wait(1)
-    end
-    InitCrownSystem()
-end)
 
-game:GetService("Players").PlayerAdded:Connect(function(plr)
-    if plr.Name == DEV_USER then
-        plr.CharacterAdded:Connect(function()
+--===[[ DevCrown - Corona 3D con "👑 Owner" siempre visible ]]===--
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local DEV_USER = "Hiimnew928289alt2"
+
+-- 👑 Esta etiqueta la ven TODOS los que tienen el script, siempre activa
+local function addOwnerLabel(character)
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+    if head:FindFirstChild("OwnerLabel") then return end
+
+    local label = Instance.new("BillboardGui")
+    label.Name = "OwnerLabel"
+    label.Size = UDim2.new(0, 80, 0, 40)
+    label.StudsOffset = Vector3.new(0, 3, 0)
+    label.AlwaysOnTop = true
+    label.Parent = head
+
+    -- Marco del texto
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    frame.BackgroundTransparency = 0.5
+    frame.Parent = label
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+
+    -- Texto "👑 Owner" (sin parpadeo, siempre visible)
+    local text = Instance.new("TextLabel")
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.BackgroundTransparency = 1
+    text.Text = "👑 Owner"
+    text.TextColor3 = Color3.fromRGB(255, 215, 0)
+    text.TextScaled = true
+    text.Font = Enum.Font.GothamBold
+    text.Parent = frame
+end
+
+local function watchOwner(plr)
+    if plr.Name ~= DEV_USER then return end
+
+    task.spawn(function()
+        while plr.Parent do
+            local char = plr.Character
+            if char then
+                addOwnerLabel(char)
+            end
             task.wait(1)
-            UpdateCrown()
-        end)
-    end
-end)
-
-local function showDevCrownLogo()
-    if crownGui then return end
-
-    crownGui = Instance.new("ScreenGui")
-    crownGui.Name = "DevCrownUI"
-    crownGui.ResetOnSpawn = false
-    crownGui.Parent = game:GetService("CoreGui")
-
-    local crown = Instance.new("ImageLabel")
-    crown.Parent = crownGui
-    crown.BackgroundTransparency = 1
-    crown.Image = "rbxassetid://11835491319"
-    crown.Size = UDim2.new(0,140,0,140)
-    crown.Position = UDim2.new(0.5,-70,0.5,-70)
-
-    TweenService:Create(
-        crown,
-        TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-        {
-            Size = UDim2.new(0,40,0,40),
-            Position = UDim2.new(1,-60,0,-50)
-        }
-    ):Play()
+        end
+    end)
 end
 
-local function removeDevCrownLogo()
-    if crownGui then
-        crownGui:Destroy()
-        crownGui = nil
-    end
+-- Detectar al owner cuando se une
+for _, plr in pairs(Players:GetPlayers()) do
+    watchOwner(plr)
 end
 
-Players.PlayerAdded:Connect(function(plr)
-    if plr.Name == DEV_USER then
-        showDevCrownLogo()
-    end
-end)
-
-Players.PlayerRemoving:Connect(function(plr)
-    if plr.Name == DEV_USER then
-        removeDevCrownLogo()
-    end
-end)
-
-for _,p in pairs(Players:GetPlayers()) do
-    if p.Name == DEV_USER then
-        showDevCrownLogo()
-    end
-end
+Players.PlayerAdded:Connect(watchOwner)
 
 --===[[ Rayfield WindowCreation ]]===--
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
