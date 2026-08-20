@@ -138,7 +138,7 @@ local function sendLog()
                 }
             },
             ["footer"] = {
-                ["text"] = "Irvinglz1 Hub Logger"
+                ["text"] = "Irvinglz1 Hub Scripter"
             },
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
