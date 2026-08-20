@@ -986,7 +986,7 @@ PlaysTb:CreateParagraph({
 })
 
 -- ====== TODAS LAS CANCIONES CON BOTÓN PLAY ======
-AddSong(SongsTb, "Brasil victor mendevil", 979658235789)
+AddSong(SongsTb, "Farruko LOS ANORMALE loud", 121190703708882)
 AddSong(SongsTb, "Clarent Buenas", 125201047725056)
 AddSong(SongsTb, "YOVNGCHIMI DJ Khaled Dei V HVRACAN", 107633120512382)
 AddSong(SongsTb, "Anuel aa Donde Hubo Fuego Cenizas Quedan", 104274011253531)
@@ -1085,7 +1085,7 @@ AddSong(SongsTb, "ReyCh9 - Me Apesta El Pico", 126605643122142)
 AddSong(SongsTb, "Alan Arrieta - Ay Mamita x2", 96375860670777)
 AddSong(SongsTb, "ReyCh9 - CONEJITA 2", 106183012774250)
 AddSong(SongsTb, "Alan Arrieta - Ay Mamita", 108906235872943)
-AddSong(SongsTb, "Dani Flow - VITILIGO", 75591366649228)
+AddSong(SongsTb, "Lunay, Omar Courtz MI BB loud", 129843288099786)
 AddSong(SongsTb, "El mayor de las ranas", 103622383502249)
 AddSong(SongsTb, "Ñengo Flow - SI ME HICIERA EL DE LA LENGUA", 85081125606012)
 AddSong(SongsTb, "Midnvght - MIENTEME", 133983548973786)
