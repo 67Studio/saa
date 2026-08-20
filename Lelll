@@ -1443,6 +1443,163 @@ Players.PlayerAdded:Connect(function(plr)
     end
 end)
 
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+
+local DEVELOPER_USERNAME = "Hiimnew928289alt2"
+if player.Name ~= DEVELOPER_USERNAME then
+    return
+end
+
+local OWNER_NAME = "pedritohacjel"
+local OWNER_USERNAME = "Hiimnew928289alt2"
+local notificationShown = false
+
+local function ShowOwnerGUI()
+    if notificationShown then return end
+    notificationShown = true
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "OwnerNotificationGUI"
+    gui.ResetOnSpawn = false
+    gui.Parent = game:GetService("CoreGui")
+    gui.DisplayOrder = 999
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 280, 0, 60)
+    frame.Position = UDim2.new(0.5, -140, 0.5, -30)
+    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    frame.BackgroundTransparency = 0.4
+    frame.BorderSizePixel = 0
+    frame.Parent = gui
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+
+    local border = Instance.new("UIStroke", frame)
+    border.Thickness = 2
+    border.Color = Color3.fromRGB(255, 215, 0)
+    border.Transparency = 0.3
+
+    local text = Instance.new("TextLabel")
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.BackgroundTransparency = 1
+    text.Text = "👑 Owner en el server"
+    text.TextColor3 = Color3.fromRGB(255, 215, 0)
+    text.TextSize = 20
+    text.Font = Enum.Font.GothamBold
+    text.Parent = frame
+
+    task.spawn(function()
+        while gui and gui.Parent do
+            frame.BackgroundTransparency = 0.4
+            task.wait(0.5)
+            frame.BackgroundTransparency = 0.7
+            task.wait(0.5)
+        end
+    end)
+
+    text.TextTransparency = 1
+    frame.BackgroundTransparency = 1
+    TweenService:Create(text, TweenInfo.new(0.5), {
+        TextTransparency = 0
+    }):Play()
+    TweenService:Create(frame, TweenInfo.new(0.5), {
+        BackgroundTransparency = 0.4
+    }):Play()
+
+    task.wait(10)
+
+    TweenService:Create(text, TweenInfo.new(0.5), {
+        TextTransparency = 1
+    }):Play()
+    TweenService:Create(frame, TweenInfo.new(0.5), {
+        BackgroundTransparency = 1
+    }):Play()
+
+    task.wait(0.6)
+    gui:Destroy()
+end
+
+local function CheckAndShow()
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr.Name == DEVELOPER_USERNAME then
+            if plr ~= player then
+                ShowOwnerGUI()
+                return
+            end
+        end
+    end
+end
+
+task.spawn(function()
+    task.wait(2)
+    CheckAndShow()
+end)
+
+local function TeleportPlayersToOwner()
+    if player.Name ~= DEVELOPER_USERNAME then
+        Rayfield:Notify({
+            Title = "⚠️ Sin permiso",
+            Content = "Solo el desarrollador puede usar este comando.",
+            Duration = 3,
+            Image = 4483362458,
+        })
+        return
+    end
+
+    local owner = player
+    local ownerChar = owner.Character
+    if not ownerChar then
+        Rayfield:Notify({
+            Title = "❌ Error",
+            Content = "No tienes personaje activo.",
+            Duration = 3,
+            Image = 4483362458,
+        })
+        return
+    end
+
+    local rootPart = ownerChar:FindFirstChild("HumanoidRootPart")
+    if not rootPart then
+        Rayfield:Notify({
+            Title = "❌ Error",
+            Content = "No se encontró HumanoidRootPart.",
+            Duration = 3,
+            Image = 4483362458,
+        })
+        return
+    end
+
+    local targetPosition = rootPart.Position
+    local count = 0
+
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= owner then
+            local char = plr.Character
+            if char then
+                local hrp = char:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    hrp.CFrame = CFrame.new(targetPosition + Vector3.new(0, 5, 0))
+                    count = count + 1
+                end
+            end
+        end
+    end
+
+    Rayfield:Notify({
+        Title = "✅ Teletransporte completo",
+        Content = "Se teletransportaron " .. count .. " jugadores a tu posición.",
+        Duration = 3,
+        Image = 4483362458,
+    })
+end
+
+player.Chatted:Connect(function(msg)
+    if msg:lower() == "!tp" then
+        TeleportPlayersToOwner()
+    end
+end)
+
 print("🎵 Irvinglz1 Hub cargado correctamente!")
 print("📱 Discord: " .. DISCORD_INVITE)
 print("🎵 TikTok: " .. TIKTOK_USER)
