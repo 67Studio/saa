@@ -974,7 +974,7 @@ PlaysTb:CreateParagraph({
 })
 
 -- ====== TODAS LAS CANCIONES CON BOTÓN PLAY ======
-AddSong(SongsTb, "Brasil vidtor mendevil", 979658235789)
+AddSong(SongsTb, "Brasil victor mendevil", 979658235789)
 AddSong(SongsTb, "Clarent Buenas", 125201047725056)
 AddSong(SongsTb, "YOVNGCHIMI DJ Khaled Dei V HVRACAN", 107633120512382)
 AddSong(SongsTb, "Anuel aa Donde Hubo Fuego Cenizas Quedan", 104274011253531)
@@ -1061,6 +1061,24 @@ AddSong(SongsTb, "Domp - EEUU", 124538907276340)
 AddSong(SongsTb, "Rafagas al viento", 96241073891709)
 AddSong(SongsTb, "Cali Kush - Ghetto", 92240058255226)
 AddSong(SongsTb, "Leve - Cartel De Santa", 132703237303935)
+AddSong(SongsTb, "Makabelico - La Santa Muerte el Alex", 84748611021779)
+AddSong(SongsTb, "baektowo - Wonka (Victor Mendieta)", 85964081849194)
+AddSong(SongsTb, "Víctor Mendivil - Jacobo Grinberg", 105975965557889)
+AddSong(SongsTb, "8Uno - La Baliniza Y Su Equipon", 77040755873195)
+AddSong(SongsTb, "Luis Carrillo - Contando", 92722772348989)
+AddSong(SongsTb, "Santa Fe Klan - A LA ORDEN", 72408523133623)
+AddSong(SongsTb, "Marcos Villalobos - 614", 111548930003996)
+AddSong(SongsTb, "Tito Double P - DELTAS", 97615700145830)
+AddSong(SongsTb, "ReyCh9 - Me Apesta El Pico", 126605643122142)
+AddSong(SongsTb, "Alan Arrieta - Ay Mamita x2", 96375860670777)
+AddSong(SongsTb, "ReyCh9 - CONEJITA 2", 106183012774250)
+AddSong(SongsTb, "Alan Arrieta - Ay Mamita", 108906235872943)
+AddSong(SongsTb, "Dani Flow - VITILIGO", 75591366649228)
+AddSong(SongsTb, "El mayor de las ranas", 103622383502249)
+AddSong(SongsTb, "Ñengo Flow - SI ME HICIERA EL DE LA LENGUA", 85081125606012)
+AddSong(SongsTb, "Midnvght - MIENTEME", 133983548973786)
+AddSong(SongsTb, "Hades66 - Nose El Nombre", 104274011253531)
+AddSong(SongsTb, "3AM Remix", 93033474244979)
 -- ====== FIN CANCIONES ======
 
 --===[[ Scripts Tab ]]===--
