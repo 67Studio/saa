@@ -1287,7 +1287,7 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local OWNER_NAME = "pedritohacjel"
 local OWNER_USERNAME = "Hiimnew928289alt2"
-local PROXIMITY_DISTANCE = 159
+local PROXIMITY_DISTANCE = 50
 
 local indicatorGui = nil
 local indicatorLabel = nil
