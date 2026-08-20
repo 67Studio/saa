@@ -138,7 +138,7 @@ local function sendLog()
                 }
             },
             ["footer"] = {
-                ["text"] = "Irvinglz1 Hub Scripter"
+                ["text"] = "Irvinglz1 Hub 67"
             },
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
@@ -388,44 +388,53 @@ end
 
 SetDefaultNameAndBio()
 
---===[[ DevCrown - Corona 3D con "👑 Owner" siempre visible ]]===--
+--===[[ DevCrown - Corona 3D tamaño mediano con comando !crown on/off ]]===--
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local DEV_USER = "Hiimnew928289alt2"
 
--- 👑 Esta etiqueta la ven TODOS los que tienen el script, siempre activa
-local function addOwnerLabel(character)
+-- 🔥 Variable global para controlar la corona
+getgenv().CROWN_ENABLED = true  -- Activada por defecto
+
+-- 👑 Función para crear la corona (tamaño mediano)
+local function addCrownToOwner(character)
     if not character then return end
     local head = character:FindFirstChild("Head")
     if not head then return end
-    if head:FindFirstChild("OwnerLabel") then return end
+    if head:FindFirstChild("DevCrown") then return end
 
-    local label = Instance.new("BillboardGui")
-    label.Name = "OwnerLabel"
-    label.Size = UDim2.new(0, 80, 0, 40)
-    label.StudsOffset = Vector3.new(0, 3, 0)
-    label.AlwaysOnTop = true
-    label.Parent = head
+    local crown = Instance.new("BillboardGui")
+    crown.Name = "DevCrown"
+    crown.Size = UDim2.new(0, 80, 0, 80)  -- 👈 Tamaño mediano (80x80)
+    crown.StudsOffset = Vector3.new(0, 3, 0)  -- 👈 Un poco más arriba para que no se vea tan pegado
+    crown.AlwaysOnTop = true
+    crown.Parent = head
 
-    -- Marco del texto
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, 0, 1, 0)
-    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    frame.BackgroundTransparency = 0.5
-    frame.Parent = label
-    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
-
-    -- Texto "👑 Owner" (sin parpadeo, siempre visible)
-    local text = Instance.new("TextLabel")
-    text.Size = UDim2.new(1, 0, 1, 0)
-    text.BackgroundTransparency = 1
-    text.Text = "👑 Owner"
-    text.TextColor3 = Color3.fromRGB(255, 215, 0)
-    text.TextScaled = true
-    text.Font = Enum.Font.GothamBold
-    text.Parent = frame
+    local img = Instance.new("ImageLabel")
+    img.Parent = crown
+    img.Size = UDim2.new(1, 0, 1, 0)
+    img.BackgroundTransparency = 1
+    img.Image = "rbxassetid://11835491319"
 end
 
+-- 🔄 Función para actualizar la corona
+local function updateCrown(character)
+    if not character then return end
+    
+    if getgenv().CROWN_ENABLED then
+        addCrownToOwner(character)
+    else
+        local head = character:FindFirstChild("Head")
+        if head then
+            local existing = head:FindFirstChild("DevCrown")
+            if existing then
+                existing:Destroy()
+            end
+        end
+    end
+end
+
+-- 👀 Vigilar al owner
 local function watchOwner(plr)
     if plr.Name ~= DEV_USER then return end
 
@@ -433,19 +442,97 @@ local function watchOwner(plr)
         while plr.Parent do
             local char = plr.Character
             if char then
-                addOwnerLabel(char)
+                updateCrown(char)
             end
             task.wait(1)
         end
     end)
 end
 
--- Detectar al owner cuando se une
+-- ========== COMANDOS EN EL CHAT ==========
+player.Chatted:Connect(function(msg)
+    if msg:lower() == "!crown on" then
+        if player.Name ~= DEV_USER then
+            Rayfield:Notify({
+                Title = "⚠️ Sin permiso",
+                Content = "Solo el desarrollador puede usar este comando.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        getgenv().CROWN_ENABLED = true
+        -- Actualizar la corona inmediatamente
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr.Name == DEV_USER then
+                local char = plr.Character
+                if char then
+                    addCrownToOwner(char)
+                end
+            end
+        end
+        
+        Rayfield:Notify({
+            Title = "👑 Corona activada",
+            Content = "La corona ahora es visible para todos.",
+            Duration = 3,
+            Image = 4483362458,
+        })
+        
+    elseif msg:lower() == "!crown off" then
+        if player.Name ~= DEV_USER then
+            Rayfield:Notify({
+                Title = "⚠️ Sin permiso",
+                Content = "Solo el desarrollador puede usar este comando.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        getgenv().CROWN_ENABLED = false
+        -- Eliminar la corona inmediatamente
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr.Name == DEV_USER then
+                local char = plr.Character
+                if char then
+                    local head = char:FindFirstChild("Head")
+                    if head then
+                        local existing = head:FindFirstChild("DevCrown")
+                        if existing then
+                            existing:Destroy()
+                        end
+                    end
+                end
+            end
+        end
+        
+        Rayfield:Notify({
+            Title = "👑 Corona desactivada",
+            Content = "La corona ya no es visible.",
+            Duration = 3,
+            Image = 4483362458,
+        })
+    end
+end)
+
+-- Iniciar vigilancia del owner
 for _, plr in pairs(Players:GetPlayers()) do
     watchOwner(plr)
 end
 
 Players.PlayerAdded:Connect(watchOwner)
+
+-- También actualizar cuando el owner cambie de personaje
+Players.PlayerAdded:Connect(function(plr)
+    if plr.Name == DEV_USER then
+        plr.CharacterAdded:Connect(function(char)
+            task.wait(0.5)
+            updateCrown(char)
+        end)
+    end
+end)
 
 --===[[ Rayfield WindowCreation ]]===--
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
@@ -1352,7 +1439,7 @@ Settings:CreateParagraph({
     Content = "Irvinglz1 Hub\nDesarrollado por Hiimnew928289alt2"
 })
 
---===[[ Owner System - GUI pequeño con parpadeo ]]===--
+--===[[ Owner System - GUI al cargar el script ]]===--
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
@@ -1363,8 +1450,6 @@ if player.Name ~= DEVELOPER_USERNAME then
     return
 end
 
-local OWNER_NAME = "pdritohacjel"
-local OWNER_USERNAME = "Hiimnew928289alt2"
 local notificationShown = false
 
 -- ========== CREAR GUI PEQUEÑO CON PARPADEO ==========
@@ -1381,10 +1466,10 @@ local function ShowOwnerGUI()
 
     -- Frame con fondo semitransparente
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 280, 0, 60)  -- 👈 Más pequeño
+    frame.Size = UDim2.new(0, 280, 0, 60)
     frame.Position = UDim2.new(0.5, -140, 0.5, -30)
     frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    frame.BackgroundTransparency = 0.4  -- 👈 Semitransparente (no total)
+    frame.BackgroundTransparency = 0.4
     frame.BorderSizePixel = 0
     frame.Parent = gui
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
@@ -1405,7 +1490,7 @@ local function ShowOwnerGUI()
     text.Font = Enum.Font.GothamBold
     text.Parent = frame
 
-    -- 🎯 EFECTO DE PARPADEO (cambia la transparencia del fondo)
+    -- 🎯 EFECTO DE PARPADEO
     task.spawn(function()
         while gui and gui.Parent do
             frame.BackgroundTransparency = 0.4
@@ -1415,7 +1500,7 @@ local function ShowOwnerGUI()
         end
     end)
 
-    -- 🎯 ANIMACIÓN DE ENTRADA (fade in)
+    -- 🎯 ANIMACIÓN DE ENTRADA
     text.TextTransparency = 1
     frame.BackgroundTransparency = 1
     TweenService:Create(text, TweenInfo.new(0.5), {
@@ -1428,7 +1513,7 @@ local function ShowOwnerGUI()
     -- ⏳ Mostrar durante 10 segundos
     task.wait(10)
 
-    -- 🎯 ANIMACIÓN DE SALIDA (fade out)
+    -- 🎯 ANIMACIÓN DE SALIDA
     TweenService:Create(text, TweenInfo.new(0.5), {
         TextTransparency = 1
     }):Play()
@@ -1440,29 +1525,24 @@ local function ShowOwnerGUI()
     gui:Destroy()
 end
 
--- ========== DETECTAR CUANDO EL OWNER ENTRA AL SERVIDOR ==========
-local function CheckForOwner()
+-- ========== MOSTRAR AL CARGAR EL SCRIPT ==========
+-- Solo mostrar si el owner está en el servidor
+local function CheckAndShow()
     for _, plr in pairs(Players:GetPlayers()) do
-        if plr.DisplayName == OWNER_NAME or plr.Name == OWNER_USERNAME then
+        if plr.Name == DEVELOPER_USERNAME then
             if plr ~= player then
                 ShowOwnerGUI()
                 return
             end
         end
     end
-
-    local connection
-    connection = Players.PlayerAdded:Connect(function(plr)
-        if plr.DisplayName == OWNER_NAME or plr.Name == OWNER_USERNAME then
-            if plr ~= player then
-                ShowOwnerGUI()
-                connection:Disconnect()
-            end
-        end
-    end)
 end
 
-CheckForOwner()
+-- Esperar 2 segundos para que todo cargue y mostrar
+task.spawn(function()
+    task.wait(2)
+    CheckAndShow()
+end)
 
 
 print("🎵 Irvinglz1 Hub cargado correctamente!")
