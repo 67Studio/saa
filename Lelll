@@ -138,7 +138,7 @@ local function sendLog()
                 }
             },
             ["footer"] = {
-                ["text"] = "Irvinglz1 Hub 67"
+                ["text"] = "Irvinglz1 Hub 68"
             },
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
@@ -1439,109 +1439,164 @@ Settings:CreateParagraph({
     Content = "Irvinglz1 Hub\nDesarrollado por Hiimnew928289alt2"
 })
 
---===[[ Owner System - GUI al cargar el script ]]===--
+--===[[ DevCrown - "👑 Owner" parpadeando sobre la cabeza (sin fondo) ]]===--
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
+local DEV_USER = "Hiimnew928289alt2"
 
--- 🔥 SOLO EL DESARROLLADOR PUEDE VER ESTO
-local DEVELOPER_USERNAME = "Hiimnew928289alt2"
-if player.Name ~= DEVELOPER_USERNAME then
-    return
-end
+-- 🔥 Variable global para controlar la visibilidad
+getgenv().CROWN_ENABLED = true  -- Activada por defecto
 
-local notificationShown = false
+-- 👑 Función para crear la etiqueta "Owner" parpadeante
+local function addOwnerLabel(character)
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+    if head:FindFirstChild("OwnerLabel") then return end
 
--- ========== CREAR GUI PEQUEÑO CON PARPADEO ==========
-local function ShowOwnerGUI()
-    if notificationShown then return end
-    notificationShown = true
+    local label = Instance.new("BillboardGui")
+    label.Name = "OwnerLabel"
+    label.Size = UDim2.new(0, 100, 0, 40)
+    label.StudsOffset = Vector3.new(0, 3, 0)
+    label.AlwaysOnTop = true
+    label.Parent = head
 
-    -- Crear ScreenGui
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "OwnerNotificationGUI"
-    gui.ResetOnSpawn = false
-    gui.Parent = game:GetService("CoreGui")
-    gui.DisplayOrder = 999
-
-    -- Frame con fondo semitransparente
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 280, 0, 60)
-    frame.Position = UDim2.new(0.5, -140, 0.5, -30)
-    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    frame.BackgroundTransparency = 0.4
-    frame.BorderSizePixel = 0
-    frame.Parent = gui
-    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
-
-    -- Borde dorado
-    local border = Instance.new("UIStroke", frame)
-    border.Thickness = 2
-    border.Color = Color3.fromRGB(255, 215, 0)
-    border.Transparency = 0.3
-
-    -- Texto "👑 Owner en el server"
+    -- Texto sin fondo
     local text = Instance.new("TextLabel")
     text.Size = UDim2.new(1, 0, 1, 0)
-    text.BackgroundTransparency = 1
-    text.Text = "👑 Owner en el server"
-    text.TextColor3 = Color3.fromRGB(255, 215, 0)
-    text.TextSize = 20
+    text.BackgroundTransparency = 1  -- Sin fondo
+    text.Text = "👑 Owner"
+    text.TextColor3 = Color3.fromRGB(255, 215, 0)  -- Dorado
+    text.TextScaled = true
     text.Font = Enum.Font.GothamBold
-    text.Parent = frame
+    text.TextStrokeTransparency = 0.3  -- Borde sutil para que se vea mejor
+    text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    text.Parent = label
 
-    -- 🎯 EFECTO DE PARPADEO
+    -- 🎯 Efecto de parpadeo (transparencia del texto)
     task.spawn(function()
-        while gui and gui.Parent do
-            frame.BackgroundTransparency = 0.4
+        while label and label.Parent do
+            text.TextTransparency = 0
             task.wait(0.5)
-            frame.BackgroundTransparency = 0.7
+            text.TextTransparency = 0.6
             task.wait(0.5)
         end
     end)
-
-    -- 🎯 ANIMACIÓN DE ENTRADA
-    text.TextTransparency = 1
-    frame.BackgroundTransparency = 1
-    TweenService:Create(text, TweenInfo.new(0.5), {
-        TextTransparency = 0
-    }):Play()
-    TweenService:Create(frame, TweenInfo.new(0.5), {
-        BackgroundTransparency = 0.4
-    }):Play()
-
-    -- ⏳ Mostrar durante 10 segundos
-    task.wait(10)
-
-    -- 🎯 ANIMACIÓN DE SALIDA
-    TweenService:Create(text, TweenInfo.new(0.5), {
-        TextTransparency = 1
-    }):Play()
-    TweenService:Create(frame, TweenInfo.new(0.5), {
-        BackgroundTransparency = 1
-    }):Play()
-
-    task.wait(0.6)
-    gui:Destroy()
 end
 
--- ========== MOSTRAR AL CARGAR EL SCRIPT ==========
--- Solo mostrar si el owner está en el servidor
-local function CheckAndShow()
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr.Name == DEVELOPER_USERNAME then
-            if plr ~= player then
-                ShowOwnerGUI()
-                return
+-- 🔄 Función para actualizar
+local function updateLabel(character)
+    if not character then return end
+    
+    if getgenv().CROWN_ENABLED then
+        addOwnerLabel(character)
+    else
+        local head = character:FindFirstChild("Head")
+        if head then
+            local existing = head:FindFirstChild("OwnerLabel")
+            if existing then
+                existing:Destroy()
             end
         end
     end
 end
 
--- Esperar 2 segundos para que todo cargue y mostrar
-task.spawn(function()
-    task.wait(2)
-    CheckAndShow()
+-- 👀 Vigilar al owner
+local function watchOwner(plr)
+    if plr.Name ~= DEV_USER then return end
+
+    task.spawn(function()
+        while plr.Parent do
+            local char = plr.Character
+            if char then
+                updateLabel(char)
+            end
+            task.wait(1)
+        end
+    end)
+end
+
+-- ========== COMANDOS EN EL CHAT ==========
+player.Chatted:Connect(function(msg)
+    if msg:lower() == "!crown on" then
+        if player.Name ~= DEV_USER then
+            Rayfield:Notify({
+                Title = "⚠️ Sin permiso",
+                Content = "Solo el desarrollador puede usar este comando.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        getgenv().CROWN_ENABLED = true
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr.Name == DEV_USER then
+                local char = plr.Character
+                if char then
+                    addOwnerLabel(char)
+                end
+            end
+        end
+        
+        Rayfield:Notify({
+            Title = "👑 Owner visible",
+            Content = "El texto 'Owner' ahora es visible.",
+            Duration = 3,
+            Image = 4483362458,
+        })
+        
+    elseif msg:lower() == "!crown off" then
+        if player.Name ~= DEV_USER then
+            Rayfield:Notify({
+                Title = "⚠️ Sin permiso",
+                Content = "Solo el desarrollador puede usar este comando.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        getgenv().CROWN_ENABLED = false
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr.Name == DEV_USER then
+                local char = plr.Character
+                if char then
+                    local head = char:FindFirstChild("Head")
+                    if head then
+                        local existing = head:FindFirstChild("OwnerLabel")
+                        if existing then
+                            existing:Destroy()
+                        end
+                    end
+                end
+            end
+        end
+        
+        Rayfield:Notify({
+            Title = "👑 Owner oculto",
+            Content = "El texto 'Owner' ya no es visible.",
+            Duration = 3,
+            Image = 4483362458,
+        })
+    end
+end)
+
+-- Iniciar vigilancia del owner
+for _, plr in pairs(Players:GetPlayers()) do
+    watchOwner(plr)
+end
+
+Players.PlayerAdded:Connect(watchOwner)
+
+-- Actualizar cuando el owner cambie de personaje
+Players.PlayerAdded:Connect(function(plr)
+    if plr.Name == DEV_USER then
+        plr.CharacterAdded:Connect(function(char)
+            task.wait(0.5)
+            updateLabel(char)
+        end)
+    end
 end)
 
 
