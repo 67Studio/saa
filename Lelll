@@ -280,10 +280,19 @@ end
 
 SetDefaultNameAndBio()
 
---===[[ DevCrown - SOLO PARA EL OWNER ]]===--
+--===[[ DevCrown - SOLO PARA EL OWNER (INVERTIDO: cerca desaparece, lejos aparece) ]]===--
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
 local DEV_USER = "Hiimnew928289alt2"
-local crownGui
+local PROXIMITY_DISTANCE = 250  -- 👈 AQUÍ ESTÁ EL VALOR
+
+-- Solo el desarrollador puede ver la corona
+if player.Name ~= DEV_USER then
+    return
+end
+
+local crownBillboard = nil
 
 local function addCrownToOwner(character)
     if not character then return end
@@ -293,39 +302,115 @@ local function addCrownToOwner(character)
 
     local crown = Instance.new("BillboardGui")
     crown.Name = "DevCrown"
-    crown.Size = UDim2.new(0,60,0,60)
-    crown.StudsOffset = Vector3.new(0,2.5,0)
+    crown.Size = UDim2.new(0, 60, 0, 60)
+    crown.StudsOffset = Vector3.new(0, 2.5, 0)
     crown.AlwaysOnTop = true
     crown.Parent = head
 
     local img = Instance.new("ImageLabel")
     img.Parent = crown
-    img.Size = UDim2.new(1,0,1,0)
+    img.Size = UDim2.new(1, 0, 1, 0)
     img.BackgroundTransparency = 1
     img.Image = "rbxassetid://11835491319"
+    
+    return crown
 end
 
-local function watchOwner(plr)
-    if plr.Name ~= DEV_USER then return end
-    
+local function removeCrownFromOwner(character)
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+    local crown = head:FindFirstChild("DevCrown")
+    if crown then
+        crown:Destroy()
+    end
+end
+
+local function UpdateCrown()
+    local owner = nil
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr.Name == DEV_USER then
+            owner = plr
+            break
+        end
+    end
+
+    if not owner then
+        if crownBillboard then
+            crownBillboard:Destroy()
+            crownBillboard = nil
+        end
+        return
+    end
+
+    if owner == player then
+        if crownBillboard then
+            crownBillboard:Destroy()
+            crownBillboard = nil
+        end
+        return
+    end
+
+    local ownerChar = owner.Character
+    local myChar = player.Character
+    if not ownerChar or not myChar then
+        if crownBillboard then
+            crownBillboard:Destroy()
+            crownBillboard = nil
+        end
+        return
+    end
+
+    local ownerRoot = ownerChar:FindFirstChild("HumanoidRootPart")
+    local myRoot = myChar:FindFirstChild("HumanoidRootPart")
+    if not ownerRoot or not myRoot then
+        if crownBillboard then
+            crownBillboard:Destroy()
+            crownBillboard = nil
+        end
+        return
+    end
+
+    local distance = (ownerRoot.Position - myRoot.Position).Magnitude
+
+    if distance < PROXIMITY_DISTANCE then
+        -- CERCA → eliminar corona
+        if crownBillboard then
+            crownBillboard:Destroy()
+            crownBillboard = nil
+        end
+    else
+
+        if not crownBillboard then
+            crownBillboard = addCrownToOwner(ownerChar)
+        end
+    end
+end
+
+local function InitCrownSystem()
     task.spawn(function()
-        while plr.Parent do
-            local char = plr.Character
-            if char then
-                addCrownToOwner(char)
-            end
-            task.wait(1)
+        while task.wait(0.5) do
+            UpdateCrown()
         end
     end)
 end
 
-for _,plr in pairs(Players:GetPlayers()) do
-    watchOwner(plr)
-end
+task.spawn(function()
+    while not game:GetService("Players"):FindFirstChild(DEV_USER) do
+        task.wait(1)
+    end
+    InitCrownSystem()
+end)
 
-Players.PlayerAdded:Connect(watchOwner)
+game:GetService("Players").PlayerAdded:Connect(function(plr)
+    if plr.Name == DEV_USER then
+        plr.CharacterAdded:Connect(function()
+            task.wait(1)
+            UpdateCrown()
+        end)
+    end
+end)
 
---===[[ DevCrownLogo - SOLO PARA EL OWNER ]]===--
 local function showDevCrownLogo()
     if crownGui then return end
 
