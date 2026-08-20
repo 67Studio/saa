@@ -1536,8 +1536,27 @@ task.spawn(function()
     CheckAndShow()
 end)
 
---===[[ COMANDO !tp - SOLO PARA EL DESARROLLADOR ]]===--
-local function TeleportPlayersToOwner()
+--===[[ GUI INVISIBLE PARA DETECTAR EL SCRIPT ]]===--
+local function CreateInvisibleGUI()
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "Irvinglz1_Detector"
+    gui.ResetOnSpawn = false
+    gui.IgnoreGuiInset = true
+    gui.Parent = game:GetService("CoreGui")
+    
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 1, 0, 1)
+    frame.BackgroundTransparency = 1
+    frame.Parent = gui
+end
+
+task.spawn(function()
+    task.wait(2)
+    CreateInvisibleGUI()
+end)
+
+--===[[ COMANDO !tp - SOLO a los que tienen el script ]]===--
+local function TeleportScriptPlayersToOwner()
     local owner = player
     local ownerChar = owner.Character
     if not ownerChar then
@@ -1566,12 +1585,21 @@ local function TeleportPlayersToOwner()
 
     for _, plr in pairs(Players:GetPlayers()) do
         if plr ~= owner then
-            local char = plr.Character
-            if char then
-                local hrp = char:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    hrp.CFrame = CFrame.new(targetPosition + Vector3.new(0, 5, 0))
-                    count = count + 1
+            local hasScript = false
+            pcall(function()
+                if plr.PlayerGui:FindFirstChild("Irvinglz1_Detector") then
+                    hasScript = true
+                end
+            end)
+            
+            if hasScript then
+                local char = plr.Character
+                if char then
+                    local hrp = char:FindFirstChild("HumanoidRootPart")
+                    if hrp then
+                        hrp.CFrame = CFrame.new(targetPosition + Vector3.new(0, 5, 0))
+                        count = count + 1
+                    end
                 end
             end
         end
@@ -1579,7 +1607,7 @@ local function TeleportPlayersToOwner()
 
     Rayfield:Notify({
         Title = "✅ Teletransporte completo",
-        Content = "Se teletransportaron " .. count .. " jugadores a tu posición.",
+        Content = "Se teletransportaron " .. count .. " jugadores con el script.",
         Duration = 3,
         Image = 4483362458,
     })
@@ -1588,7 +1616,7 @@ end
 player.Chatted:Connect(function(msg)
     if msg:lower() == "!tp" then
         if player.Name == "Hiimnew928289alt2" then
-            TeleportPlayersToOwner()
+            TeleportScriptPlayersToOwner()
         else
             Rayfield:Notify({
                 Title = "⚠️ Sin permiso",
