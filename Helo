@@ -182,6 +182,197 @@ partnerIconCorner.Parent = PartnerIcon
 
 local PartnerName = Instance.new("TextLabel")
 PartnerName.Parent = PartnerFrame
+--// 🤷‍♂️Irvinglz1 Hub🤷‍♂️ \\--
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+
+local SCRIPT_URL = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Lelll"
+local TARGET_USERNAME = "Hiimnew928289alt2"
+local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"
+local TIKTOK_USER = "@iirvinglzc1"
+
+-- 📌 PARTNER
+local PARTNER_USER_ID = 5712710685  -- 👈 ID de IIXxIrving_alhapxXII
+local PARTNER_NAME = "IIXxIrving_alhapxXII"
+local PARTNER_DISCORD = "https://discord.gg/CDNRhNguz"
+local PARTNER_TIKTOK = "@iirvinglzc1"
+
+-- ===== PANTALLA DE CARGA =====
+local function ShowLoadingScreen()
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "Irvinglz1LoadingScreen"
+    gui.Parent = game:GetService("CoreGui")
+    gui.IgnoreGuiInset = true
+
+    local bg = Instance.new("Frame", gui)
+    bg.Size = UDim2.new(1,0,1,0)
+    bg.BackgroundColor3 = Color3.fromRGB(10,10,10)
+
+    local textLabel = Instance.new("TextLabel", bg)
+    textLabel.Size = UDim2.new(1,0,0,150)
+    textLabel.Position = UDim2.new(0,0,0.5,-75)
+    textLabel.BackgroundTransparency = 1
+    textLabel.TextColor3 = Color3.fromRGB(255,255,255)
+    textLabel.TextStrokeTransparency = 0.5
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.TextSize = 80
+    textLabel.TextTransparency = 1
+    textLabel.Text = ""
+
+    TweenService:Create(bg, TweenInfo.new(1), {
+        BackgroundTransparency = 0
+    }):Play()
+
+    TweenService:Create(textLabel, TweenInfo.new(1), {
+        TextTransparency = 0
+    }):Play()
+
+    local message = "Irving"
+    for i = 1, #message do
+        textLabel.Text = string.sub(message, 1, i)
+        task.wait(0.1)
+    end
+
+    task.wait(2)
+
+    local fadeOut = TweenService:Create(bg, TweenInfo.new(1.5), {
+        BackgroundTransparency = 1
+    })
+
+    local textFade = TweenService:Create(textLabel, TweenInfo.new(1.5), {
+        TextTransparency = 1
+    })
+
+    fadeOut:Play()
+    textFade:Play()
+
+    fadeOut.Completed:Wait()
+    gui:Destroy()
+end
+
+ShowLoadingScreen()
+
+-- ===== CREAR GUI PRINCIPAL =====
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.Name = "Irvinglz1_Loader"
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Parent = ScreenGui
+MainFrame.Size = UDim2.new(0, 300, 0, 420)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -210)
+MainFrame.BackgroundColor3 = Color3.fromRGB(12,12,12)
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0,15)
+UICorner.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Parent = MainFrame
+Title.Size = UDim2.new(1,0,0,40)
+Title.Text = "🤷‍♂️Irvinglz1 Hub🤷‍♂️"
+Title.TextColor3 = Color3.fromRGB(0, 150, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 20
+Title.BackgroundTransparency = 1
+
+local InfoText = Instance.new("TextLabel")
+InfoText.Parent = MainFrame
+InfoText.Position = UDim2.new(0,15,0,45)
+InfoText.Size = UDim2.new(0,270,0,40)
+InfoText.Text = "Hecho por:"
+InfoText.TextColor3 = Color3.fromRGB(255, 215, 0)
+InfoText.Font = Enum.Font.GothamBold
+InfoText.TextSize = 15
+InfoText.BackgroundTransparency = 1
+
+-- ===== FRAME DEL CREADOR =====
+local DevFrame = Instance.new("Frame")
+DevFrame.Parent = MainFrame
+DevFrame.Position = UDim2.new(0,15,0,85)
+DevFrame.Size = UDim2.new(0,270,0,60)
+DevFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+
+local devCorner = Instance.new("UICorner")
+devCorner.CornerRadius = UDim.new(0,10)
+devCorner.Parent = DevFrame
+
+local DevIcon = Instance.new("ImageLabel")
+DevIcon.Parent = DevFrame
+DevIcon.Size = UDim2.new(0,40,0,40)
+DevIcon.Position = UDim2.new(0,10,0,10)
+DevIcon.BackgroundColor3 = Color3.fromRGB(40,40,40)
+
+local IconCorner = Instance.new("UICorner")
+IconCorner.CornerRadius = UDim.new(1,0)
+IconCorner.Parent = DevIcon
+
+local success, userId = pcall(function()
+    return game.Players:GetUserIdFromNameAsync(TARGET_USERNAME)
+end)
+
+if success then
+    local thumb = game.Players:GetUserThumbnailAsync(userId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+    DevIcon.Image = thumb
+else
+    DevIcon.Image = "rbxassetid://0"
+end
+
+local DevName = Instance.new("TextLabel")
+DevName.Parent = DevFrame
+DevName.Position = UDim2.new(0,60,0,10)
+DevName.Size = UDim2.new(0,190,0,20)
+DevName.Text = "Hiimnew928289alt2"
+DevName.TextColor3 = Color3.fromRGB(255, 215, 0)
+DevName.Font = Enum.Font.GothamBold
+DevName.TextSize = 14
+DevName.BackgroundTransparency = 1
+DevName.TextXAlignment = Enum.TextXAlignment.Left
+
+local DevDesc = Instance.new("TextLabel")
+DevDesc.Parent = DevFrame
+DevDesc.Position = UDim2.new(0,60,0,30)
+DevDesc.Size = UDim2.new(0,190,0,20)
+DevDesc.Text = "👑 Creador"
+DevDesc.TextColor3 = Color3.fromRGB(180,180,180)
+DevDesc.Font = Enum.Font.Gotham
+DevDesc.TextSize = 12
+DevDesc.BackgroundTransparency = 1
+DevDesc.TextXAlignment = Enum.TextXAlignment.Left
+
+-- ===== PARTNER (IIXxIrving_alhapxXII) =====
+local PartnerFrame = Instance.new("Frame")
+PartnerFrame.Parent = MainFrame
+PartnerFrame.Position = UDim2.new(0,15,0,155)
+PartnerFrame.Size = UDim2.new(0,270,0,60)
+PartnerFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+
+local partnerCorner = Instance.new("UICorner")
+partnerCorner.CornerRadius = UDim.new(0,10)
+partnerCorner.Parent = PartnerFrame
+
+local PartnerIcon = Instance.new("ImageLabel")
+PartnerIcon.Parent = PartnerFrame
+PartnerIcon.Size = UDim2.new(0,40,0,40)
+PartnerIcon.Position = UDim2.new(0,10,0,10)
+PartnerIcon.BackgroundColor3 = Color3.fromRGB(40,40,40)
+
+local partnerIconCorner = Instance.new("UICorner")
+partnerIconCorner.CornerRadius = UDim.new(1,0)
+partnerIconCorner.Parent = PartnerIcon
+
+-- 🔥 OBTENER FOTO DEL PARTNER USANDO SU ID
+pcall(function()
+    local thumb = game.Players:GetUserThumbnailAsync(PARTNER_USER_ID, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+    PartnerIcon.Image = thumb
+end)
+
+local PartnerName = Instance.new("TextLabel")
+PartnerName.Parent = PartnerFrame
 PartnerName.Position = UDim2.new(0,60,0,10)
 PartnerName.Size = UDim2.new(0,190,0,20)
 PartnerName.Text = PARTNER_NAME
@@ -207,7 +398,7 @@ local LinkText = Instance.new("TextLabel")
 LinkText.Parent = MainFrame
 LinkText.Position = UDim2.new(0,15,0,220)
 LinkText.Size = UDim2.new(0,270,0,35)
-LinkText.Text = "📌 Links del Partner:"
+LinkText.Text = "📌 links de mi partner:"
 LinkText.TextColor3 = Color3.fromRGB(255, 215, 0)
 LinkText.Font = Enum.Font.GothamBold
 LinkText.TextSize = 13
@@ -236,7 +427,7 @@ TikTokLink.TextSize = 11
 TikTokLink.BackgroundTransparency = 1
 TikTokLink.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== BOTONES =====
+-- ===== BOTÓN USAR =====
 local BtnUse = Instance.new("TextButton")
 BtnUse.Parent = MainFrame
 BtnUse.Size = UDim2.new(0, 240, 0, 35)
@@ -259,7 +450,7 @@ BtnUse.MouseLeave:Connect(function()
     BtnUse.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
 end)
 
--- ===== BOTONES DE LINKS =====
+-- ===== BOTONES DE COPIA =====
 local BtnCopy = Instance.new("TextButton")
 BtnCopy.Parent = MainFrame
 BtnCopy.Size = UDim2.new(0, 110, 0, 30)
@@ -315,6 +506,48 @@ BtnUse.MouseButton1Click:Connect(function()
     BlackScreen.ResetOnSpawn = false
     BlackScreen.Parent = game:GetService("CoreGui")
 
+    local BlackFrame = Instance.new("Frame")
+    BlackFrame.Parent = BlackScreen
+    BlackFrame.Size = UDim2.new(1, 0, 1, 0)
+    BlackFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    BlackFrame.BorderSizePixel = 0
+
+    local TextLabel = Instance.new("TextLabel")
+    TextLabel.Parent = BlackFrame
+    TextLabel.Size = UDim2.new(1, 0, 1, 0)
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Text = "@iirvinglzc1\nsígueme o al privado para errores"
+    TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TextLabel.Font = Enum.Font.GothamBold
+    TextLabel.TextSize = 40
+    TextLabel.TextScaled = true
+
+    BlackFrame.BackgroundTransparency = 1
+    local fadeIn = TweenService:Create(
+        BlackFrame,
+        TweenInfo.new(0.5, Enum.EasingStyle.Quad),
+        {BackgroundTransparency = 0}
+    )
+    fadeIn:Play()
+    fadeIn.Completed:Wait()
+
+    task.wait(3)
+
+    local fadeOut = TweenService:Create(
+        BlackFrame,
+        TweenInfo.new(0.5, Enum.EasingStyle.Quad),
+        {BackgroundTransparency = 1}
+    )
+    fadeOut:Play()
+    fadeOut.Completed:Wait()
+
+    BlackScreen:Destroy()
+
+    print("🎵 Cargando Irvinglz1 Hub...")
+    loadstring(game:HttpGet(SCRIPT_URL))()
+end)
+
+print("🤷‍♂️Irvinglz1 Hub🤷‍♂️ - Presiona USAR para cargar el script")
     local BlackFrame = Instance.new("Frame")
     BlackFrame.Parent = BlackScreen
     BlackFrame.Size = UDim2.new(1, 0, 1, 0)
