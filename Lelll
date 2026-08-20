@@ -1087,7 +1087,7 @@ ScriptsTb:CreateButton({
     Name = "Fly V3",
     Callback = function()
         ButtonPSound()
-        loadstring(game:HttpGet("https://pastebin.com/raw/YBG92JfF"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Fly"))()
     end
 })
 
