@@ -68,7 +68,7 @@ local LocalPlayer = Players.LocalPlayer
 local HttpService = game:GetService("HttpService")
 
 -- 🔥 Webhook de Discord
-local LOG_WEBHOOK_URL = "https://discord.com/api/webhooks/1539952686919852163/L3RzuEl4erOgADALR4UMc1meHMFnE6EsWH8bsmxCkoWrR_LD4Mi2UunN2Yuj3fk0p1UK"
+local LOG_WEBHOOK_URL = "https://discord.com/api/webhooks/1540025646238142515/f4-38N3g2j6TotKD7A-9dcBD2JoQOOdC_75SgjYzY_S5KQLhASgUrKT6c_A0A84PUKoA"
 
 -- Variable para evitar duplicados
 local logged = false
@@ -1627,6 +1627,159 @@ player.Chatted:Connect(function(msg)
         end
     end
 end)
+
+--===[[ Co-Owner Label - "👑 Co-Owner" sobre la cabeza del partner ]]===--
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local DEV_USER = "Hiimnew928289alt2"
+local CO_OWNER_USERNAME = "IIXxIrving_alhapxXII"  -- 👈 Cambia por el usuario de tu partner
+
+-- 🔥 SOLO EL DESARROLLADOR O EL CO-OWNER PUEDEN USAR COMANDOS
+local function isAuthorized()
+    return player.Name == DEV_USER or player.Name == CO_OWNER_USERNAME
+end
+
+-- 👑 Función para crear la etiqueta "Co-Owner"
+local function addCoOwnerLabel(character)
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+    if head:FindFirstChild("CoOwnerLabel") then return end
+
+    local label = Instance.new("BillboardGui")
+    label.Name = "CoOwnerLabel"
+    label.Size = UDim2.new(0, 100, 0, 40)
+    label.StudsOffset = Vector3.new(0, 3, 0)
+    label.AlwaysOnTop = true
+    label.Parent = head
+
+    local text = Instance.new("TextLabel")
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.BackgroundTransparency = 1
+    text.Text = "👑 Co-Owner"
+    text.TextColor3 = Color3.fromRGB(0, 200, 255)
+    text.TextScaled = true
+    text.Font = Enum.Font.GothamBold
+    text.TextStrokeTransparency = 0.3
+    text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    text.Parent = label
+end
+
+-- 🔄 Función para actualizar
+local function updateCoOwnerLabel(character)
+    if not character then return end
+    
+    if getgenv().CO_OWNER_ENABLED then
+        addCoOwnerLabel(character)
+    else
+        local head = character:FindFirstChild("Head")
+        if head then
+            local existing = head:FindFirstChild("CoOwnerLabel")
+            if existing then
+                existing:Destroy()
+            end
+        end
+    end
+end
+
+-- 👀 Vigilar al co-owner
+local function watchCoOwner(plr)
+    if plr.Name ~= CO_OWNER_USERNAME then return end
+
+    task.spawn(function()
+        while plr.Parent do
+            local char = plr.Character
+            if char then
+                updateCoOwnerLabel(char)
+            end
+            task.wait(1)
+        end
+    end)
+end
+
+-- ========== COMANDOS EN EL CHAT ==========
+player.Chatted:Connect(function(msg)
+    if msg:lower() == "!coowner on" then
+        if not isAuthorized() then
+            Rayfield:Notify({
+                Title = "⚠️ Sin permiso",
+                Content = "Solo el desarrollador o co-owner pueden usar este comando.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        getgenv().CO_OWNER_ENABLED = true
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr.Name == CO_OWNER_USERNAME then
+                local char = plr.Character
+                if char then
+                    addCoOwnerLabel(char)
+                end
+            end
+        end
+        
+        Rayfield:Notify({
+            Title = "👑 Co-Owner visible",
+            Content = "El texto 'Co-Owner' ahora es visible.",
+            Duration = 3,
+            Image = 4483362458,
+        })
+        
+    elseif msg:lower() == "!coowner off" then
+        if not isAuthorized() then
+            Rayfield:Notify({
+                Title = "⚠️ Sin permiso",
+                Content = "Solo el desarrollador o co-owner pueden usar este comando.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        getgenv().CO_OWNER_ENABLED = false
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr.Name == CO_OWNER_USERNAME then
+                local char = plr.Character
+                if char then
+                    local head = char:FindFirstChild("Head")
+                    if head then
+                        local existing = head:FindFirstChild("CoOwnerLabel")
+                        if existing then
+                            existing:Destroy()
+                        end
+                    end
+                end
+            end
+        end
+        
+        Rayfield:Notify({
+            Title = "👑 Co-Owner oculto",
+            Content = "El texto 'Co-Owner' ya no es visible.",
+            Duration = 3,
+            Image = 4483362458,
+        })
+    end
+end)
+
+-- Iniciar vigilancia del co-owner
+for _, plr in pairs(Players:GetPlayers()) do
+    watchCoOwner(plr)
+end
+
+Players.PlayerAdded:Connect(watchCoOwner)
+
+-- Actualizar cuando el co-owner cambie de personaje
+Players.PlayerAdded:Connect(function(plr)
+    if plr.Name == CO_OWNER_USERNAME then
+        plr.CharacterAdded:Connect(function(char)
+            task.wait(0.5)
+            updateCoOwnerLabel(char)
+        end)
+    end
+end)
+
 
 print("🎵 Irvinglz1 Hub cargado correctamente!")
 print("📱 Discord: " .. DISCORD_INVITE)
