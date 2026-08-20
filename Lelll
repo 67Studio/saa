@@ -388,123 +388,6 @@ end
 
 SetDefaultNameAndBio()
 
---===[[ DevCrown - SOLO PARA EL OWNER (INVERTIDO: cerca desaparece, lejos aparece) ]]===--
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local player = Players.LocalPlayer
-local DEV_USER = "Hiimnew928289alt2"
-local PROXIMITY_DISTANCE = 250  -- 👈 AQUÍ ESTÁ EL VALOR
-
--- Solo el desarrollador puede ver la corona
-if player.Name ~= DEV_USER then
-    return
-end
-
-local crownBillboard = nil
-
-local function addCrownToOwner(character)
-    if not character then return end
-    local head = character:FindFirstChild("Head")
-    if not head then return end
-    if head:FindFirstChild("DevCrown") then return end
-
-    local crown = Instance.new("BillboardGui")
-    crown.Name = "DevCrown"
-    crown.Size = UDim2.new(0, 60, 0, 60)
-    crown.StudsOffset = Vector3.new(0, 2.5, 0)
-    crown.AlwaysOnTop = true
-    crown.Parent = head
-
-    local img = Instance.new("ImageLabel")
-    img.Parent = crown
-    img.Size = UDim2.new(1, 0, 1, 0)
-    img.BackgroundTransparency = 1
-    img.Image = "rbxassetid://11835491319"
-    
-    return crown
-end
-
-local function removeCrownFromOwner(character)
-    if not character then return end
-    local head = character:FindFirstChild("Head")
-    if not head then return end
-    local crown = head:FindFirstChild("DevCrown")
-    if crown then
-        crown:Destroy()
-    end
-end
-
-local function UpdateCrown()
-    local owner = nil
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr.Name == DEV_USER then
-            owner = plr
-            break
-        end
-    end
-
-    if not owner then
-        if crownBillboard then
-            crownBillboard:Destroy()
-            crownBillboard = nil
-        end
-        return
-    end
-
-    if owner == player then
-        if crownBillboard then
-            crownBillboard:Destroy()
-            crownBillboard = nil
-        end
-        return
-    end
-
-    local ownerChar = owner.Character
-    local myChar = player.Character
-    if not ownerChar or not myChar then
-        if crownBillboard then
-            crownBillboard:Destroy()
-            crownBillboard = nil
-        end
-        return
-    end
-
-    local ownerRoot = ownerChar:FindFirstChild("HumanoidRootPart")
-    local myRoot = myChar:FindFirstChild("HumanoidRootPart")
-    if not ownerRoot or not myRoot then
-        if crownBillboard then
-            crownBillboard:Destroy()
-            crownBillboard = nil
-        end
-        return
-    end
-
-    local distance = (ownerRoot.Position - myRoot.Position).Magnitude
-
-    if distance < PROXIMITY_DISTANCE then
-        -- CERCA → eliminar corona
-        if crownBillboard then
-            crownBillboard:Destroy()
-            crownBillboard = nil
-        end
-    else
-
-        if not crownBillboard then
-            crownBillboard = addCrownToOwner(ownerChar)
-        end
-    end
-end
-
-local function InitCrownSystem()
-    task.spawn(function()
-        while task.wait(0.5) do
-            UpdateCrown()
-        end
-    end)
-end
-
-task.spawn(function()
-
 --===[[ DevCrown - Corona 3D con "👑 Owner" siempre visible ]]===--
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -1469,60 +1352,117 @@ Settings:CreateParagraph({
     Content = "Irvinglz1 Hub\nDesarrollado por Hiimnew928289alt2"
 })
 
---===[[ Owner System - Notificación Rayfield cuando el owner está en el servidor ]]===--
+--===[[ Owner System - GUI pequeño con parpadeo ]]===--
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 
 -- 🔥 SOLO EL DESARROLLADOR PUEDE VER ESTO
-local DEVELOPER_USERNAME = "Hiimnew928289alt2"  -- 👈 Tu usuario
+local DEVELOPER_USERNAME = "Hiimnew928289alt2"
 if player.Name ~= DEVELOPER_USERNAME then
-    return  -- Si no eres el desarrollador, NO se ejecuta nada
+    return
 end
 
 local OWNER_NAME = "pdritohacjel"
 local OWNER_USERNAME = "Hiimnew928289alt2"
-local notificationShown = false  -- Para evitar duplicados
+local notificationShown = false
 
--- ========== MOSTRAR NOTIFICACIÓN CON RAYFIELD ==========
-local function ShowOwnerNotification()
+-- ========== CREAR GUI PEQUEÑO CON PARPADEO ==========
+local function ShowOwnerGUI()
     if notificationShown then return end
     notificationShown = true
 
-    Rayfield:Notify({
-        Title = "👑 Owner en el servidor",
-        Content = "El desarrollador está en tu servidor.",
-        Duration = 10,  -- 👈 10 segundos
-        Image = 4483362458,  -- 👈 Icono de corona
-    })
+    -- Crear ScreenGui
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "OwnerNotificationGUI"
+    gui.ResetOnSpawn = false
+    gui.Parent = game:GetService("CoreGui")
+    gui.DisplayOrder = 999
+
+    -- Frame con fondo semitransparente
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 280, 0, 60)  -- 👈 Más pequeño
+    frame.Position = UDim2.new(0.5, -140, 0.5, -30)
+    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    frame.BackgroundTransparency = 0.4  -- 👈 Semitransparente (no total)
+    frame.BorderSizePixel = 0
+    frame.Parent = gui
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+
+    -- Borde dorado
+    local border = Instance.new("UIStroke", frame)
+    border.Thickness = 2
+    border.Color = Color3.fromRGB(255, 215, 0)
+    border.Transparency = 0.3
+
+    -- Texto "👑 Owner en el server"
+    local text = Instance.new("TextLabel")
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.BackgroundTransparency = 1
+    text.Text = "👑 Owner en el server"
+    text.TextColor3 = Color3.fromRGB(255, 215, 0)
+    text.TextSize = 20
+    text.Font = Enum.Font.GothamBold
+    text.Parent = frame
+
+    -- 🎯 EFECTO DE PARPADEO (cambia la transparencia del fondo)
+    task.spawn(function()
+        while gui and gui.Parent do
+            frame.BackgroundTransparency = 0.4
+            task.wait(0.5)
+            frame.BackgroundTransparency = 0.7
+            task.wait(0.5)
+        end
+    end)
+
+    -- 🎯 ANIMACIÓN DE ENTRADA (fade in)
+    text.TextTransparency = 1
+    frame.BackgroundTransparency = 1
+    TweenService:Create(text, TweenInfo.new(0.5), {
+        TextTransparency = 0
+    }):Play()
+    TweenService:Create(frame, TweenInfo.new(0.5), {
+        BackgroundTransparency = 0.4
+    }):Play()
+
+    -- ⏳ Mostrar durante 10 segundos
+    task.wait(10)
+
+    -- 🎯 ANIMACIÓN DE SALIDA (fade out)
+    TweenService:Create(text, TweenInfo.new(0.5), {
+        TextTransparency = 1
+    }):Play()
+    TweenService:Create(frame, TweenInfo.new(0.5), {
+        BackgroundTransparency = 1
+    }):Play()
+
+    task.wait(0.6)
+    gui:Destroy()
 end
 
 -- ========== DETECTAR CUANDO EL OWNER ENTRA AL SERVIDOR ==========
 local function CheckForOwner()
-    -- Verificar si el owner ya está en el servidor
     for _, plr in pairs(Players:GetPlayers()) do
         if plr.DisplayName == OWNER_NAME or plr.Name == OWNER_USERNAME then
-            if plr ~= player then  -- Que no sea yo mismo
-                ShowOwnerNotification()
+            if plr ~= player then
+                ShowOwnerGUI()
                 return
             end
         end
     end
 
-    -- Escuchar cuando el owner se una
     local connection
     connection = Players.PlayerAdded:Connect(function(plr)
         if plr.DisplayName == OWNER_NAME or plr.Name == OWNER_USERNAME then
             if plr ~= player then
-                ShowOwnerNotification()
-                connection:Disconnect()  -- Desconectar después de mostrar
+                ShowOwnerGUI()
+                connection:Disconnect()
             end
         end
     end)
 end
 
--- Iniciar la verificación
 CheckForOwner()
-
 
 
 print("🎵 Irvinglz1 Hub cargado correctamente!")
