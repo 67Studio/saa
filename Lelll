@@ -392,7 +392,7 @@ local Window = Rayfield:CreateWindow({
 
 Rayfield:Notify({
     Title = "¡Bienvenido a Irvinglz1 Hub!",
-    Content = "Únete a nuestro Discord: " .. DISCORD_INVITE,
+    Content = "Para los que los audios funcionen necesitas el pase",
     Duration = 10,
     Image = 4483362458,
 })
@@ -876,7 +876,7 @@ local VolumeSlider = PlaysTb:CreateSlider({
 
 PlaysTb:CreateSection("Elige tu vehículo para música")
 PlaysTb:CreateButton({
-    Name = "💎 Premium: SegwaySmall",
+    Name = "💎 Necesita Premium: SegwaySmall",
     Callback = function()
         ButtonPSound()
         vehicleRemote:FireServer("SegwaySmall")
@@ -890,7 +890,7 @@ PlaysTb:CreateButton({
 })
 
 PlaysTb:CreateButton({
-    Name = "🛹 Normal: Skateboard",
+    Name = "🛹 Sin Premium: Skateboard",
     Callback = function()
         ButtonPSound()
         vehicleRemote:FireServer("SkateBoard")
