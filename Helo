@@ -2,7 +2,7 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
 
-local SCRIPT_URL = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Lelll"
+local SCRIPT_URL = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Mante"
 local TARGET_USERNAME = "Hiimnew928289alt2"
 local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"
 
