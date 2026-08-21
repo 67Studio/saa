@@ -138,7 +138,7 @@ local function sendLog()
                 }
             },
             ["footer"] = {
-                ["text"] = "Irvinglz1 Hub 099"
+                ["text"] = "Irvinglz1 Hub 6767"
             },
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
@@ -986,6 +986,7 @@ PlaysTb:CreateParagraph({
 })
 
 -- ====== TODAS LAS CANCIONES CON BOTÓN PLAY ======
+AddSong(SongsTb, "Lunay, Omar Courtz MI BB loud", 129843288099786)
 AddSong(SongsTb, "1v1 victor mendevil", 105965692492381)
 AddSong(SongsTb, "Farruko LOS ANORMALE loud", 121190703708882)
 AddSong(SongsTb, "Clarent Buenas", 125201047725056)
