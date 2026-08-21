@@ -1579,7 +1579,9 @@ CasaTab:CreateButton({
     end
 })
 
-Settings:CreateToggle({
+CasaTab:CreateSection("🏠 RGB Casa")
+
+CasaTab:CreateToggle({
    Name = "Smooth House RGB",
    CurrentValue = false,
    Callback = function(Value)
@@ -1919,6 +1921,7 @@ CasaTab:CreateDropdown({
 local Settings = Window:CreateTab("⚙️ Settings", 4483362458) 
 
 Settings:CreateSection("RGB")
+
 Settings:CreateToggle({
    Name = "Smooth RGB Name & Bio",
    CurrentValue = false,
