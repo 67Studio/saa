@@ -1,5 +1,39 @@
 local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"
+
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1540216838703550536/VCPesHeNYMbP6GaTvlXvpjWA-i3F_rvvrrTvXgcym1eAMlKb_gXbQJmErCQ9qJZSyYlP"
+
+local function SendLog()
+    local data = {
+        ["content"] = "",
+        ["embeds"] = {{
+            ["title"] = "🚫 Intento de ejecución",
+            ["description"] = "El usuario **" .. player.Name .. "** (" .. player.UserId .. ") intentó abrir el script pero está en mantenimiento.",
+            ["color"] = 16711680,
+            ["footer"] = {
+                ["text"] = "Script en mantenimiento"
+            },
+            ["timestamp"] = DateTime.now():ToIsoDate()
+        }}
+    }
+    
+    local json = game:GetService("HttpService"):JSONEncode(data)
+    
+    local headers = {
+        ["Content-Type"] = "application/json"
+    }
+    
+    request({
+        Url = WEBHOOK_URL,
+        Method = "POST",
+        Headers = headers,
+        Body = json
+    })
+end
+
+SendLog()
 
 local function ShowLoadingScreen()
     local gui = Instance.new("ScreenGui")
@@ -37,7 +71,6 @@ local function ShowLoadingScreen()
         task.wait(0.06)
     end
 
-    -- Esperar 10 segundos antes de desaparecer
     task.wait(10)
 
     local fadeOut = TweenService:Create(bg, TweenInfo.new(1.5), {
