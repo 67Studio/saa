@@ -1131,8 +1131,814 @@ ScriptsTb:CreateButton({
     end
 })
 
+--===[[ NUEVA PESTAÑA: AVATAR ]]===--
+local AvatarTb = Window:CreateTab("👔 Avatar [Nuevo]", 4483362458)
+
+AvatarTb:CreateSection("📋 Copiar Avatar de Otro Jugador")
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Remotes = ReplicatedStorage:WaitForChild("Remotes")
+local TargetPlayer = nil
+
+local function GetPlayerNames()
+    local names = {}
+    for _, v in pairs(Players:GetPlayers()) do
+        if v ~= Players.LocalPlayer then
+            table.insert(names, v.Name)
+        end
+    end
+    return names
+end
+
+local PlayerDropdown = AvatarTb:CreateDropdown({
+    Name = "Seleccionar Jugador",
+    Options = GetPlayerNames(),
+    CurrentOption = {""},
+    MultipleOptions = false,
+    Callback = function(Option)
+        ButtonPSound()
+        TargetPlayer = Option[1]
+    end
+})
+
+AvatarTb:CreateButton({
+    Name = "📋 Copiar Avatar",
+    Callback = function()
+        ButtonPSound()
+        if not TargetPlayer or TargetPlayer == "" then
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "Debes seleccionar un jugador primero",
+                Duration = 3
+            })
+            return
+        end
+
+        local TPlr = Players:FindFirstChild(TargetPlayer)
+        local LPlr = Players.LocalPlayer
+        
+        if TPlr and TPlr.Character and LPlr.Character then
+            local THum = TPlr.Character:FindFirstChildOfClass("Humanoid")
+            local LHum = LPlr.Character:FindFirstChildOfClass("Humanoid")
+
+            if THum and LHum then
+                local PDesc = THum:GetAppliedDescription()
+                
+                local argsBody = {
+                    [1] = {
+                        [1] = PDesc.Torso,
+                        [2] = PDesc.RightArm,
+                        [3] = PDesc.LeftArm,
+                        [4] = PDesc.RightLeg,
+                        [5] = PDesc.LeftLeg,
+                        [6] = PDesc.Head
+                    }
+                }
+                Remotes.ChangeCharacterBody:InvokeServer(unpack(argsBody))
+                task.wait(0.3)
+
+                if tonumber(PDesc.Shirt) then
+                    Remotes.Wear:InvokeServer(tonumber(PDesc.Shirt))
+                    task.wait(0.2)
+                end
+                if tonumber(PDesc.Pants) then
+                    Remotes.Wear:InvokeServer(tonumber(PDesc.Pants))
+                    task.wait(0.2)
+                end
+                if tonumber(PDesc.Face) then
+                    Remotes.Wear:InvokeServer(tonumber(PDesc.Face))
+                    task.wait(0.2)
+                end
+                
+                for _, v in ipairs(PDesc:GetAccessories(true)) do
+                    if v.AssetId then
+                        Remotes.Wear:InvokeServer(tonumber(v.AssetId))
+                        task.wait(0.1)
+                    end
+                end
+                
+                local SkinColor = TPlr.Character:FindFirstChild("Body Colors")
+                if SkinColor then
+                    Remotes.ChangeBodyColor:FireServer(tostring(SkinColor.HeadColor))
+                end
+
+                Rayfield:Notify({
+                    Title = "✅ Avatar Copiado",
+                    Content = "Avatar de " .. TargetPlayer .. " copiado exitosamente",
+                    Duration = 3
+                })
+            else
+                Rayfield:Notify({
+                    Title = "❌ Error",
+                    Content = "El jugador no tiene un personaje válido",
+                    Duration = 3
+                })
+            end
+        else
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "Jugador no encontrado o sin personaje",
+                Duration = 3
+            })
+        end
+    end
+})
+
+AvatarTb:CreateButton({
+    Name = "🔄 Actualizar Lista de Jugadores",
+    Callback = function()
+        ButtonPSound()
+        PlayerDropdown:Refresh(GetPlayerNames(), true)
+    end
+})
+
+AvatarTb:CreateSection("🎀 Paquetes de Cuerpo")
+
+local function ApplyBodyBundle(ids)
+    for _, id in ipairs(ids) do
+        pcall(function()
+            game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(id)
+        end)
+        task.wait(0.3)
+    end
+    Rayfield:Notify({
+        Title = "✅ Aplicado",
+        Content = "Paquete de cuerpo aplicado",
+        Duration = 2
+    })
+end
+
+AvatarTb:CreateButton({
+    Name = "🎀 Viral Girl Body",
+    Callback = function()
+        ButtonPSound()
+        ApplyBodyBundle({
+            18839824113,
+            18839824209,
+            18839824132,
+            127241951574732,
+            118303475394830
+        })
+    end
+})
+
+AvatarTb:CreateButton({
+    Name = "🖤 Tall Emo Body",
+    Callback = function()
+        ButtonPSound()
+        ApplyBodyBundle({
+            15365110905,
+            15365110924,
+            15365110917,
+            96815508293389,
+            121515016872144
+        })
+    end
+})
+
+AvatarTb:CreateButton({
+    Name = "👗 Zepeto Girl Body",
+    Callback = function()
+        ButtonPSound()
+        ApplyBodyBundle({
+            115745153758680,
+            18839824209,
+            18839824132,
+            70582373853805,
+            70380761114055
+        })
+    end
+})
+
+AvatarTb:CreateButton({
+    Name = "👔 Zepeto Boy Body",
+    Callback = function()
+        ButtonPSound()
+        ApplyBodyBundle({
+            127731857442064,
+            116852226852049,
+            18839824132,
+            70582373853805,
+            70380761114055
+        })
+    end
+})
+
+AvatarTb:CreateSection("🦵 Modificadores de Avatar")
+
+local function ApplyBodyMod(useKorblox, useHeadless)
+    local p = game:GetService("Players").LocalPlayer
+    local hum = p.Character and p.Character:FindFirstChildOfClass("Humanoid")
+    
+    if hum then
+        local desc = hum:GetAppliedDescription()
+        local args = {
+            [1] = {
+                [1] = desc.Torso,
+                [2] = desc.RightArm,
+                [3] = desc.LeftArm,
+                [4] = useKorblox and 139607718 or desc.RightLeg,
+                [5] = desc.LeftLeg,
+                [6] = useHeadless and 134082579 or desc.Head
+            }
+        }
+        game:GetService("ReplicatedStorage").Remotes.ChangeCharacterBody:InvokeServer(unpack(args))
+    end
+end
+
+AvatarTb:CreateButton({
+    Name = "🦵 Korblox (Pierna Izquierda)",
+    Callback = function()
+        ButtonPSound()
+        ApplyBodyMod(true, false)
+        Rayfield:Notify({
+            Title = "✅ Aplicado",
+            Content = "Korblox aplicado",
+            Duration = 2
+        })
+    end
+})
+
+AvatarTb:CreateButton({
+    Name = "💀 Headless (Cabeza)",
+    Callback = function()
+        ButtonPSound()
+        ApplyBodyMod(false, true)
+        Rayfield:Notify({
+            Title = "✅ Aplicado",
+            Content = "Headless aplicado",
+            Duration = 2
+        })
+    end
+})
+
+AvatarTb:CreateSection("✨ Accesorios y Auras")
+
+local function AddAvatarItem(itemID, notifyTitle)
+    local args = {[1] = itemID}
+    pcall(function()
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(args))
+    end)
+    Rayfield:Notify({
+        Title = "✅ Aplicado",
+        Content = notifyTitle .. " añadido",
+        Duration = 2
+    })
+end
+
+local accesorios = {
+    {"🛸 UFO", 8151404994},
+    {"🪓 Hacha", 3240543366},
+    {"☠️ Aura Calavera", 14524326503},
+    {"👑 Corona Real", 10159600649},
+    {"🔫 Pistola Sci-Fi", 3013849063},
+    {"👑 Corona Azul", 13632274891},
+    {"👑 Corona Roja", 13634032867},
+    {"👑 Corona Amarilla", 13632296794},
+    {"🌈 Corona Arcoíris", 13634162618},
+    {"🎧 Sombrero con Sonido", 305888394},
+    {"🐔 Sombrero Pollo con Sonido", 24112667},
+    {"🟪 Sombrero Morado con Sonido", 24114402},
+    {"🎹 Sombrero con Sonido", 33070696}
+}
+
+for _, acc in ipairs(accesorios) do
+    AvatarTb:CreateButton({
+        Name = acc[1],
+        Callback = function()
+            ButtonPSound()
+            AddAvatarItem(acc[2], acc[1])
+        end
+    })
+end
+
+AvatarTb:CreateSection("🎭 Animaciones")
+
+local function ApplyAnimation(id, name)
+    local args = {[1] = id}
+    pcall(function()
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(args))
+    end)
+    Rayfield:Notify({
+        Title = "✅ Animación Aplicada",
+        Content = name .. " activada",
+        Duration = 2
+    })
+end
+
+local AnimData = {
+    Idle = {
+        {"Adidas Stand", 126354114956642},
+        {"Wicked Popular Idle", 101839542383818},
+        {"Stylish Idle", 619511648},
+        {"Levitation Idle", 619542203},
+        {"Realistic Idle", 11600321661},
+        {"Catwalk Glam Idle", 101279640971758}
+    },
+    Walk = {
+        {"Adidas Walking", 106810508343012},
+        {"Wicked Popular Walk", 133304526526319},
+        {"Stylish Walk", 619511648},
+        {"Realistic Walk", 11600321661},
+        {"Adidas Sport Walk", 18538146480}
+    },
+    Run = {
+        {"Adidas Running", 124765145869332},
+        {"Wicked Popular Run", 136276875045281},
+        {"Fast Realistic Run", 11600321661},
+        {"Adidas Sport Run", 18538133604}
+    },
+    Jump = {
+        {"Adidas Jump", 115715495289805},
+        {"Wicked Popular Jump", 130373407996664},
+        {"Adidas Sport Jump", 18538153691}
+    },
+    Fall = {
+        {"Adidas Fall", 93993406355955},
+        {"Wicked Popular Fall", 83937116921114},
+        {"Adidas Sport Fall", 18538164337}
+    },
+    Swim = {
+        {"Adidas Swim", 106537993816942},
+        {"Wicked Popular Swim", 128475661806875},
+        {"Adidas Sport Swim", 18538158932}
+    },
+    Climb = {
+        {"Adidas Climb", 123695349157584},
+        {"Wicked Popular Climb", 135810009801094},
+        {"Adidas Sport Climb", 18538170170}
+    }
+}
+
+for category, animations in pairs(AnimData) do
+    local options = {}
+    for _, anim in ipairs(animations) do
+        table.insert(options, anim[1])
+    end
+    
+    AvatarTb:CreateDropdown({
+        Name = category .. " Animation",
+        Options = options,
+        CurrentOption = options[1] or "",
+        Callback = function(Option)
+            ButtonPSound()
+            local selectedName = type(Option) == "table" and Option[1] or Option
+            for _, anim in ipairs(animations) do
+                if anim[1] == selectedName then
+                    ApplyAnimation(anim[2], selectedName)
+                    break
+                end
+            end
+        end
+    })
+end
+
+--===[[ NUEVA PESTAÑA: CASA ]]===--
+local CasaTab = Window:CreateTab("🏠 Casa [Nuevo]", 4483362458)
+
+CasaTab:CreateSection("🔓 Desbaneo Automático")
+
+local isUnbanActive = false
+local unbanLoop = nil
+
+local function startAutoUnban()
+    while isUnbanActive do
+        pcall(function()
+            local lots = workspace:FindFirstChild("001_Lots")
+            if lots then
+                for _, v in pairs(lots:GetDescendants()) do
+                    if v.Name and v.Name:match("^BannedBlock%d+$") then
+                        v:Destroy()
+                    end
+                end
+            end
+        end)
+        task.wait(0.5)
+    end
+end
+
+CasaTab:CreateToggle({
+    Name = "🔓 Auto Unban",
+    CurrentValue = false,
+    Flag = "AutoUnbanToggle",
+    Callback = function(Value)
+        ButtonPSound()
+        isUnbanActive = Value
+        
+        if isUnbanActive then
+            if unbanLoop then
+                task.cancel(unbanLoop)
+                unbanLoop = nil
+            end
+            unbanLoop = task.spawn(startAutoUnban)
+            Rayfield:Notify({
+                Title = "✅ Auto Unban Activado",
+                Content = "Desbaneando casas automáticamente...",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        else
+            if unbanLoop then
+                task.cancel(unbanLoop)
+                unbanLoop = nil
+            end
+            Rayfield:Notify({
+                Title = "⏹️ Auto Unban Desactivado",
+                Content = "Ya no se desbanearán casas.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        end
+    end
+})
+
+CasaTab:CreateButton({
+    Name = "🔓 Desbanear Ahora (Una vez)",
+    Callback = function()
+        ButtonPSound()
+        local count = 0
+        pcall(function()
+            local lots = workspace:FindFirstChild("001_Lots")
+            if lots then
+                for _, v in pairs(lots:GetDescendants()) do
+                    if v.Name and v.Name:match("^BannedBlock%d+$") then
+                        v:Destroy()
+                        count = count + 1
+                    end
+                end
+            end
+        end)
+        
+        Rayfield:Notify({
+            Title = "🔓 Desbaneo Completado",
+            Content = "Se eliminaron " .. count .. " bloques de baneo.",
+            Duration = 3,
+            Image = 4483362458,
+        })
+    end
+})
+
+Settings:CreateToggle({
+   Name = "Smooth House RGB",
+   CurrentValue = false,
+   Callback = function(Value)
+      ButtonPSound()
+      houseRgb = Value
+      if houseRgb then
+          task.spawn(function()
+              while houseRgb do
+                  local smoothColor = Color3.fromHSV(hueValue, 1, 1)
+                  pcall(function()
+                      HouseRemote:FireServer("ColorPickHouse", smoothColor)
+                  end)
+                  task.wait(1.1)
+              end
+          end)
+      end
+   end,
+})
+
+CasaTab:CreateSection("🏠 Utilidades de Casas")
+
+local function getHouseList()
+    local Tabela = {}
+    local lots = workspace:FindFirstChild("001_Lots")
+    if lots then
+        for _, House in ipairs(lots:GetChildren()) do
+            if House.Name ~= "For Sale" and House:IsA("Model") then
+                table.insert(Tabela, House.Name)
+            end
+        end
+    end
+    return Tabela
+end
+
+local SelectHouse = nil
+
+CasaTab:CreateDropdown({
+    Name = "Seleccionar Casa",
+    Options = getHouseList(),
+    CurrentOption = {""},
+    MultipleOptions = false,
+    Callback = function(Option)
+        ButtonPSound()
+        SelectHouse = Option[1]
+    end
+})
+
+CasaTab:CreateButton({
+    Name = "🔄 Actualizar Lista de Casas",
+    Callback = function()
+        ButtonPSound()
+        local houses = getHouseList()
+        CasaTab:ClearDropdown("Seleccionar Casa")
+        CasaTab:CreateDropdown({
+            Name = "Seleccionar Casa",
+            Options = houses,
+            CurrentOption = {""},
+            MultipleOptions = false,
+            Callback = function(Option)
+                ButtonPSound()
+                SelectHouse = Option[1]
+            end
+        })
+        Rayfield:Notify({
+            Title = "🔄 Actualizado",
+            Content = "Lista de casas actualizada correctamente.",
+            Duration = 2,
+            Image = 4483362458,
+        })
+    end
+})
+
+CasaTab:CreateButton({
+    Name = "📌 Teletransportarse a Casa",
+    Callback = function()
+        ButtonPSound()
+        if not SelectHouse or SelectHouse == "" then
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "Debes seleccionar una casa primero.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        local House = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
+        if House and game.Players.LocalPlayer.Character then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(House.WorldPivot.Position)
+            Rayfield:Notify({
+                Title = "📌 Teletransportado",
+                Content = "Te has teletransportado a " .. SelectHouse,
+                Duration = 2,
+                Image = 4483362458,
+            })
+        else
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "Casa no encontrada.",
+                Duration = 2,
+                Image = 4483362458,
+            })
+        end
+    end
+})
+
+CasaTab:CreateButton({
+    Name = "💰 Teletransportarse a Caja Fuerte",
+    Callback = function()
+        ButtonPSound()
+        if not SelectHouse or SelectHouse == "" then
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "Debes seleccionar una casa primero.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        local House = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
+        if House and House:FindFirstChild("HousePickedByPlayer") and game.Players.LocalPlayer.Character then
+            local safe = House.HousePickedByPlayer.HouseModel:FindFirstChild("001_Safe")
+            if safe then
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(safe.WorldPivot.Position)
+                Rayfield:Notify({
+                    Title = "💰 Teletransportado",
+                    Content = "Te has teletransportado al cofre de " .. SelectHouse,
+                    Duration = 2,
+                    Image = 4483362458,
+                })
+            else
+                Rayfield:Notify({
+                    Title = "❌ Error",
+                    Content = "Cofre no encontrado en esta casa.",
+                    Duration = 2,
+                    Image = 4483362458,
+                })
+            end
+        else
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "Casa no encontrada o no comprada.",
+                Duration = 2,
+                Image = 4483362458,
+            })
+        end
+    end
+})
+
+CasaTab:CreateToggle({
+    Name = "🚪 Atravesar Puertas",
+    CurrentValue = false,
+    Callback = function(Value)
+        ButtonPSound()
+        if not SelectHouse or SelectHouse == "" then
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "Debes seleccionar una casa primero.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return false
+        end
+        
+        pcall(function()
+            local House = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
+            if House and House:FindFirstChild("HousePickedByPlayer") then
+                local housepickedbyplayer = House.HousePickedByPlayer
+                local doors = housepickedbyplayer.HouseModel:FindFirstChild("001_HouseDoors")
+                if doors and doors:FindFirstChild("HouseDoorFront") then
+                    for _, Base in ipairs(doors.HouseDoorFront:GetChildren()) do
+                        if Base:IsA("BasePart") then
+                            Base.CanCollide = not Value
+                        end
+                    end
+                end
+            end
+        end)
+        
+        Rayfield:Notify({
+            Title = "🚪 Puertas",
+            Content = Value and "Ahora puedes atravesar las puertas." or "Ya no puedes atravesar las puertas.",
+            Duration = 2,
+            Image = 4483362458,
+        })
+    end
+})
+
+CasaTab:CreateToggle({
+    Name = "🔔 Tocar Campanilla",
+    CurrentValue = false,
+    Callback = function(Value)
+        ButtonPSound()
+        if not SelectHouse or SelectHouse == "" then
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "Debes seleccionar una casa primero.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return false
+        end
+        
+        getgenv().ChaosHubAutoSpawnDoorbellValue = Value
+        task.spawn(function()
+            while getgenv().ChaosHubAutoSpawnDoorbellValue do
+                pcall(function()
+                    local House = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
+                    if House and House:FindFirstChild("HousePickedByPlayer") then
+                        local doorbell = House.HousePickedByPlayer.HouseModel:FindFirstChild("001_DoorBell")
+                        if doorbell and doorbell:FindFirstChild("TouchBell") then
+                            fireclickdetector(doorbell.TouchBell.ClickDetector)
+                        end
+                    end
+                end)
+                task.wait(0.5)
+            end
+        end)
+        
+        Rayfield:Notify({
+            Title = "🔔 Campanilla",
+            Content = Value and "Tocando campanilla automáticamente..." or "Campanilla desactivada.",
+            Duration = 2,
+            Image = 4483362458,
+        })
+    end
+})
+
+CasaTab:CreateToggle({
+    Name = "🚪 Tocar Puerta (Knock)",
+    CurrentValue = false,
+    Callback = function(Value)
+        ButtonPSound()
+        if not SelectHouse or SelectHouse == "" then
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "Debes seleccionar una casa primero.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return false
+        end
+        
+        getgenv().ChaosHubAutoSpawnDoorValue = Value
+        task.spawn(function()
+            while getgenv().ChaosHubAutoSpawnDoorValue do
+                pcall(function()
+                    local House = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
+                    if House and House:FindFirstChild("HousePickedByPlayer") then
+                        local doors = House.HousePickedByPlayer.HouseModel:FindFirstChild("001_HouseDoors")
+                        if doors and doors:FindFirstChild("HouseDoorFront") and doors.HouseDoorFront:FindFirstChild("Knock") then
+                            fireclickdetector(doors.HouseDoorFront.Knock.TouchBell.ClickDetector)
+                        end
+                    end
+                end)
+                task.wait(0.5)
+            end
+        end)
+        
+        Rayfield:Notify({
+            Title = "🚪 Tocar Puerta",
+            Content = Value and "Tocando puerta automáticamente..." or "Tocar puerta desactivado.",
+            Duration = 2,
+            Image = 4483362458,
+        })
+    end
+})
+
+CasaTab:CreateSection("📍 Teletransporte Directo a Casas")
+
+local casas = {
+    ["Casa 1"] = Vector3.new(260.29, 4.37, 209.32),
+    ["Casa 2"] = Vector3.new(234.49, 4.37, 228.00),
+    ["Casa 3"] = Vector3.new(262.79, 21.37, 210.84),
+    ["Casa 4"] = Vector3.new(229.60, 21.37, 225.40),
+    ["Casa 5"] = Vector3.new(173.44, 21.37, 228.11),
+    ["Casa 6"] = Vector3.new(-43, 21, -137),
+    ["Casa 7"] = Vector3.new(-40, 36, -137),
+    ["Casa 11"] = Vector3.new(-21, 40, 436),
+    ["Casa 12"] = Vector3.new(155, 37, 433),
+    ["Casa 13"] = Vector3.new(255, 35, 431),
+    ["Casa 14"] = Vector3.new(254, 38, 394),
+    ["Casa 15"] = Vector3.new(148, 39, 387),
+    ["Casa 16"] = Vector3.new(-17, 42, 395),
+    ["Casa 17"] = Vector3.new(-189, 37, -247),
+    ["Casa 18"] = Vector3.new(-354, 37, -244),
+    ["Casa 19"] = Vector3.new(-456, 36, -245),
+    ["Casa 20"] = Vector3.new(-453, 38, -295),
+    ["Casa 21"] = Vector3.new(-356, 38, -294),
+    ["Casa 22"] = Vector3.new(-187, 37, -295),
+    ["Casa 23"] = Vector3.new(-410, 68, -447),
+    ["Casa 24"] = Vector3.new(-348, 69, -496),
+    ["Casa 28"] = Vector3.new(-103, 12, 1087),
+    ["Casa 29"] = Vector3.new(-730, 6, 808),
+    ["Casa 30"] = Vector3.new(-245, 7, 822),
+    ["Casa 31"] = Vector3.new(639, 76, -361),
+    ["Casa 32"] = Vector3.new(-908, 6, -361),
+    ["Casa 33"] = Vector3.new(-111, 70, -417),
+    ["Casa 34"] = Vector3.new(230, 38, 569),
+    ["Casa 35"] = Vector3.new(-30, 13, 2209)
+}
+
+local casasNomes = {}
+for nome, _ in pairs(casas) do
+    table.insert(casasNomes, nome)
+end
+
+table.sort(casasNomes, function(a, b)
+    local numA = tonumber(a:match("%d+")) or 0
+    local numB = tonumber(b:match("%d+")) or 0
+    return numA < numB
+end)
+
+CasaTab:CreateDropdown({
+    Name = "Seleccionar Casa para TP Directo",
+    Options = casasNomes,
+    CurrentOption = {""},
+    MultipleOptions = false,
+    Callback = function(Option)
+        ButtonPSound()
+        local casaSelecionada = Option[1]
+        if casaSelecionada and game.Players.LocalPlayer.Character then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(casas[casaSelecionada])
+            Rayfield:Notify({
+                Title = "📍 Teletransportado",
+                Content = "Te has teletransportado a " .. casaSelecionada,
+                Duration = 2,
+                Image = 4483362458,
+            })
+        end
+    end
+})
+
+
 --===[[ Configuración ]]===--
 local Settings = Window:CreateTab("⚙️ Settings", 4483362458) 
+
+Settings:CreateSection("RGB")
+Settings:CreateToggle({
+   Name = "Smooth RGB Name & Bio",
+   CurrentValue = false,
+   Callback = function(Value)
+      ButtonPSound()
+      nameRgb = Value
+      if nameRgb then
+          task.spawn(function()
+              while nameRgb do
+                  local smoothColor = Color3.fromHSV(hueValue, 1, 1)
+                  pcall(function()
+                      NameRemote:FireServer("PickingRPNameColor", smoothColor)
+                      NameRemote:FireServer("PickingRPBioColor", smoothColor)
+                  end)
+                  task.wait(0.8)
+              end
+          end)
+      end
+   end,
+})
 
 Settings:CreateSlider({
     Name = "WalkSpeed",
@@ -1199,28 +2005,6 @@ Settings:CreateButton({
     end
 })
 
-Settings:CreateSection("RGB")
-Settings:CreateToggle({
-   Name = "Smooth RGB Name & Bio",
-   CurrentValue = false,
-   Callback = function(Value)
-      ButtonPSound()
-      nameRgb = Value
-      if nameRgb then
-          task.spawn(function()
-              while nameRgb do
-                  local smoothColor = Color3.fromHSV(hueValue, 1, 1)
-                  pcall(function()
-                      NameRemote:FireServer("PickingRPNameColor", smoothColor)
-                      NameRemote:FireServer("PickingRPBioColor", smoothColor)
-                  end)
-                  task.wait(0.8)
-              end
-          end)
-      end
-   end,
-})
-
 Settings:CreateToggle({
    Name = "RGB Avatar",
    CurrentValue = false,
@@ -1237,26 +2021,6 @@ Settings:CreateToggle({
                       remote:FireServer(color)
                       task.wait(0.5)
                   end
-              end
-          end)
-      end
-   end,
-})
-
-Settings:CreateToggle({
-   Name = "Smooth House RGB",
-   CurrentValue = false,
-   Callback = function(Value)
-      ButtonPSound()
-      houseRgb = Value
-      if houseRgb then
-          task.spawn(function()
-              while houseRgb do
-                  local smoothColor = Color3.fromHSV(hueValue, 1, 1)
-                  pcall(function()
-                      HouseRemote:FireServer("ColorPickHouse", smoothColor)
-                  end)
-                  task.wait(1.1)
               end
           end)
       end
@@ -1787,368 +2551,6 @@ Players.PlayerAdded:Connect(function(plr)
     end
 end)
 
---===[[ NUEVA PESTAÑA: AVATAR ]]===--
-local AvatarTb = Window:CreateTab("👔 Avatar [Nuevo]", 4483362458)
-
-AvatarTb:CreateSection("📋 Copiar Avatar de Otro Jugador")
-
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Remotes = ReplicatedStorage:WaitForChild("Remotes")
-local TargetPlayer = nil
-
-local function GetPlayerNames()
-    local names = {}
-    for _, v in pairs(Players:GetPlayers()) do
-        if v ~= Players.LocalPlayer then
-            table.insert(names, v.Name)
-        end
-    end
-    return names
-end
-
-local PlayerDropdown = AvatarTb:CreateDropdown({
-    Name = "Seleccionar Jugador",
-    Options = GetPlayerNames(),
-    CurrentOption = {""},
-    MultipleOptions = false,
-    Callback = function(Option)
-        ButtonPSound()
-        TargetPlayer = Option[1]
-    end
-})
-
-AvatarTb:CreateButton({
-    Name = "📋 Copiar Avatar",
-    Callback = function()
-        ButtonPSound()
-        if not TargetPlayer or TargetPlayer == "" then
-            Rayfield:Notify({
-                Title = "❌ Error",
-                Content = "Debes seleccionar un jugador primero",
-                Duration = 3
-            })
-            return
-        end
-
-        local TPlr = Players:FindFirstChild(TargetPlayer)
-        local LPlr = Players.LocalPlayer
-        
-        if TPlr and TPlr.Character and LPlr.Character then
-            local THum = TPlr.Character:FindFirstChildOfClass("Humanoid")
-            local LHum = LPlr.Character:FindFirstChildOfClass("Humanoid")
-
-            if THum and LHum then
-                local PDesc = THum:GetAppliedDescription()
-                
-                local argsBody = {
-                    [1] = {
-                        [1] = PDesc.Torso,
-                        [2] = PDesc.RightArm,
-                        [3] = PDesc.LeftArm,
-                        [4] = PDesc.RightLeg,
-                        [5] = PDesc.LeftLeg,
-                        [6] = PDesc.Head
-                    }
-                }
-                Remotes.ChangeCharacterBody:InvokeServer(unpack(argsBody))
-                task.wait(0.3)
-
-                if tonumber(PDesc.Shirt) then
-                    Remotes.Wear:InvokeServer(tonumber(PDesc.Shirt))
-                    task.wait(0.2)
-                end
-                if tonumber(PDesc.Pants) then
-                    Remotes.Wear:InvokeServer(tonumber(PDesc.Pants))
-                    task.wait(0.2)
-                end
-                if tonumber(PDesc.Face) then
-                    Remotes.Wear:InvokeServer(tonumber(PDesc.Face))
-                    task.wait(0.2)
-                end
-                
-                for _, v in ipairs(PDesc:GetAccessories(true)) do
-                    if v.AssetId then
-                        Remotes.Wear:InvokeServer(tonumber(v.AssetId))
-                        task.wait(0.1)
-                    end
-                end
-                
-                local SkinColor = TPlr.Character:FindFirstChild("Body Colors")
-                if SkinColor then
-                    Remotes.ChangeBodyColor:FireServer(tostring(SkinColor.HeadColor))
-                end
-
-                Rayfield:Notify({
-                    Title = "✅ Avatar Copiado",
-                    Content = "Avatar de " .. TargetPlayer .. " copiado exitosamente",
-                    Duration = 3
-                })
-            else
-                Rayfield:Notify({
-                    Title = "❌ Error",
-                    Content = "El jugador no tiene un personaje válido",
-                    Duration = 3
-                })
-            end
-        else
-            Rayfield:Notify({
-                Title = "❌ Error",
-                Content = "Jugador no encontrado o sin personaje",
-                Duration = 3
-            })
-        end
-    end
-})
-
-AvatarTb:CreateButton({
-    Name = "🔄 Actualizar Lista de Jugadores",
-    Callback = function()
-        ButtonPSound()
-        PlayerDropdown:Refresh(GetPlayerNames(), true)
-    end
-})
-
-AvatarTb:CreateSection("🎀 Paquetes de Cuerpo")
-
-local function ApplyBodyBundle(ids)
-    for _, id in ipairs(ids) do
-        pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(id)
-        end)
-        task.wait(0.3)
-    end
-    Rayfield:Notify({
-        Title = "✅ Aplicado",
-        Content = "Paquete de cuerpo aplicado",
-        Duration = 2
-    })
-end
-
-AvatarTb:CreateButton({
-    Name = "🎀 Viral Girl Body",
-    Callback = function()
-        ButtonPSound()
-        ApplyBodyBundle({
-            18839824113,
-            18839824209,
-            18839824132,
-            127241951574732,
-            118303475394830
-        })
-    end
-})
-
-AvatarTb:CreateButton({
-    Name = "🖤 Tall Emo Body",
-    Callback = function()
-        ButtonPSound()
-        ApplyBodyBundle({
-            15365110905,
-            15365110924,
-            15365110917,
-            96815508293389,
-            121515016872144
-        })
-    end
-})
-
-AvatarTb:CreateButton({
-    Name = "👗 Zepeto Girl Body",
-    Callback = function()
-        ButtonPSound()
-        ApplyBodyBundle({
-            115745153758680,
-            18839824209,
-            18839824132,
-            70582373853805,
-            70380761114055
-        })
-    end
-})
-
-AvatarTb:CreateButton({
-    Name = "👔 Zepeto Boy Body",
-    Callback = function()
-        ButtonPSound()
-        ApplyBodyBundle({
-            127731857442064,
-            116852226852049,
-            18839824132,
-            70582373853805,
-            70380761114055
-        })
-    end
-})
-
-AvatarTb:CreateSection("🦵 Modificadores de Avatar")
-
-local function ApplyBodyMod(useKorblox, useHeadless)
-    local p = game:GetService("Players").LocalPlayer
-    local hum = p.Character and p.Character:FindFirstChildOfClass("Humanoid")
-    
-    if hum then
-        local desc = hum:GetAppliedDescription()
-        local args = {
-            [1] = {
-                [1] = desc.Torso,
-                [2] = desc.RightArm,
-                [3] = desc.LeftArm,
-                [4] = useKorblox and 139607718 or desc.RightLeg,
-                [5] = desc.LeftLeg,
-                [6] = useHeadless and 134082579 or desc.Head
-            }
-        }
-        game:GetService("ReplicatedStorage").Remotes.ChangeCharacterBody:InvokeServer(unpack(args))
-    end
-end
-
-AvatarTb:CreateButton({
-    Name = "🦵 Korblox (Pierna Izquierda)",
-    Callback = function()
-        ButtonPSound()
-        ApplyBodyMod(true, false)
-        Rayfield:Notify({
-            Title = "✅ Aplicado",
-            Content = "Korblox aplicado",
-            Duration = 2
-        })
-    end
-})
-
-AvatarTb:CreateButton({
-    Name = "💀 Headless (Cabeza)",
-    Callback = function()
-        ButtonPSound()
-        ApplyBodyMod(false, true)
-        Rayfield:Notify({
-            Title = "✅ Aplicado",
-            Content = "Headless aplicado",
-            Duration = 2
-        })
-    end
-})
-
-AvatarTb:CreateSection("✨ Accesorios y Auras")
-
-local function AddAvatarItem(itemID, notifyTitle)
-    local args = {[1] = itemID}
-    pcall(function()
-        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(args))
-    end)
-    Rayfield:Notify({
-        Title = "✅ Aplicado",
-        Content = notifyTitle .. " añadido",
-        Duration = 2
-    })
-end
-
-local accesorios = {
-    {"🛸 UFO", 8151404994},
-    {"🪓 Hacha", 3240543366},
-    {"☠️ Aura Calavera", 14524326503},
-    {"👑 Corona Real", 10159600649},
-    {"🔫 Pistola Sci-Fi", 3013849063},
-    {"👑 Corona Azul", 13632274891},
-    {"👑 Corona Roja", 13634032867},
-    {"👑 Corona Amarilla", 13632296794},
-    {"🌈 Corona Arcoíris", 13634162618},
-    {"🎧 Sombrero con Sonido", 305888394},
-    {"🐔 Sombrero Pollo con Sonido", 24112667},
-    {"🟪 Sombrero Morado con Sonido", 24114402},
-    {"🎹 Sombrero con Sonido", 33070696}
-}
-
-for _, acc in ipairs(accesorios) do
-    AvatarTb:CreateButton({
-        Name = acc[1],
-        Callback = function()
-            ButtonPSound()
-            AddAvatarItem(acc[2], acc[1])
-        end
-    })
-end
-
-AvatarTb:CreateSection("🎭 Animaciones")
-
-local function ApplyAnimation(id, name)
-    local args = {[1] = id}
-    pcall(function()
-        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(args))
-    end)
-    Rayfield:Notify({
-        Title = "✅ Animación Aplicada",
-        Content = name .. " activada",
-        Duration = 2
-    })
-end
-
-local AnimData = {
-    Idle = {
-        {"Adidas Stand", 126354114956642},
-        {"Wicked Popular Idle", 101839542383818},
-        {"Stylish Idle", 619511648},
-        {"Levitation Idle", 619542203},
-        {"Realistic Idle", 11600321661},
-        {"Catwalk Glam Idle", 101279640971758}
-    },
-    Walk = {
-        {"Adidas Walking", 106810508343012},
-        {"Wicked Popular Walk", 133304526526319},
-        {"Stylish Walk", 619511648},
-        {"Realistic Walk", 11600321661},
-        {"Adidas Sport Walk", 18538146480}
-    },
-    Run = {
-        {"Adidas Running", 124765145869332},
-        {"Wicked Popular Run", 136276875045281},
-        {"Fast Realistic Run", 11600321661},
-        {"Adidas Sport Run", 18538133604}
-    },
-    Jump = {
-        {"Adidas Jump", 115715495289805},
-        {"Wicked Popular Jump", 130373407996664},
-        {"Adidas Sport Jump", 18538153691}
-    },
-    Fall = {
-        {"Adidas Fall", 93993406355955},
-        {"Wicked Popular Fall", 83937116921114},
-        {"Adidas Sport Fall", 18538164337}
-    },
-    Swim = {
-        {"Adidas Swim", 106537993816942},
-        {"Wicked Popular Swim", 128475661806875},
-        {"Adidas Sport Swim", 18538158932}
-    },
-    Climb = {
-        {"Adidas Climb", 123695349157584},
-        {"Wicked Popular Climb", 135810009801094},
-        {"Adidas Sport Climb", 18538170170}
-    }
-}
-
-for category, animations in pairs(AnimData) do
-    local options = {}
-    for _, anim in ipairs(animations) do
-        table.insert(options, anim[1])
-    end
-    
-    AvatarTb:CreateDropdown({
-        Name = category .. " Animation",
-        Options = options,
-        CurrentOption = options[1] or "",
-        Callback = function(Option)
-            ButtonPSound()
-            local selectedName = type(Option) == "table" and Option[1] or Option
-            for _, anim in ipairs(animations) do
-                if anim[1] == selectedName then
-                    ApplyAnimation(anim[2], selectedName)
-                    break
-                end
-            end
-        end
-    })
-end
 
 
 print("🎵 Irvinglz1 Hub cargado correctamente!")
