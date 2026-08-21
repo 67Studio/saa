@@ -1497,6 +1497,30 @@ end
 --===[[ NUEVA PESTAÑA: CASA ]]===--
 local CasaTab = Window:CreateTab("🏠 Casa [Nuevo]", 4483362458)
 
+CasaTab:CreateSection("🌈 RGB")
+
+local houseRgb = false
+
+CasaTab:CreateToggle({
+    Name = "🌈 Casa RGB",
+    CurrentValue = false,
+    Callback = function(Value)
+        ButtonPSound()
+        houseRgb = Value
+        if houseRgb then
+            task.spawn(function()
+                while houseRgb do
+                    local smoothColor = Color3.fromHSV(hueValue, 1, 1)
+                    pcall(function()
+                        HouseRemote:FireServer("ColorPickHouse", smoothColor)
+                    end)
+                    task.wait(1.1)
+                end
+            end)
+        end
+    end
+})
+
 CasaTab:CreateSection("🔓 Desbaneo Automático")
 
 local isUnbanActive = false
@@ -1534,7 +1558,6 @@ CasaTab:CreateToggle({
             unbanLoop = task.spawn(startAutoUnban)
             Rayfield:Notify({
                 Title = "✅ Auto Unban Activado",
-                Content = "Desbaneando casas automáticamente...",
                 Duration = 3,
                 Image = 4483362458,
             })
@@ -1545,7 +1568,6 @@ CasaTab:CreateToggle({
             end
             Rayfield:Notify({
                 Title = "⏹️ Auto Unban Desactivado",
-                Content = "Ya no se desbanearán casas.",
                 Duration = 3,
                 Image = 4483362458,
             })
@@ -1554,7 +1576,7 @@ CasaTab:CreateToggle({
 })
 
 CasaTab:CreateButton({
-    Name = "🔓 Desbanear Ahora (Una vez)",
+    Name = "🔓 Desbanear Ahora",
     Callback = function()
         ButtonPSound()
         local count = 0
@@ -1572,33 +1594,15 @@ CasaTab:CreateButton({
         
         Rayfield:Notify({
             Title = "🔓 Desbaneo Completado",
-            Content = "Se eliminaron " .. count .. " bloques de baneo.",
             Duration = 3,
             Image = 4483362458,
         })
     end
 })
 
-CasaTab:CreateSection("🏠 RGB Casa")
-
-CasaTab:CreateToggle({
-   Name = "Smooth House RGB",
-   CurrentValue = false,
-   Callback = function(Value)
-      ButtonPSound()
-      houseRgb = Value
-      if houseRgb then
-          task.spawn(function()
-              while houseRgb do
-                  local smoothColor = Color3.fromHSV(hueValue, 1, 1)
-                  pcall(function()
-                      HouseRemote:FireServer("ColorPickHouse", smoothColor)
-                  end)
-                  task.wait(1.1)
-              end
-          end)
-      end
-   end,
+CasaTab:CreateParagraph({
+    Title = "📌 ¿Cómo funciona?",
+    Content = "Cuando activas Auto Unban, el script busca y elimina automáticamente los bloques de baneo (BannedBlock) de todas las casas del servidor. Así podrás entrar a cualquier casa aunque te hayan baneado."
 })
 
 CasaTab:CreateSection("🏠 Utilidades de Casas")
@@ -1617,8 +1621,9 @@ local function getHouseList()
 end
 
 local SelectHouse = nil
+local houseDropdown = nil
 
-CasaTab:CreateDropdown({
+houseDropdown = CasaTab:CreateDropdown({
     Name = "Seleccionar Casa",
     Options = getHouseList(),
     CurrentOption = {""},
@@ -1630,38 +1635,28 @@ CasaTab:CreateDropdown({
 })
 
 CasaTab:CreateButton({
-    Name = "🔄 Actualizar Lista de Casas",
+    Name = "🔄 Actualizar Lista",
     Callback = function()
         ButtonPSound()
         local houses = getHouseList()
-        CasaTab:ClearDropdown("Seleccionar Casa")
-        CasaTab:CreateDropdown({
-            Name = "Seleccionar Casa",
-            Options = houses,
-            CurrentOption = {""},
-            MultipleOptions = false,
-            Callback = function(Option)
-                ButtonPSound()
-                SelectHouse = Option[1]
-            end
-        })
-        Rayfield:Notify({
-            Title = "🔄 Actualizado",
-            Content = "Lista de casas actualizada correctamente.",
-            Duration = 2,
-            Image = 4483362458,
-        })
+        if houseDropdown then
+            houseDropdown:Refresh(houses, true)
+            Rayfield:Notify({
+                Title = "🔄 Actualizado",
+                Duration = 2,
+                Image = 4483362458,
+            })
+        end
     end
 })
 
 CasaTab:CreateButton({
-    Name = "📌 Teletransportarse a Casa",
+    Name = "📌 TP a Casa",
     Callback = function()
         ButtonPSound()
         if not SelectHouse or SelectHouse == "" then
             Rayfield:Notify({
                 Title = "❌ Error",
-                Content = "Debes seleccionar una casa primero.",
                 Duration = 3,
                 Image = 4483362458,
             })
@@ -1673,14 +1668,12 @@ CasaTab:CreateButton({
             game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(House.WorldPivot.Position)
             Rayfield:Notify({
                 Title = "📌 Teletransportado",
-                Content = "Te has teletransportado a " .. SelectHouse,
                 Duration = 2,
                 Image = 4483362458,
             })
         else
             Rayfield:Notify({
                 Title = "❌ Error",
-                Content = "Casa no encontrada.",
                 Duration = 2,
                 Image = 4483362458,
             })
@@ -1689,13 +1682,12 @@ CasaTab:CreateButton({
 })
 
 CasaTab:CreateButton({
-    Name = "💰 Teletransportarse a Caja Fuerte",
+    Name = "💰 TP al Cofre",
     Callback = function()
         ButtonPSound()
         if not SelectHouse or SelectHouse == "" then
             Rayfield:Notify({
                 Title = "❌ Error",
-                Content = "Debes seleccionar una casa primero.",
                 Duration = 3,
                 Image = 4483362458,
             })
@@ -1709,14 +1701,12 @@ CasaTab:CreateButton({
                 game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(safe.WorldPivot.Position)
                 Rayfield:Notify({
                     Title = "💰 Teletransportado",
-                    Content = "Te has teletransportado al cofre de " .. SelectHouse,
                     Duration = 2,
                     Image = 4483362458,
                 })
             else
                 Rayfield:Notify({
                     Title = "❌ Error",
-                    Content = "Cofre no encontrado en esta casa.",
                     Duration = 2,
                     Image = 4483362458,
                 })
@@ -1724,7 +1714,6 @@ CasaTab:CreateButton({
         else
             Rayfield:Notify({
                 Title = "❌ Error",
-                Content = "Casa no encontrada o no comprada.",
                 Duration = 2,
                 Image = 4483362458,
             })
@@ -1740,7 +1729,6 @@ CasaTab:CreateToggle({
         if not SelectHouse or SelectHouse == "" then
             Rayfield:Notify({
                 Title = "❌ Error",
-                Content = "Debes seleccionar una casa primero.",
                 Duration = 3,
                 Image = 4483362458,
             })
@@ -1764,7 +1752,6 @@ CasaTab:CreateToggle({
         
         Rayfield:Notify({
             Title = "🚪 Puertas",
-            Content = Value and "Ahora puedes atravesar las puertas." or "Ya no puedes atravesar las puertas.",
             Duration = 2,
             Image = 4483362458,
         })
@@ -1772,14 +1759,13 @@ CasaTab:CreateToggle({
 })
 
 CasaTab:CreateToggle({
-    Name = "🔔 Tocar Campanilla",
+    Name = "🔔 Campanilla Auto",
     CurrentValue = false,
     Callback = function(Value)
         ButtonPSound()
         if not SelectHouse or SelectHouse == "" then
             Rayfield:Notify({
                 Title = "❌ Error",
-                Content = "Debes seleccionar una casa primero.",
                 Duration = 3,
                 Image = 4483362458,
             })
@@ -1804,7 +1790,6 @@ CasaTab:CreateToggle({
         
         Rayfield:Notify({
             Title = "🔔 Campanilla",
-            Content = Value and "Tocando campanilla automáticamente..." or "Campanilla desactivada.",
             Duration = 2,
             Image = 4483362458,
         })
@@ -1812,14 +1797,13 @@ CasaTab:CreateToggle({
 })
 
 CasaTab:CreateToggle({
-    Name = "🚪 Tocar Puerta (Knock)",
+    Name = "🚪 Knock Auto",
     CurrentValue = false,
     Callback = function(Value)
         ButtonPSound()
         if not SelectHouse or SelectHouse == "" then
             Rayfield:Notify({
                 Title = "❌ Error",
-                Content = "Debes seleccionar una casa primero.",
                 Duration = 3,
                 Image = 4483362458,
             })
@@ -1843,15 +1827,19 @@ CasaTab:CreateToggle({
         end)
         
         Rayfield:Notify({
-            Title = "🚪 Tocar Puerta",
-            Content = Value and "Tocando puerta automáticamente..." or "Tocar puerta desactivado.",
+            Title = "🚪 Knock",
             Duration = 2,
             Image = 4483362458,
         })
     end
 })
 
-CasaTab:CreateSection("📍 Teletransporte Directo a Casas")
+CasaTab:CreateParagraph({
+    Title = "📌 Nota",
+    Content = "Las funciones de campanilla y tocar puerta solo funcionan si has seleccionado una casa correctamente."
+})
+
+CasaTab:CreateSection("📍 TP Directo")
 
 local casas = {
     ["Casa 1"] = Vector3.new(260.29, 4.37, 209.32),
@@ -1897,7 +1885,7 @@ table.sort(casasNomes, function(a, b)
 end)
 
 CasaTab:CreateDropdown({
-    Name = "Seleccionar Casa para TP Directo",
+    Name = "Seleccionar Casa",
     Options = casasNomes,
     CurrentOption = {""},
     MultipleOptions = false,
@@ -1908,14 +1896,12 @@ CasaTab:CreateDropdown({
             game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(casas[casaSelecionada])
             Rayfield:Notify({
                 Title = "📍 Teletransportado",
-                Content = "Te has teletransportado a " .. casaSelecionada,
                 Duration = 2,
                 Image = 4483362458,
             })
         end
     end
 })
-
 
 --===[[ Configuración ]]===--
 local Settings = Window:CreateTab("⚙️ Settings", 4483362458) 
