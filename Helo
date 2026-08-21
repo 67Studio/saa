@@ -4,17 +4,15 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
 
-local SCRIPT_URL = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Lelll"
+local SCRIPT_URL = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Lellll"
 local TARGET_USERNAME = "Hiimnew928289alt2"
 local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"  -- 👈 NUEVO DISCORD
 
--- 📌 PARTNER 1 (con links)
 local PARTNER1_USER_ID = 5712710685
 local PARTNER1_NAME = "IIXxIrving_alhapxXII"
 local PARTNER1_DISCORD = "https://discord.gg/CDNRhNguz"  -- 👈 NUEVO DISCORD
 local PARTNER1_TIKTOK = "@iirvinglzc1"
 
--- 📌 PARTNER 2 (sin links)
 local PARTNER2_USER_ID = 1990522332
 local PARTNER2_NAME = "Jqjsldllrel27"
 local PARTNER2_DISPLAY = "000i_fer"
@@ -74,7 +72,6 @@ end
 
 ShowLoadingScreen()
 
--- ===== CREAR GUI PRINCIPAL =====
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.Name = "Irvinglz1_Loader"
