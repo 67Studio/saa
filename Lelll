@@ -404,7 +404,7 @@ local Window = Rayfield:CreateWindow({
 
 Rayfield:Notify({
     Title = "¡Bienvenido a Irvinglz1 Hub!",
-    Content = "Para los que los audios funcionen necesitas el pase",
+    Content = "PARA QUE LOS AUDIOS FUNCIONEN NECESITAS EL PASE DE MUSICA",
     Duration = 10,
     Image = 4483362458,
 })
@@ -986,6 +986,7 @@ PlaysTb:CreateParagraph({
 })
 
 -- ====== TODAS LAS CANCIONES CON BOTÓN PLAY ======
+AddSong(SongsTb, "1v1 victor mendevil", 105965692492381)
 AddSong(SongsTb, "Farruko LOS ANORMALE loud", 121190703708882)
 AddSong(SongsTb, "Clarent Buenas", 125201047725056)
 AddSong(SongsTb, "YOVNGCHIMI DJ Khaled Dei V HVRACAN", 107633120512382)
