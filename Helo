@@ -1,23 +1,20 @@
---// 🤷‍♂️Irvinglz1 Hub🤷‍♂️ \\--
-
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
 
 local SCRIPT_URL = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Lelll"
 local TARGET_USERNAME = "Hiimnew928289alt2"
-local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"  -- 👈 NUEVO DISCORD
+local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"
 
 local PARTNER1_USER_ID = 5712710685
 local PARTNER1_NAME = "IIXxIrving_alhapxXII"
-local PARTNER1_DISCORD = "https://discord.gg/CDNRhNguz"  -- 👈 NUEVO DISCORD
+local PARTNER1_DISCORD = "https://discord.gg/CDNRhNguz"
 local PARTNER1_TIKTOK = "@iirvinglzc1"
 
 local PARTNER2_USER_ID = 1990522332
 local PARTNER2_NAME = "Jqjsldllrel27"
 local PARTNER2_DISPLAY = "000i_fer"
 
--- ===== PANTALLA DE CARGA =====
 local function ShowLoadingScreen()
     local gui = Instance.new("ScreenGui")
     gui.Name = "Irvinglz1LoadingScreen"
@@ -107,7 +104,6 @@ InfoText.Font = Enum.Font.GothamBold
 InfoText.TextSize = 15
 InfoText.BackgroundTransparency = 1
 
--- ===== FRAME DEL CREADOR =====
 local DevFrame = Instance.new("Frame")
 DevFrame.Parent = MainFrame
 DevFrame.Position = UDim2.new(0,15,0,85)
@@ -161,7 +157,6 @@ DevDesc.TextSize = 12
 DevDesc.BackgroundTransparency = 1
 DevDesc.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== PARTNER 1 (con foto) =====
 local Partner1Frame = Instance.new("Frame")
 Partner1Frame.Parent = MainFrame
 Partner1Frame.Position = UDim2.new(0,15,0,155)
@@ -209,7 +204,6 @@ Partner1Desc.TextSize = 12
 Partner1Desc.BackgroundTransparency = 1
 Partner1Desc.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== PARTNER 2 (con foto, sin links) =====
 local Partner2Frame = Instance.new("Frame")
 Partner2Frame.Parent = MainFrame
 Partner2Frame.Position = UDim2.new(0,15,0,225)
@@ -257,7 +251,6 @@ Partner2Desc.TextSize = 12
 Partner2Desc.BackgroundTransparency = 1
 Partner2Desc.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== LINKS DEL PARTNER 1 (SOLO DEL PARTNER 1) =====
 local LinkText1 = Instance.new("TextLabel")
 LinkText1.Parent = MainFrame
 LinkText1.Position = UDim2.new(0,15,0,290)
@@ -273,7 +266,7 @@ local DiscordLink1 = Instance.new("TextLabel")
 DiscordLink1.Parent = MainFrame
 DiscordLink1.Position = UDim2.new(0,15,0,315)
 DiscordLink1.Size = UDim2.new(0,270,0,20)
-DiscordLink1.Text = "💬 Discord: " .. PARTNER1_DISCORD  -- 👈 NUEVO DISCORD
+DiscordLink1.Text = "💬 Discord: " .. PARTNER1_DISCORD
 DiscordLink1.TextColor3 = Color3.fromRGB(88, 101, 242)
 DiscordLink1.Font = Enum.Font.GothamMedium
 DiscordLink1.TextSize = 11
@@ -291,7 +284,6 @@ TikTokLink1.TextSize = 11
 TikTokLink1.BackgroundTransparency = 1
 TikTokLink1.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== BOTÓN USAR =====
 local BtnUse = Instance.new("TextButton")
 BtnUse.Parent = MainFrame
 BtnUse.Size = UDim2.new(0, 240, 0, 35)
@@ -332,7 +324,7 @@ BtnUse.MouseButton1Click:Connect(function()
     TextLabel.Parent = BlackFrame
     TextLabel.Size = UDim2.new(1, 0, 1, 0)
     TextLabel.BackgroundTransparency = 1
-    TextLabel.Text = "Únete al servidor\nhttps://discord.gg/CDNRhNguz"  -- 👈 NUEVO DISCORD
+    TextLabel.Text = "Únete al servidor\nhttps://discord.gg/CDNRhNguz"
     TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     TextLabel.Font = Enum.Font.GothamBold
     TextLabel.TextSize = 40
@@ -359,8 +351,5 @@ BtnUse.MouseButton1Click:Connect(function()
 
     BlackScreen:Destroy()
 
-    print("🎵 Cargando Irvinglz1 Hub...")
     loadstring(game:HttpGet(SCRIPT_URL))()
 end)
-
-print("🤷‍♂️Irvinglz1 Hub🤷‍♂️ - Presiona USAR para cargar el script")
