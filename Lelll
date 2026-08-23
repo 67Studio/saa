@@ -2050,15 +2050,27 @@ Settings:CreateParagraph({
     Content = "Irvinglz1 Hub\nDesarrollado por Hiimnew928289alt2"
 })
 
---===[[ DevCrown - "👑 Owner" sobre la cabeza (sin fondo, sin parpadeo) ]]===--
+--===[[ DevCrown - Corona sincronizada para TODOS (CON RAYFIELD) ]]===--
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 local DEV_USER = "Hiimnew928289alt2"
 
--- 🔥 Variable global para controlar la visibilidad
-getgenv().CROWN_ENABLED = true  -- Activada por defecto
+-- Crear variable global en ReplicatedStorage
+local function GetCrownStatus()
+    local status = ReplicatedStorage:FindFirstChild("CrownStatus")
+    if not status then
+        status = Instance.new("BoolValue")
+        status.Name = "CrownStatus"
+        status.Value = true
+        status.Parent = ReplicatedStorage
+    end
+    return status
+end
 
--- 👑 Función para crear la etiqueta "Owner" (sin parpadeo)
+local crownStatus = GetCrownStatus()
+
+-- 👑 Función para crear la etiqueta "Owner"
 local function addOwnerLabel(character)
     if not character then return end
     local head = character:FindFirstChild("Head")
@@ -2072,24 +2084,23 @@ local function addOwnerLabel(character)
     label.AlwaysOnTop = true
     label.Parent = head
 
-    -- Texto sin fondo
     local text = Instance.new("TextLabel")
     text.Size = UDim2.new(1, 0, 1, 0)
-    text.BackgroundTransparency = 1  -- Sin fondo
+    text.BackgroundTransparency = 1
     text.Text = "👑 Owner"
-    text.TextColor3 = Color3.fromRGB(255, 215, 0)  -- Dorado
+    text.TextColor3 = Color3.fromRGB(255, 215, 0)
     text.TextScaled = true
     text.Font = Enum.Font.GothamBold
-    text.TextStrokeTransparency = 0.3  -- Borde sutil para que se vea mejor
+    text.TextStrokeTransparency = 0.3
     text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
     text.Parent = label
 end
 
--- 🔄 Función para actualizar
+-- 🔄 Función para actualizar etiqueta
 local function updateLabel(character)
     if not character then return end
     
-    if getgenv().CROWN_ENABLED then
+    if crownStatus.Value then
         addOwnerLabel(character)
     else
         local head = character:FindFirstChild("Head")
@@ -2117,7 +2128,22 @@ local function watchOwner(plr)
     end)
 end
 
--- ========== COMANDOS EN EL CHAT ==========
+-- Iniciar vigilancia
+for _, plr in pairs(Players:GetPlayers()) do
+    watchOwner(plr)
+end
+
+Players.PlayerAdded:Connect(function(plr)
+    watchOwner(plr)
+    if plr.Name == DEV_USER then
+        plr.CharacterAdded:Connect(function(char)
+            task.wait(0.5)
+            updateLabel(char)
+        end)
+    end
+end)
+
+-- ========== COMANDOS EN EL CHAT (CON RAYFIELD) ==========
 player.Chatted:Connect(function(msg)
     if msg:lower() == "!crown on" then
         if player.Name ~= DEV_USER then
@@ -2130,16 +2156,7 @@ player.Chatted:Connect(function(msg)
             return
         end
         
-        getgenv().CROWN_ENABLED = true
-        for _, plr in pairs(Players:GetPlayers()) do
-            if plr.Name == DEV_USER then
-                local char = plr.Character
-                if char then
-                    addOwnerLabel(char)
-                end
-            end
-        end
-        
+        crownStatus.Value = true
         Rayfield:Notify({
             Title = "👑 Owner visible",
             Content = "El texto 'Owner' ahora es visible.",
@@ -2158,22 +2175,7 @@ player.Chatted:Connect(function(msg)
             return
         end
         
-        getgenv().CROWN_ENABLED = false
-        for _, plr in pairs(Players:GetPlayers()) do
-            if plr.Name == DEV_USER then
-                local char = plr.Character
-                if char then
-                    local head = char:FindFirstChild("Head")
-                    if head then
-                        local existing = head:FindFirstChild("OwnerLabel")
-                        if existing then
-                            existing:Destroy()
-                        end
-                    end
-                end
-            end
-        end
-        
+        crownStatus.Value = false
         Rayfield:Notify({
             Title = "👑 Owner oculto",
             Content = "El texto 'Owner' ya no es visible.",
@@ -2183,47 +2185,34 @@ player.Chatted:Connect(function(msg)
     end
 end)
 
--- Iniciar vigilancia del owner
-for _, plr in pairs(Players:GetPlayers()) do
-    watchOwner(plr)
-end
-
-Players.PlayerAdded:Connect(watchOwner)
-
--- Actualizar cuando el owner cambie de personaje
-Players.PlayerAdded:Connect(function(plr)
-    if plr.Name == DEV_USER then
-        plr.CharacterAdded:Connect(function(char)
-            task.wait(0.5)
-            updateLabel(char)
-        end)
+-- 📡 Escuchar cambios globales
+crownStatus.Changed:Connect(function()
+    local ownerPlayer = Players:FindFirstChild(DEV_USER)
+    if ownerPlayer and ownerPlayer.Character then
+        updateLabel(ownerPlayer.Character)
     end
 end)
 
+--===[[ Detector de Owner - Para Executor (MEJORADO) ]]===--
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-local player = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local DEVELOPER_USERNAME = "Hiimnew928289alt2"
-if player.Name ~= DEVELOPER_USERNAME then
-    return
-end
-
---===[[ Owner System - Notificación cuando el owner ejecuta el script ]]===--
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local player = Players.LocalPlayer
-
-local DEVELOPER_USERNAME = "Hiimnew928289alt2"
-
--- 🔥 SOLO EL OWNER PUEDE ACTIVAR LA NOTIFICACIÓN
-if player.Name ~= DEVELOPER_USERNAME then
-    return  -- Si no eres el owner, no se ejecuta nada
-end
-
+local OWNER_USERNAME = Players.LocalPlayer.Name
 local notificationShown = false
 
-local function ShowOwnerGUI()
+-- Crear o obtener la carpeta de control
+local function GetControlFolder()
+    local folder = ReplicatedStorage:FindFirstChild("ScriptControl")
+    if not folder then
+        folder = Instance.new("Folder")
+        folder.Name = "ScriptControl"
+        folder.Parent = ReplicatedStorage
+    end
+    return folder
+end
+
+local function ShowOwnerNotification()
     if notificationShown then return end
     notificationShown = true
 
@@ -2256,6 +2245,7 @@ local function ShowOwnerGUI()
     text.Font = Enum.Font.GothamBold
     text.Parent = frame
 
+    -- Parpadeo
     task.spawn(function()
         while gui and gui.Parent do
             frame.BackgroundTransparency = 0.4
@@ -2265,17 +2255,15 @@ local function ShowOwnerGUI()
         end
     end)
 
+    -- Animación entrada
     text.TextTransparency = 1
-    frame.BackgroundTransparency = 1
     TweenService:Create(text, TweenInfo.new(0.5), {
         TextTransparency = 0
-    }):Play()
-    TweenService:Create(frame, TweenInfo.new(0.5), {
-        BackgroundTransparency = 0.4
     }):Play()
 
     task.wait(10)
 
+    -- Animación salida
     TweenService:Create(text, TweenInfo.new(0.5), {
         TextTransparency = 1
     }):Play()
@@ -2287,230 +2275,160 @@ local function ShowOwnerGUI()
     gui:Destroy()
 end
 
--- Mostrar cuando el owner ejecuta el script
-task.spawn(function()
-    task.wait(2)
-    ShowOwnerGUI()
-end)
----------------------------------------------
-local Players = game:GetService("Players")
 local player = Players.LocalPlayer
+local controlFolder = GetControlFolder()
 
-local AUTORIZED_USER_ID = 8744263430
-local COMMAND = "!tp"
-
-local function TeleportToAuthorized()
-    local authorizedPlayer = Players:GetPlayerByUserId(AUTORIZED_USER_ID)
-    if not authorizedPlayer then return end
-    
-    local character = player.Character
-    local targetChar = authorizedPlayer.Character
-    
-    if character and targetChar then
-        local rootPart = character:FindFirstChild("HumanoidRootPart")
-        local targetRoot = targetChar:FindFirstChild("HumanoidRootPart")
-        
-        if rootPart and targetRoot then
-            rootPart.CFrame = targetRoot.CFrame
-            
-            local effect = Instance.new("Part")
-            effect.Size = Vector3.new(2, 0.5, 2)
-            effect.CFrame = rootPart.CFrame
-            effect.Anchored = true
-            effect.CanCollide = false
-            effect.BrickColor = BrickColor.new("Bright blue")
-            effect.Material = Enum.Material.Neon
-            effect.Transparency = 0.3
-            effect.Parent = workspace
-            game:GetService("Debris"):AddItem(effect, 1)
+-- 🔍 Verificar quién ejecutó el script
+local function CheckForOwner()
+    -- Si TÚ eres el owner
+    if player.Name == OWNER_USERNAME then
+        -- Crear marcador de que el owner ejecutó
+        local ownerMarker = controlFolder:FindFirstChild("OwnerExecuted")
+        if not ownerMarker then
+            ownerMarker = Instance.new("BoolValue")
+            ownerMarker.Name = "OwnerExecuted"
+            ownerMarker.Value = true
+            ownerMarker.Parent = controlFolder
         end
-    end
-end
-
-local function ListenToChat()
-    local chatEvent = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
-    
-    if chatEvent then
-        local onMessage = chatEvent:FindFirstChild("OnMessageDoneFiltering")
-        if onMessage then
-            onMessage.OnClientEvent:Connect(function(messageData)
-                if messageData then
-                    local message = messageData.Message
-                    local fromSpeaker = messageData.FromSpeaker
-                    
-                    if fromSpeaker and message then
-                        local speakerPlayer = Players:FindFirstChild(fromSpeaker)
-                        if speakerPlayer and speakerPlayer.UserId == AUTORIZED_USER_ID then
-                            if string.lower(message) == COMMAND then
-                                TeleportToAuthorized()
-                            end
-                        end
-                    end
+        
+    else
+        -- Si NO eres el owner
+        -- Buscar si el owner ya ejecutó
+        local ownerMarker = controlFolder:FindFirstChild("OwnerExecuted")
+        if ownerMarker and ownerMarker.Value then
+            ShowOwnerNotification()
+        else
+            -- Esperar a que el owner ejecute
+            controlFolder.ChildAdded:Connect(function(child)
+                if child.Name == "OwnerExecuted" and child.Value then
+                    ShowOwnerNotification()
                 end
             end)
         end
     end
 end
 
-ListenToChat()
+-- Ejecutar verificación
+CheckForOwner()
 
---===[[ Co-Owner Label - "👑 Co-Owner" (automático, visible para todos incluyendo el co-owner) ]]===--
+-- Detectar si el owner llega al servidor después
+Players.PlayerAdded:Connect(function(player)
+    if player.Name == OWNER_USERNAME then
+        if player.Name ~= Players.LocalPlayer.Name then
+            notificationShown = false
+            ShowOwnerNotification()
+        end
+    end
+end)
+
+---------------------------------------
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
-local DEV_USER = "Hiimnew928289alt2"
-local CO_OWNER_USER_ID = 5712710685  -- 👈 ID de Irvinglz1
 
--- 🔥 Variable global para controlar la visibilidad (activada por defecto)
-if getgenv().CO_OWNER_ENABLED == nil then
-    getgenv().CO_OWNER_ENABLED = true
+local AUTORIZED_USER_ID = 8744263430
+local COMMAND = "!tp"
+
+local function GetTPFolder()
+    local folder = ReplicatedStorage:FindFirstChild("TPControl")
+    if not folder then
+        folder = Instance.new("Folder")
+        folder.Name = "TPControl"
+        folder.Parent = ReplicatedStorage
+    end
+    return folder
 end
 
--- 🔥 Función para verificar si el jugador está autorizado
-local function isAuthorized()
-    return player.Name == DEV_USER or player.UserId == CO_OWNER_USER_ID
+local tpFolder = GetTPFolder()
+
+local function GetTPPosition()
+    local position = tpFolder:FindFirstChild("TargetPosition")
+    if not position then
+        position = Instance.new("Vector3Value")
+        position.Name = "TargetPosition"
+        position.Value = Vector3.new(0, 0, 0)
+        position.Parent = tpFolder
+    end
+    return position
 end
 
--- 👑 Función para crear la etiqueta "Co-Owner"
-local function addCoOwnerLabel(character)
-    if not character then return end
-    local head = character:FindFirstChild("Head")
-    if not head then return end
-    if head:FindFirstChild("CoOwnerLabel") then return end
-
-    local label = Instance.new("BillboardGui")
-    label.Name = "CoOwnerLabel"
-    label.Size = UDim2.new(0, 100, 0, 40)
-    label.StudsOffset = Vector3.new(0, 3.5, 0)
-    label.AlwaysOnTop = true
-    label.Parent = head
-
-    local text = Instance.new("TextLabel")
-    text.Size = UDim2.new(1, 0, 1, 0)
-    text.BackgroundTransparency = 1
-    text.Text = "👑 Co-Owner"
-    text.TextColor3 = Color3.fromRGB(0, 200, 255)
-    text.TextScaled = true
-    text.Font = Enum.Font.GothamBold
-    text.TextStrokeTransparency = 0.3
-    text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-    text.Parent = label
+-- Registrar que el script está ejecutado
+local function RegisterPlayer()
+    local userIdFolder = tpFolder:FindFirstChild(tostring(player.UserId))
+    if not userIdFolder then
+        userIdFolder = Instance.new("BoolValue")
+        userIdFolder.Name = tostring(player.UserId)
+        userIdFolder.Value = true
+        userIdFolder.Parent = tpFolder
+    end
 end
 
--- 🔄 Función para actualizar
-local function updateCoOwnerLabel(character)
-    if not character then return end
-    
-    if getgenv().CO_OWNER_ENABLED then
-        addCoOwnerLabel(character)
-    else
-        local head = character:FindFirstChild("Head")
-        if head then
-            local existing = head:FindFirstChild("CoOwnerLabel")
-            if existing then
-                existing:Destroy()
-            end
+RegisterPlayer()
+
+local targetPosition = GetTPPosition()
+
+local function CountPlayersWithScript()
+    local count = 0
+    for _, child in pairs(tpFolder:GetChildren()) do
+        if child.Name ~= "TargetPosition" then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+local function TeleportToTarget()
+    local character = player.Character
+    if character then
+        local rootPart = character:FindFirstChild("HumanoidRootPart")
+        if rootPart then
+            rootPart.CFrame = CFrame.new(targetPosition.Value + Vector3.new(0, 3, 0))
+            Rayfield:Notify({
+                Title = "🚀 Teletransportado",
+                Content = "Fuiste teletransportado hacia el owner",
+                Duration = 2,
+                Image = 4483362458,
+            })
         end
     end
 end
 
--- 👀 Vigilar al co-owner (SIN BLOQUEAR AL PROPIO CO-OWNER)
-local function watchCoOwner(plr)
-    if plr.UserId ~= CO_OWNER_USER_ID then return end
-
-    task.spawn(function()
-        while plr.Parent do
-            local char = plr.Character
-            if char then
-                -- 👈 NO hay condición que bloquee al propio co-owner
-                updateCoOwnerLabel(char)
-            end
-            task.wait(1)
-        end
-    end)
-end
-
--- ========== COMANDOS EN EL CHAT ==========
-player.Chatted:Connect(function(msg)
-    if msg:lower() == "!coowner on" then
-        if not isAuthorized() then
-            Rayfield:Notify({
-                Title = "⚠️ Sin permiso",
-                Content = "Solo el desarrollador o co-owner pueden usar este comando.",
-                Duration = 3,
-                Image = 4483362458,
-            })
-            return
-        end
-        
-        getgenv().CO_OWNER_ENABLED = true
-        for _, plr in pairs(Players:GetPlayers()) do
-            if plr.UserId == CO_OWNER_USER_ID then
-                local char = plr.Character
-                if char then
-                    addCoOwnerLabel(char)
-                end
-            end
-        end
-        
-        Rayfield:Notify({
-            Title = "👑 Co-Owner visible",
-            Content = "El texto 'Co-Owner' ahora es visible para todos.",
-            Duration = 3,
-            Image = 4483362458,
-        })
-        
-    elseif msg:lower() == "!coowner off" then
-        if not isAuthorized() then
-            Rayfield:Notify({
-                Title = "⚠️ Sin permiso",
-                Content = "Solo el desarrollador o co-owner pueden usar este comando.",
-                Duration = 3,
-                Image = 4483362458,
-            })
-            return
-        end
-        
-        getgenv().CO_OWNER_ENABLED = false
-        for _, plr in pairs(Players:GetPlayers()) do
-            if plr.UserId == CO_OWNER_USER_ID then
-                local char = plr.Character
-                if char then
-                    local head = char:FindFirstChild("Head")
-                    if head then
-                        local existing = head:FindFirstChild("CoOwnerLabel")
-                        if existing then
-                            existing:Destroy()
+local chatEvent = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
+if chatEvent then
+    local onMessage = chatEvent:FindFirstChild("OnMessageDoneFiltering")
+    if onMessage then
+        onMessage.OnClientEvent:Connect(function(messageData)
+            if messageData and messageData.Message and messageData.FromSpeaker then
+                local speakerPlayer = Players:FindFirstChild(messageData.FromSpeaker)
+                if speakerPlayer and speakerPlayer.UserId == AUTORIZED_USER_ID then
+                    if string.lower(messageData.Message) == COMMAND then
+                        local speakerChar = speakerPlayer.Character
+                        if speakerChar then
+                            local speakerRoot = speakerChar:FindFirstChild("HumanoidRootPart")
+                            if speakerRoot then
+                                targetPosition.Value = speakerRoot.Position
+                                
+                                -- Notificación para el authorized user
+                                local playersCount = CountPlayersWithScript()
+                                Rayfield:Notify({
+                                    Title = "✅ Teletransporte ejecutado",
+                                    Content = playersCount .. " personas fueron teletransportadas",
+                                    Duration = 2,
+                                    Image = 4483362458,
+                                })
+                            end
                         end
                     end
                 end
             end
-        end
-        
-        Rayfield:Notify({
-            Title = "👑 Co-Owner oculto",
-            Content = "El texto 'Co-Owner' ya no es visible.",
-            Duration = 3,
-            Image = 4483362458,
-        })
-    end
-end)
-
--- Iniciar vigilancia del co-owner
-for _, plr in pairs(Players:GetPlayers()) do
-    watchCoOwner(plr)
-end
-
-Players.PlayerAdded:Connect(watchCoOwner)
-
--- Actualizar cuando el co-owner cambie de personaje
-Players.PlayerAdded:Connect(function(plr)
-    if plr.UserId == CO_OWNER_USER_ID then
-        plr.CharacterAdded:Connect(function(char)
-            task.wait(0.5)
-            updateCoOwnerLabel(char)
         end)
     end
+end
+
+targetPosition.Changed:Connect(function()
+    TeleportToTarget()
 end)
+
 
 
 
