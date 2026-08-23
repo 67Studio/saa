@@ -986,7 +986,8 @@ PlaysTb:CreateParagraph({
 })
 
 -- ====== TODAS LAS CANCIONES CON BOTÓN PLAY ======
-AddSong(SongsTb, "50/50 - Ando en la Disco", 113647013354970)
+AddSong(SongsTb, "JULIAN LEYVA - C*LITOS BAILANDO [NuevoId]", 113875800950122)
+AddSong(SongsTb, "50/50 - Ando en la Disco[NuevoId]", 113647013354970)
 AddSong(SongsTb, "Lunay, Omar Courtz MI BB loud", 129843288099786)
 AddSong(SongsTb, "1v1 victor mendevil", 105965692492381)
 AddSong(SongsTb, "Farruko LOS ANORMALE loud", 121190703708882)
