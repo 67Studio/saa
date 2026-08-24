@@ -1279,6 +1279,9 @@ local DropdownJugadores = TabTroll:CreateDropdown({
     end
 })
 
+-- ============================================
+-- ACTUALIZAR DROPDOWN - CORREGIDO
+-- ============================================
 local function ActualizarDropdown()
     local opciones = {}
     for _, jugador in pairs(Jugadores:GetPlayers()) do
@@ -1286,7 +1289,7 @@ local function ActualizarDropdown()
             table.insert(opciones, jugador.Name)
         end
     end
-    DropdownJugadores:SetOptions(opciones)
+    DropdownJugadores:Refresh(opciones, true)
 end
 
 Jugadores.PlayerAdded:Connect(ActualizarDropdown)
