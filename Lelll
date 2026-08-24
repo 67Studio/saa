@@ -1392,6 +1392,217 @@ TabTroll:CreateButton({
     Callback = function()
         FlingTodos()
     end
+}]
+-- ============================================
+-- CLICK FLING DOORS CON TOGGLE - SECCIÓN COMPLETA
+-- ============================================
+
+local SeccionDoors = TabTroll:CreateSection("Click Fling Doors")
+
+local flingDoorsActivo = false
+local BlackHole = nil
+local baseAttachment = nil
+local ControlledDoors = {}
+local doorConnections = {}
+local heartbeatConnection = nil
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HRP = Character:WaitForChild("HumanoidRootPart")
+local Camera = Workspace.CurrentCamera
+
+local function LimpiarDoors()
+    if heartbeatConnection then
+        heartbeatConnection:Disconnect()
+        heartbeatConnection = nil
+    end
+    for _, conn in ipairs(doorConnections) do
+        pcall(function() conn:Disconnect() end)
+    end
+    table.clear(doorConnections)
+    for _, data in pairs(ControlledDoors) do
+        if data.Align then
+            pcall(function()
+                data.Align.Attachment1 = baseAttachment
+            end)
+        end
+    end
+    table.clear(ControlledDoors)
+    if BlackHole then
+        pcall(function()
+            BlackHole.CFrame = CFrame.new(999999, 999999, 999999)
+            task.wait(0.5)
+            BlackHole:Destroy()
+        end)
+        BlackHole = nil
+    end
+    if baseAttachment then
+        pcall(function() baseAttachment:Destroy() end)
+        baseAttachment = nil
+    end
+    flingDoorsActivo = false
+end
+
+local function ActivarFlingDoors()
+    if flingDoorsActivo then return end
+    LimpiarDoors()
+    Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    HRP = Character:WaitForChild("HumanoidRootPart")
+    BlackHole = Instance.new("Part")
+    BlackHole.Size = Vector3.new(100000, 100000, 100000)
+    BlackHole.Transparency = 1
+    BlackHole.Anchored = true
+    BlackHole.CanCollide = false
+    BlackHole.Name = "BlackHoleTarget"
+    BlackHole.Parent = Workspace
+    baseAttachment = Instance.new("Attachment")
+    baseAttachment.Name = "DoorFling_Attachment"
+    baseAttachment.Parent = BlackHole
+    heartbeatConnection = RunService.Heartbeat:Connect(function()
+        if flingDoorsActivo and BlackHole and HRP and HRP.Parent then
+            BlackHole.CFrame = HRP.CFrame
+        end
+    end)
+    local function SetupPart(part)
+        if not part:IsA("BasePart") or part.Anchored or not string.find(part.Name, "Door") then return end
+        if part:FindFirstChild("DoorFling_Attached") then return end
+        part.CanCollide = false
+        for _, obj in ipairs(part:GetChildren()) do
+            if obj:IsA("AlignPosition") or obj:IsA("Torque") or obj:IsA("Attachment") then
+                pcall(function() obj:Destroy() end)
+            end
+        end
+        local marker = Instance.new("BoolValue", part)
+        marker.Name = "DoorFling_Attached"
+        local a1 = Instance.new("Attachment", part)
+        local align = Instance.new("AlignPosition", part)
+        align.Attachment0 = a1
+        align.Attachment1 = baseAttachment
+        align.MaxForce = 1e20
+        align.MaxVelocity = math.huge
+        align.Responsiveness = 99999
+        local torque = Instance.new("Torque", part)
+        torque.Attachment0 = a1
+        torque.RelativeTo = Enum.ActuatorRelativeTo.World
+        torque.Torque = Vector3.new(
+            math.random(-10e5, 10e5) * 10000,
+            math.random(-10e5, 10e5) * 10000,
+            math.random(-10e5, 10e5) * 10000
+        )
+        table.insert(ControlledDoors, {Part = part, Align = align})
+    end
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and string.find(obj.Name, "Door") then
+            SetupPart(obj)
+        end
+    end
+    local conn = Workspace.DescendantAdded:Connect(function(obj)
+        if flingDoorsActivo and obj:IsA("BasePart") and string.find(obj.Name, "Door") then
+            SetupPart(obj)
+        end
+    end)
+    table.insert(doorConnections, conn)
+    flingDoorsActivo = true
+    local function FlingPlayer(player)
+        if not flingDoorsActivo then return end
+        if not player or player == LocalPlayer then return end
+        local char = player.Character
+        if not char then return end
+        local targetHRP = char:FindFirstChild("HumanoidRootPart")
+        if not targetHRP then return end
+        local targetAttachment = targetHRP:FindFirstChild("DoorFling_Target")
+        if not targetAttachment then
+            targetAttachment = Instance.new("Attachment", targetHRP)
+            targetAttachment.Name = "DoorFling_Target"
+        end
+        for _, data in ipairs(ControlledDoors) do
+            if data.Align then
+                pcall(function()
+                    data.Align.Attachment1 = targetAttachment
+                end)
+            end
+        end
+        local start = tick()
+        while flingDoorsActivo and tick() - start < 5 do
+            if targetHRP.Velocity.Magnitude >= 20 then
+                break
+            end
+            RunService.Heartbeat:Wait()
+        end
+        for _, data in ipairs(ControlledDoors) do
+            if data.Align then
+                pcall(function()
+                    data.Align.Attachment1 = baseAttachment
+                end)
+            end
+        end
+    end
+    local touchConn = UserInputService.TouchTap:Connect(function(touchPositions, processed)
+        if not flingDoorsActivo or processed then return end
+        local pos = touchPositions[1]
+        local camera = Workspace.CurrentCamera
+        local unitRay = camera:ScreenPointToRay(pos.X, pos.Y)
+        local raycast = Workspace:Raycast(unitRay.Origin, unitRay.Direction * 1000)
+        if raycast and raycast.Instance then
+            local hit = raycast.Instance
+            local player = Players:GetPlayerFromCharacter(hit:FindFirstAncestorOfClass("Model"))
+            if player and player ~= LocalPlayer then
+                FlingPlayer(player)
+            end
+        end
+    end)
+    table.insert(doorConnections, touchConn)
+    Rayfield:Notify({
+        Title = "🚪 Click Fling Doors",
+        Content = "¡ACTIVADO! Toca a un jugador",
+        Duration = 3,
+        Image = 4483362458,
+    })
+end
+
+TabTroll:CreateToggle({
+    Name = "🚪 Click Fling Doors",
+    Description = "Activa/Desactiva el fling con puertas",
+    CurrentValue = false,
+    Flag = "ToggleFlingDoors",
+    Callback = function(Value)
+        if Value then
+            ActivarFlingDoors()
+        else
+            LimpiarDoors()
+            Rayfield:Notify({
+                Title = "🚪 Click Fling Doors",
+                Content = "¡DESACTIVADO! Agujero negro eliminado",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        end
+    end
+})
+
+TabTroll:CreateButton({
+    Name = "🧹 Limpiar Puertas",
+    Description = "Elimina el agujero negro y resetea las puertas",
+    Callback = function()
+        LimpiarDoors()
+        Rayfield:Notify({
+            Title = "🧹 Limpio",
+            Content = "Agujero negro eliminado y puertas reseteadas",
+            Duration = 2,
+            Image = 4483362458,
+        })
+    end
+})
+
+LocalPlayer.CharacterAdded:Connect(function()
+    if flingDoorsActivo then
+        LimpiarDoors()
+    end
+end)
 })
 
 local AvatarTb = Window:CreateTab("👔 Avatar", 4483362458)
