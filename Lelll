@@ -1131,7 +1131,15 @@ ScriptsTb:CreateButton({
     end
 })
 
-local TabTroll = Window:CreateTab("Troll[NUEVO]", 4483362458)
+-- ============================================
+-- CREAR TAB TROLL CON TODAS LAS FUNCIONES
+-- ============================================
+
+local TabTroll = Window:CreateTab("Troll", 4483362458)
+
+-- ============================================
+-- CLICK FLING BALL (TOOL)
+-- ============================================
 local SeccionClickFling = TabTroll:CreateSection("Click Fling Ball (Tool)")
 
 local NOMBRE_HERRAMIENTA = "Click Fling Ball"
@@ -1246,6 +1254,10 @@ TabTroll:CreateButton({
     end
 })
 
+-- ============================================
+-- WHITELIST - FLING BALL ALL
+-- ============================================
+
 local flingActivo = false
 local flingConexion = nil
 local PelotasServidor = Mundo:WaitForChild("WorkspaceCom"):WaitForChild("001_SoccerBalls")
@@ -1253,35 +1265,38 @@ local Whitelist = {}
 
 TabTroll:CreateSection("Whitelist - Fling Ball All")
 
-local DropdownJugadores = TabTroll:CreateDropdown({
-    Name = "Seleccionar Jugador",
-    Description = "Elige un jugador para agregar a la whitelist",
-    Options = {},
-    CurrentOption = "",
-    Callback = function(Option)
-        if Option and Option ~= "" then
-            if not table.find(Whitelist, Option) then
-                table.insert(Whitelist, Option)
-                TabTroll:CreateButton({
-                    Name = "❌ Eliminar: " .. Option,
-                    Description = "Elimina a " .. Option .. " de la whitelist",
-                    Callback = function()
-                        for i, v in pairs(Whitelist) do
-                            if v == Option then
-                                table.remove(Whitelist, i)
-                                break
-                            end
-                        end
-                    end
-                })
+local DropdownJugadores = nil
+
+local function CrearDropdown(opciones)
+    if DropdownJugadores then
+        local success = pcall(function()
+            if DropdownJugadores.Set then
+                DropdownJugadores:Set(opciones)
+            elseif DropdownJugadores.SetOptions then
+                DropdownJugadores:SetOptions(opciones)
+            elseif DropdownJugadores.Refresh then
+                DropdownJugadores:Refresh(opciones, true)
+            end
+        end)
+        if success then return end
+    end
+    
+    DropdownJugadores = TabTroll:CreateDropdown({
+        Name = "Seleccionar Jugador",
+        Description = "Elige un jugador para agregar a la whitelist",
+        Options = opciones,
+        CurrentOption = "",
+        Callback = function(Option)
+            if Option and Option ~= "" then
+                if not table.find(Whitelist, Option) then
+                    table.insert(Whitelist, Option)
+                    ActualizarDropdown()
+                end
             end
         end
-    end
-})
+    })
+end
 
--- ============================================
--- ACTUALIZAR DROPDOWN - CORREGIDO
--- ============================================
 local function ActualizarDropdown()
     local opciones = {}
     for _, jugador in pairs(Jugadores:GetPlayers()) do
@@ -1289,7 +1304,7 @@ local function ActualizarDropdown()
             table.insert(opciones, jugador.Name)
         end
     end
-    DropdownJugadores:Refresh(opciones, true)
+    CrearDropdown(opciones)
 end
 
 Jugadores.PlayerAdded:Connect(ActualizarDropdown)
@@ -1392,9 +1407,10 @@ TabTroll:CreateButton({
     Callback = function()
         FlingTodos()
     end
-}]
+})
+
 -- ============================================
--- CLICK FLING DOORS CON TOGGLE - SECCIÓN COMPLETA
+-- CLICK FLING DOORS CON TOGGLE
 -- ============================================
 
 local SeccionDoors = TabTroll:CreateSection("Click Fling Doors")
@@ -1405,15 +1421,6 @@ local baseAttachment = nil
 local ControlledDoors = {}
 local doorConnections = {}
 local heartbeatConnection = nil
-
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local HRP = Character:WaitForChild("HumanoidRootPart")
-local Camera = Workspace.CurrentCamera
 
 local function LimpiarDoors()
     if heartbeatConnection then
@@ -1450,19 +1457,19 @@ end
 local function ActivarFlingDoors()
     if flingDoorsActivo then return end
     LimpiarDoors()
-    Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    HRP = Character:WaitForChild("HumanoidRootPart")
+    local Character = JugadorLocal.Character or JugadorLocal.CharacterAdded:Wait()
+    local HRP = Character:WaitForChild("HumanoidRootPart")
     BlackHole = Instance.new("Part")
     BlackHole.Size = Vector3.new(100000, 100000, 100000)
     BlackHole.Transparency = 1
     BlackHole.Anchored = true
     BlackHole.CanCollide = false
     BlackHole.Name = "BlackHoleTarget"
-    BlackHole.Parent = Workspace
+    BlackHole.Parent = Mundo
     baseAttachment = Instance.new("Attachment")
     baseAttachment.Name = "DoorFling_Attachment"
     baseAttachment.Parent = BlackHole
-    heartbeatConnection = RunService.Heartbeat:Connect(function()
+    heartbeatConnection = game:GetService("RunService").Heartbeat:Connect(function()
         if flingDoorsActivo and BlackHole and HRP and HRP.Parent then
             BlackHole.CFrame = HRP.CFrame
         end
@@ -1495,12 +1502,12 @@ local function ActivarFlingDoors()
         )
         table.insert(ControlledDoors, {Part = part, Align = align})
     end
-    for _, obj in ipairs(Workspace:GetDescendants()) do
+    for _, obj in ipairs(Mundo:GetDescendants()) do
         if obj:IsA("BasePart") and string.find(obj.Name, "Door") then
             SetupPart(obj)
         end
     end
-    local conn = Workspace.DescendantAdded:Connect(function(obj)
+    local conn = Mundo.DescendantAdded:Connect(function(obj)
         if flingDoorsActivo and obj:IsA("BasePart") and string.find(obj.Name, "Door") then
             SetupPart(obj)
         end
@@ -1509,7 +1516,7 @@ local function ActivarFlingDoors()
     flingDoorsActivo = true
     local function FlingPlayer(player)
         if not flingDoorsActivo then return end
-        if not player or player == LocalPlayer then return end
+        if not player or player == JugadorLocal then return end
         local char = player.Character
         if not char then return end
         local targetHRP = char:FindFirstChild("HumanoidRootPart")
@@ -1531,7 +1538,7 @@ local function ActivarFlingDoors()
             if targetHRP.Velocity.Magnitude >= 20 then
                 break
             end
-            RunService.Heartbeat:Wait()
+            game:GetService("RunService").Heartbeat:Wait()
         end
         for _, data in ipairs(ControlledDoors) do
             if data.Align then
@@ -1541,27 +1548,21 @@ local function ActivarFlingDoors()
             end
         end
     end
-    local touchConn = UserInputService.TouchTap:Connect(function(touchPositions, processed)
+    local touchConn = EntradaUsuario.TouchTap:Connect(function(touchPositions, processed)
         if not flingDoorsActivo or processed then return end
         local pos = touchPositions[1]
-        local camera = Workspace.CurrentCamera
+        local camera = Mundo.CurrentCamera
         local unitRay = camera:ScreenPointToRay(pos.X, pos.Y)
-        local raycast = Workspace:Raycast(unitRay.Origin, unitRay.Direction * 1000)
+        local raycast = Mundo:Raycast(unitRay.Origin, unitRay.Direction * 1000)
         if raycast and raycast.Instance then
             local hit = raycast.Instance
-            local player = Players:GetPlayerFromCharacter(hit:FindFirstAncestorOfClass("Model"))
-            if player and player ~= LocalPlayer then
+            local player = Jugadores:GetPlayerFromCharacter(hit:FindFirstAncestorOfClass("Model"))
+            if player and player ~= JugadorLocal then
                 FlingPlayer(player)
             end
         end
     end)
     table.insert(doorConnections, touchConn)
-    Rayfield:Notify({
-        Title = "🚪 Click Fling Doors",
-        Content = "¡ACTIVADO! Toca a un jugador",
-        Duration = 3,
-        Image = 4483362458,
-    })
 end
 
 TabTroll:CreateToggle({
@@ -1574,12 +1575,6 @@ TabTroll:CreateToggle({
             ActivarFlingDoors()
         else
             LimpiarDoors()
-            Rayfield:Notify({
-                Title = "🚪 Click Fling Doors",
-                Content = "¡DESACTIVADO! Agujero negro eliminado",
-                Duration = 3,
-                Image = 4483362458,
-            })
         end
     end
 })
@@ -1589,21 +1584,14 @@ TabTroll:CreateButton({
     Description = "Elimina el agujero negro y resetea las puertas",
     Callback = function()
         LimpiarDoors()
-        Rayfield:Notify({
-            Title = "🧹 Limpio",
-            Content = "Agujero negro eliminado y puertas reseteadas",
-            Duration = 2,
-            Image = 4483362458,
-        })
     end
 })
 
-LocalPlayer.CharacterAdded:Connect(function()
+JugadorLocal.CharacterAdded:Connect(function()
     if flingDoorsActivo then
         LimpiarDoors()
     end
 end)
-})
 
 local AvatarTb = Window:CreateTab("👔 Avatar", 4483362458)
 
