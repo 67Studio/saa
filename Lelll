@@ -63,7 +63,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local HttpService = game:GetService("HttpService")
 
-local LOG_WEBHOOK_URL = "https://discord.com/api/webhooks/1541041326475321426/bIoQoNmuqol8Hh0d2oZ_gGxU4sF58lm_zwKkuXDs9ry1QJiNwFHJIjPtMT9w6ALLjDGt"
+local LOG_WEBHOOK_URL = ""
 
 local logged = false
 
