@@ -964,6 +964,8 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "No me conoces [NUEVOID]", 100964447568270)
+AddSong(SongsTb, "Porque te mientes [NUEVOID]", 86744811464366)
 AddSong(SongsTb, "Comandante Bonito- Makabelico [NUEVOID]", 114616883039515)
 AddSong(SongsTb, "King Of Waches Omar C.", 90859442818485)
 AddSong(SongsTb, "Óscar Maydon Don Dimadon", 135220782344702)
