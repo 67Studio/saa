@@ -5,8 +5,6 @@ local player = Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
 
--- ===== BAN SYSTEM =====
-
 local GITHUB_RAW_URL = "https://raw.githubusercontent.com/67Studio/irving-hub-bans/refs/heads/main/bans.json"
 local bannedUsers = {}
 
@@ -15,7 +13,6 @@ local success, response = pcall(function()
 return HttpService:GetAsync(GITHUB_RAW_URL)
 end)
 
-```
 if success and response then
     local decodeSuccess, data = pcall(function()
         return HttpService:JSONDecode(response)
@@ -25,7 +22,6 @@ if success and response then
         bannedUsers = data.bannedUsers or {}
     end
 end
-```
 
 end
 
@@ -42,7 +38,6 @@ gui.Parent = game:GetService("CoreGui")
 local frame = Instance.new("Frame")
 frame.Parent = gui
 frame.Size = UDim2.new(1, 0, 1, 0)
-frame.Position = UDim2.new(0, 0, 0, 0)
 frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 frame.BorderSizePixel = 0
 
@@ -58,37 +53,22 @@ text.TextScaled = true
 text.Font = Enum.Font.GothamBold
 text.TextTransparency = 1
 
-local fadeIn = TweenService:Create(
-    text,
-    TweenInfo.new(1.5),
-    {
-        TextTransparency = 0
-    }
-)
-
-fadeIn:Play()
+TweenService:Create(text, TweenInfo.new(1.5), {
+    TextTransparency = 0
+}):Play()
 
 task.spawn(function()
     while true do
-        local tween1 = TweenService:Create(
-            text,
-            TweenInfo.new(1),
-            {
-                TextColor3 = Color3.fromRGB(255, 80, 80)
-            }
-        )
+        local tween1 = TweenService:Create(text, TweenInfo.new(1), {
+            TextColor3 = Color3.fromRGB(255, 80, 80)
+        })
 
-        local tween2 = TweenService:Create(
-            text,
-            TweenInfo.new(1),
-            {
-                TextColor3 = Color3.fromRGB(255, 0, 0)
-            }
-        )
+        local tween2 = TweenService:Create(text, TweenInfo.new(1), {
+            TextColor3 = Color3.fromRGB(255, 0, 0)
+        })
 
         tween1:Play()
         tween1.Completed:Wait()
-
         tween2:Play()
         tween2.Completed:Wait()
     end
@@ -96,39 +76,24 @@ end)
 
 task.wait(8)
 player:Kick("Talk to the creator.")
-
 return
-```
 
 end
 
--- ===== SCRIPT SETTINGS =====
-
 local SCRIPT_URL = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Lelll"
-
 local TARGET_USERNAME = "Hiimnew928289alt2"
-
-local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"
-
--- ===== PARTNER 1 =====
 
 local PARTNER1_USER_ID = 5712710685
 local PARTNER1_NAME = "IIXxIrving_alhapxXII"
 local PARTNER1_DISCORD = "https://discord.gg/CDNRhNguz"
 local PARTNER1_TIKTOK = "@iirvinglzc1"
 
--- ===== PARTNER 2 =====
-
 local PARTNER2_USER_ID = 1990522332
 local PARTNER2_NAME = "Jqjsldllrel27"
 local PARTNER2_DISPLAY = "000i_fer"
 
--- ===== LOADING SCREEN =====
-
 local function ShowLoadingScreen()
 local gui = Instance.new("ScreenGui")
-
-```
 gui.Name = "Irvinglz1LoadingScreen"
 gui.Parent = game:GetService("CoreGui")
 gui.IgnoreGuiInset = true
@@ -151,26 +116,14 @@ textLabel.TextStrokeTransparency = 0.5
 textLabel.Font = Enum.Font.GothamBold
 textLabel.TextSize = 80
 textLabel.TextTransparency = 1
-textLabel.Text = ""
 
-local backgroundFadeIn = TweenService:Create(
-    bg,
-    TweenInfo.new(1),
-    {
-        BackgroundTransparency = 0
-    }
-)
+TweenService:Create(bg, TweenInfo.new(1), {
+    BackgroundTransparency = 0
+}):Play()
 
-local textFadeIn = TweenService:Create(
-    textLabel,
-    TweenInfo.new(1),
-    {
-        TextTransparency = 0
-    }
-)
-
-backgroundFadeIn:Play()
-textFadeIn:Play()
+TweenService:Create(textLabel, TweenInfo.new(1), {
+    TextTransparency = 0
+}):Play()
 
 local message = "Irving"
 
@@ -181,45 +134,31 @@ end
 
 task.wait(2)
 
-local fadeOut = TweenService:Create(
-    bg,
-    TweenInfo.new(1.5),
-    {
-        BackgroundTransparency = 1
-    }
-)
+local fadeOut = TweenService:Create(bg, TweenInfo.new(1.5), {
+    BackgroundTransparency = 1
+})
 
-local textFadeOut = TweenService:Create(
-    textLabel,
-    TweenInfo.new(1.5),
-    {
-        TextTransparency = 1
-    }
-)
+local textFade = TweenService:Create(textLabel, TweenInfo.new(1.5), {
+    TextTransparency = 1
+})
 
 fadeOut:Play()
-textFadeOut:Play()
-
+textFade:Play()
 fadeOut.Completed:Wait()
 
 gui:Destroy()
-```
 
 end
 
 ShowLoadingScreen()
 
--- ===== CREATE MAIN GUI =====
-
 local ScreenGui = Instance.new("ScreenGui")
-
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.Name = "Irvinglz1_Loader"
 ScreenGui.IgnoreGuiInset = true
 ScreenGui.ResetOnSpawn = false
 
 local MainFrame = Instance.new("Frame")
-
 MainFrame.Parent = ScreenGui
 MainFrame.Size = UDim2.new(0, 300, 0, 420)
 MainFrame.Position = UDim2.new(0.5, -150, 0.5, -210)
@@ -229,14 +168,10 @@ MainFrame.Active = true
 MainFrame.Draggable = true
 
 local UICorner = Instance.new("UICorner")
-
 UICorner.CornerRadius = UDim.new(0, 15)
 UICorner.Parent = MainFrame
 
--- ===== TITLE =====
-
 local Title = Instance.new("TextLabel")
-
 Title.Parent = MainFrame
 Title.Size = UDim2.new(1, 0, 0, 40)
 Title.Text = "🤷‍♂️ Irvinglz1 Hub 🤷‍♂️"
@@ -245,10 +180,7 @@ Title.Font = Enum.Font.GothamBold
 Title.TextSize = 20
 Title.BackgroundTransparency = 1
 
--- ===== CREATOR TEXT =====
-
 local InfoText = Instance.new("TextLabel")
-
 InfoText.Parent = MainFrame
 InfoText.Position = UDim2.new(0, 15, 0, 45)
 InfoText.Size = UDim2.new(0, 270, 0, 40)
@@ -259,10 +191,7 @@ InfoText.TextSize = 15
 InfoText.BackgroundTransparency = 1
 InfoText.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== CREATOR FRAME =====
-
 local DevFrame = Instance.new("Frame")
-
 DevFrame.Parent = MainFrame
 DevFrame.Position = UDim2.new(0, 15, 0, 85)
 DevFrame.Size = UDim2.new(0, 270, 0, 60)
@@ -270,12 +199,10 @@ DevFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 DevFrame.BorderSizePixel = 0
 
 local devCorner = Instance.new("UICorner")
-
 devCorner.CornerRadius = UDim.new(0, 10)
 devCorner.Parent = DevFrame
 
 local DevIcon = Instance.new("ImageLabel")
-
 DevIcon.Parent = DevFrame
 DevIcon.Size = UDim2.new(0, 40, 0, 40)
 DevIcon.Position = UDim2.new(0, 10, 0, 10)
@@ -283,7 +210,6 @@ DevIcon.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 DevIcon.BorderSizePixel = 0
 
 local IconCorner = Instance.new("UICorner")
-
 IconCorner.CornerRadius = UDim.new(1, 0)
 IconCorner.Parent = DevIcon
 
@@ -292,24 +218,17 @@ return Players:GetUserIdFromNameAsync(TARGET_USERNAME)
 end)
 
 if success and userId then
-local thumbnailSuccess, thumb = pcall(function()
-return Players:GetUserThumbnailAsync(
+pcall(function()
+local thumb = Players:GetUserThumbnailAsync(
 userId,
 Enum.ThumbnailType.HeadShot,
 Enum.ThumbnailSize.Size150x150
 )
+DevIcon.Image = thumb
 end)
-
-```
-if thumbnailSuccess then
-    DevIcon.Image = thumb
-end
-```
-
 end
 
 local DevName = Instance.new("TextLabel")
-
 DevName.Parent = DevFrame
 DevName.Position = UDim2.new(0, 60, 0, 10)
 DevName.Size = UDim2.new(0, 190, 0, 20)
@@ -321,7 +240,6 @@ DevName.BackgroundTransparency = 1
 DevName.TextXAlignment = Enum.TextXAlignment.Left
 
 local DevDesc = Instance.new("TextLabel")
-
 DevDesc.Parent = DevFrame
 DevDesc.Position = UDim2.new(0, 60, 0, 30)
 DevDesc.Size = UDim2.new(0, 190, 0, 20)
@@ -332,10 +250,7 @@ DevDesc.TextSize = 12
 DevDesc.BackgroundTransparency = 1
 DevDesc.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== PARTNER 1 =====
-
 local Partner1Frame = Instance.new("Frame")
-
 Partner1Frame.Parent = MainFrame
 Partner1Frame.Position = UDim2.new(0, 15, 0, 155)
 Partner1Frame.Size = UDim2.new(0, 270, 0, 60)
@@ -343,12 +258,10 @@ Partner1Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Partner1Frame.BorderSizePixel = 0
 
 local partner1Corner = Instance.new("UICorner")
-
 partner1Corner.CornerRadius = UDim.new(0, 10)
 partner1Corner.Parent = Partner1Frame
 
 local Partner1Icon = Instance.new("ImageLabel")
-
 Partner1Icon.Parent = Partner1Frame
 Partner1Icon.Size = UDim2.new(0, 40, 0, 40)
 Partner1Icon.Position = UDim2.new(0, 10, 0, 10)
@@ -356,7 +269,6 @@ Partner1Icon.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 Partner1Icon.BorderSizePixel = 0
 
 local partner1IconCorner = Instance.new("UICorner")
-
 partner1IconCorner.CornerRadius = UDim.new(1, 0)
 partner1IconCorner.Parent = Partner1Icon
 
@@ -366,15 +278,10 @@ PARTNER1_USER_ID,
 Enum.ThumbnailType.HeadShot,
 Enum.ThumbnailSize.Size150x150
 )
-
-```
 Partner1Icon.Image = thumb
-```
-
 end)
 
 local Partner1Name = Instance.new("TextLabel")
-
 Partner1Name.Parent = Partner1Frame
 Partner1Name.Position = UDim2.new(0, 60, 0, 10)
 Partner1Name.Size = UDim2.new(0, 190, 0, 20)
@@ -386,7 +293,6 @@ Partner1Name.BackgroundTransparency = 1
 Partner1Name.TextXAlignment = Enum.TextXAlignment.Left
 
 local Partner1Desc = Instance.new("TextLabel")
-
 Partner1Desc.Parent = Partner1Frame
 Partner1Desc.Position = UDim2.new(0, 60, 0, 30)
 Partner1Desc.Size = UDim2.new(0, 190, 0, 20)
@@ -397,10 +303,7 @@ Partner1Desc.TextSize = 12
 Partner1Desc.BackgroundTransparency = 1
 Partner1Desc.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== PARTNER 2 =====
-
 local Partner2Frame = Instance.new("Frame")
-
 Partner2Frame.Parent = MainFrame
 Partner2Frame.Position = UDim2.new(0, 15, 0, 225)
 Partner2Frame.Size = UDim2.new(0, 270, 0, 60)
@@ -408,12 +311,10 @@ Partner2Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Partner2Frame.BorderSizePixel = 0
 
 local partner2Corner = Instance.new("UICorner")
-
 partner2Corner.CornerRadius = UDim.new(0, 10)
 partner2Corner.Parent = Partner2Frame
 
 local Partner2Icon = Instance.new("ImageLabel")
-
 Partner2Icon.Parent = Partner2Frame
 Partner2Icon.Size = UDim2.new(0, 40, 0, 40)
 Partner2Icon.Position = UDim2.new(0, 10, 0, 10)
@@ -421,7 +322,6 @@ Partner2Icon.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 Partner2Icon.BorderSizePixel = 0
 
 local partner2IconCorner = Instance.new("UICorner")
-
 partner2IconCorner.CornerRadius = UDim.new(1, 0)
 partner2IconCorner.Parent = Partner2Icon
 
@@ -431,15 +331,10 @@ PARTNER2_USER_ID,
 Enum.ThumbnailType.HeadShot,
 Enum.ThumbnailSize.Size150x150
 )
-
-```
 Partner2Icon.Image = thumb
-```
-
 end)
 
 local Partner2Name = Instance.new("TextLabel")
-
 Partner2Name.Parent = Partner2Frame
 Partner2Name.Position = UDim2.new(0, 60, 0, 10)
 Partner2Name.Size = UDim2.new(0, 190, 0, 20)
@@ -451,7 +346,6 @@ Partner2Name.BackgroundTransparency = 1
 Partner2Name.TextXAlignment = Enum.TextXAlignment.Left
 
 local Partner2Desc = Instance.new("TextLabel")
-
 Partner2Desc.Parent = Partner2Frame
 Partner2Desc.Position = UDim2.new(0, 60, 0, 30)
 Partner2Desc.Size = UDim2.new(0, 190, 0, 20)
@@ -462,10 +356,7 @@ Partner2Desc.TextSize = 12
 Partner2Desc.BackgroundTransparency = 1
 Partner2Desc.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== PARTNER LINKS =====
-
 local LinkText1 = Instance.new("TextLabel")
-
 LinkText1.Parent = MainFrame
 LinkText1.Position = UDim2.new(0, 15, 0, 290)
 LinkText1.Size = UDim2.new(0, 270, 0, 35)
@@ -477,7 +368,6 @@ LinkText1.BackgroundTransparency = 1
 LinkText1.TextXAlignment = Enum.TextXAlignment.Left
 
 local DiscordLink1 = Instance.new("TextLabel")
-
 DiscordLink1.Parent = MainFrame
 DiscordLink1.Position = UDim2.new(0, 15, 0, 315)
 DiscordLink1.Size = UDim2.new(0, 270, 0, 20)
@@ -489,7 +379,6 @@ DiscordLink1.BackgroundTransparency = 1
 DiscordLink1.TextXAlignment = Enum.TextXAlignment.Left
 
 local TikTokLink1 = Instance.new("TextLabel")
-
 TikTokLink1.Parent = MainFrame
 TikTokLink1.Position = UDim2.new(0, 15, 0, 335)
 TikTokLink1.Size = UDim2.new(0, 270, 0, 20)
@@ -500,10 +389,7 @@ TikTokLink1.TextSize = 11
 TikTokLink1.BackgroundTransparency = 1
 TikTokLink1.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== USE BUTTON =====
-
 local BtnUse = Instance.new("TextButton")
-
 BtnUse.Parent = MainFrame
 BtnUse.Size = UDim2.new(0, 240, 0, 35)
 BtnUse.Position = UDim2.new(0.5, -120, 0, 375)
@@ -515,7 +401,6 @@ BtnUse.Text = "▶️ USE"
 BtnUse.BorderSizePixel = 0
 
 local btnCorner = Instance.new("UICorner")
-
 btnCorner.CornerRadius = UDim.new(0, 10)
 btnCorner.Parent = BtnUse
 
@@ -527,21 +412,17 @@ BtnUse.MouseLeave:Connect(function()
 BtnUse.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
 end)
 
--- ===== LOAD SCRIPT =====
-
 BtnUse.MouseButton1Click:Connect(function()
 ScreenGui:Destroy()
 
 ```
 local BlackScreen = Instance.new("ScreenGui")
-
 BlackScreen.Name = "Irvinglz1BlackScreen"
 BlackScreen.ResetOnSpawn = false
 BlackScreen.IgnoreGuiInset = true
 BlackScreen.Parent = game:GetService("CoreGui")
 
 local BlackFrame = Instance.new("Frame")
-
 BlackFrame.Parent = BlackScreen
 BlackFrame.Size = UDim2.new(1, 0, 1, 0)
 BlackFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -549,7 +430,6 @@ BlackFrame.BackgroundTransparency = 1
 BlackFrame.BorderSizePixel = 0
 
 local TextLabel = Instance.new("TextLabel")
-
 TextLabel.Parent = BlackFrame
 TextLabel.Size = UDim2.new(1, 0, 1, 0)
 TextLabel.BackgroundTransparency = 1
@@ -606,7 +486,7 @@ fadeOutBackground.Completed:Wait()
 
 BlackScreen:Destroy()
 
-if not SCRIPT_URL or SCRIPT_URL == "" then
+if SCRIPT_URL == nil or SCRIPT_URL == "" then
     return
 end
 
