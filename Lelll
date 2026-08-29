@@ -1424,119 +1424,198 @@ TabTroll:CreateButton({
 
 local flingActivo = false
 local flingConexion = nil
-local PelotasServidor = Mundo:WaitForChild("WorkspaceCom"):WaitForChild("001_SoccerBalls")
 local Whitelist = {}
 
 TabTroll:CreateSection("Whitelist - Fling Ball All")
 
-local DropdownJugadores = nil
+local DropdownJugadores
 
-local function CrearDropdown(opciones)
-    if DropdownJugadores then
-        local success = pcall(function()
-            if DropdownJugadores.Set then
-                DropdownJugadores:Set(opciones)
-            elseif DropdownJugadores.SetOptions then
-                DropdownJugadores:SetOptions(opciones)
-            elseif DropdownJugadores.Refresh then
-                DropdownJugadores:Refresh(opciones, true)
-            end
-        end)
-        if success then return end
-    end
-    
-    DropdownJugadores = TabTroll:CreateDropdown({
-        Name = "Seleccionar Jugador",
-        Description = "Elige un jugador para agregar a la whitelist",
-        Options = opciones,
-        CurrentOption = "",
-        Callback = function(Option)
-            if Option and Option ~= "" then
-                if not table.find(Whitelist, Option) then
-                    table.insert(Whitelist, Option)
-                    ActualizarDropdown()
-                end
-            end
-        end
-    })
-end
-
-local function ActualizarDropdown()
+local function ObtenerOpcionesWhitelist()
     local opciones = {}
-    for _, jugador in pairs(Jugadores:GetPlayers()) do
+
+    for _, jugador in ipairs(Jugadores:GetPlayers()) do
         if jugador ~= JugadorLocal and not table.find(Whitelist, jugador.Name) then
             table.insert(opciones, jugador.Name)
         end
     end
-    CrearDropdown(opciones)
+
+    return opciones
 end
 
-Jugadores.PlayerAdded:Connect(ActualizarDropdown)
-Jugadores.PlayerRemoving:Connect(ActualizarDropdown)
-ActualizarDropdown()
+local function ActualizarDropdown()
+    if DropdownJugadores then
+        pcall(function()
+            DropdownJugadores:Refresh(ObtenerOpcionesWhitelist())
+        end)
+    end
+end
+
+DropdownJugadores = TabTroll:CreateDropdown({
+    Name = "Seleccionar Jugador",
+    Description = "Selecciona un jugador para añadirlo a la whitelist",
+    Options = ObtenerOpcionesWhitelist(),
+    CurrentOption = {},
+    MultipleOptions = false,
+
+    Callback = function(Option)
+        local nombre
+
+        if type(Option) == "table" then
+            nombre = Option[1]
+        else
+            nombre = Option
+        end
+
+        if not nombre or nombre == "" then
+            return
+        end
+
+        if not table.find(Whitelist, nombre) then
+            table.insert(Whitelist, nombre)
+        end
+
+        ActualizarDropdown()
+    end
+})
+
+Jugadores.PlayerAdded:Connect(function()
+    task.wait(0.1)
+    ActualizarDropdown()
+end)
+
+Jugadores.PlayerRemoving:Connect(function(jugador)
+    local index = table.find(Whitelist, jugador.Name)
+
+    if index then
+        table.remove(Whitelist, index)
+    end
+
+    task.wait(0.1)
+    ActualizarDropdown()
+end)
 
 local function EstaEnWhitelist(jugador)
-    return table.find(Whitelist, jugador.Name) ~= nil
+    return jugador
+        and table.find(Whitelist, jugador.Name) ~= nil
 end
 
 local function FlingJugador(objetivo)
-    if not objetivo or objetivo == JugadorLocal or EstaEnWhitelist(objetivo) then return end
-    local Pelota = PelotasServidor:FindFirstChild("Soccer" .. JugadorLocal.Name) or ObtenerPelota()
-    if not Pelota then return end
+    if not objetivo or objetivo == JugadorLocal then
+        return
+    end
+
+    -- Comprobar whitelist justo antes de atacar
+    if EstaEnWhitelist(objetivo) then
+        return
+    end
+
+    local Pelota = PelotasServidor:FindFirstChild("Soccer" .. JugadorLocal.Name)
+
+    if not Pelota then
+        Pelota = ObtenerPelota()
+    end
+
+    if not Pelota then
+        return
+    end
+
+    -- Volver a comprobar por seguridad
+    if EstaEnWhitelist(objetivo) then
+        return
+    end
+
     local personajeObjetivo = objetivo.Character
-    if not personajeObjetivo then return end
+    if not personajeObjetivo then
+        return
+    end
+
     local raizObjetivo = personajeObjetivo:FindFirstChild("HumanoidRootPart")
     local humanoideObjetivo = personajeObjetivo:FindFirstChild("Humanoid")
-    if not raizObjetivo or not humanoideObjetivo then return end
+
+    if not raizObjetivo or not humanoideObjetivo then
+        return
+    end
+
     Pelota.CanCollide = false
     Pelota.Massless = true
     Pelota.CustomPhysicalProperties = PhysicalProperties.new(0.0001, 0, 0)
-    for _, v in pairs(Pelota:GetChildren()) do
-        if v:IsA("BodyVelocity") then v:Destroy() end
+
+    for _, v in ipairs(Pelota:GetChildren()) do
+        if v:IsA("BodyVelocity") then
+            v:Destroy()
+        end
     end
+
     local velocidadCuerpo = Instance.new("BodyVelocity")
     velocidadCuerpo.Name = "FlingPower"
     velocidadCuerpo.Velocity = Vector3.new(9e8, 9e8, 9e8)
     velocidadCuerpo.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
     velocidadCuerpo.P = 9e900
     velocidadCuerpo.Parent = Pelota
+
     local tiempoInicio = tick()
+
     repeat
+        -- Comprobar whitelist durante el fling también
+        if EstaEnWhitelist(objetivo) then
+            break
+        end
+
         if raizObjetivo.Velocity.Magnitude > 0 then
             local pos = raizObjetivo.Position + (raizObjetivo.Velocity / 1.5)
             Pelota.CFrame = CFrame.new(pos)
             Pelota.Orientation += Vector3.new(45, 60, 30)
         else
-            for _, v in pairs(personajeObjetivo:GetChildren()) do
+            for _, v in ipairs(personajeObjetivo:GetChildren()) do
                 if v:IsA("BasePart") and v.CanCollide and not v.Anchored then
                     Pelota.CFrame = v.CFrame
-                    task.wait(1/6000)
+                    task.wait(1 / 6000)
                 end
             end
         end
-        task.wait(1/6000)
-    until raizObjetivo.Velocity.Magnitude > 1000 or humanoideObjetivo.Health <= 0 or not personajeObjetivo:IsDescendantOf(Mundo) or tick() - tiempoInicio > 8
+
+        task.wait(1 / 6000)
+
+    until raizObjetivo.Velocity.Magnitude > 1000
+        or humanoideObjetivo.Health <= 0
+        or not personajeObjetivo:IsDescendantOf(Mundo)
+        or tick() - tiempoInicio > 8
+
+    if velocidadCuerpo then
+        velocidadCuerpo:Destroy()
+    end
 end
 
-local function ObtenerJugadorDisponible()
-    for _, jugador in pairs(Jugadores:GetPlayers()) do
+local function ObtenerJugadoresDisponibles()
+    local disponibles = {}
+
+    for _, jugador in ipairs(Jugadores:GetPlayers()) do
         if jugador ~= JugadorLocal and not EstaEnWhitelist(jugador) then
-            return jugador
+            table.insert(disponibles, jugador)
         end
     end
-    return nil
+
+    return disponibles
 end
 
 local function FlingTodos()
-    local jugador = ObtenerJugadorDisponible()
-    if jugador then
-        task.spawn(function() FlingJugador(jugador) end)
+    for _, jugador in ipairs(ObtenerJugadoresDisponibles()) do
+        task.spawn(function()
+            FlingJugador(jugador)
+        end)
+
+        task.wait(0.05)
     end
 end
 
 local function IniciarFling()
+    if flingConexion then
+        return
+    end
+
     flingActivo = true
-    flingConexion = game:GetService("RunService").Heartbeat:Connect(function()
+
+    flingConexion = RunService.Heartbeat:Connect(function()
         if flingActivo then
             FlingTodos()
         end
@@ -1545,6 +1624,7 @@ end
 
 local function DetenerFling()
     flingActivo = false
+
     if flingConexion then
         flingConexion:Disconnect()
         flingConexion = nil
@@ -1553,9 +1633,10 @@ end
 
 TabTroll:CreateToggle({
     Name = "🌐 Fling Ball All",
-    Description = "Lanza a los jugadores (excepto whitelist)",
+    Description = "Lanza a los jugadores excepto los de la whitelist",
     CurrentValue = false,
     Flag = "FlingBallAll",
+
     Callback = function(Value)
         if Value then
             IniciarFling()
@@ -1567,7 +1648,8 @@ TabTroll:CreateToggle({
 
 TabTroll:CreateButton({
     Name = "⚡ Fling All (Una vez)",
-    Description = "Lanza a todos los jugadores 1 vez (excepto whitelist)",
+    Description = "Lanza una vez a todos excepto los de la whitelist",
+
     Callback = function()
         FlingTodos()
     end
