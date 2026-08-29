@@ -1209,11 +1209,105 @@ ScriptsTb:CreateButton({
 -- CREAR TAB TROLL CON TODAS LAS FUNCIONES
 -- ============================================
 
-local TabTroll = Window:CreateTab("Troll", 4483362458)
+local TabTroll = Window:CreateTab("Troll [Nuevo]", 4483362458)
 
--- ============================================
--- CLICK FLING BALL (TOOL)
--- ============================================
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+local selectedPlayer = nil
+local spectateActive = false
+local spectateConn = nil
+
+local function GetPlayerNames()
+    local names = {}
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            table.insert(names, player.Name)
+        end
+    end
+
+    return names
+end
+
+local Dropdown = TabTroll:CreateDropdown({
+    Name = "Seleccionar Jugador",
+    Options = GetPlayerNames(),
+    CurrentOption = {},
+    MultipleOptions = false,
+
+    Callback = function(Options)
+        selectedPlayer = Options[1]
+    end
+})
+
+local function UpdatePlayerList()
+    Dropdown:Refresh(GetPlayerNames())
+end
+
+Players.PlayerAdded:Connect(UpdatePlayerList)
+Players.PlayerRemoving:Connect(UpdatePlayerList)
+
+TabTroll:CreateButton({
+    Name = "Actualizar Lista",
+    Callback = UpdatePlayerList
+})
+
+TabTroll:CreateToggle({
+    Name = "Espectar Jugador",
+    CurrentValue = false,
+    Flag = "SpectatePlayer",
+
+    Callback = function(Value)
+        spectateActive = Value
+
+        if Value then
+            if not selectedPlayer then
+                spectateActive = false
+                return
+            end
+
+            local target = Players:FindFirstChild(selectedPlayer)
+
+            if not target then
+                spectateActive = false
+                return
+            end
+
+            if spectateConn then
+                spectateConn:Disconnect()
+            end
+
+            spectateConn = RunService.Heartbeat:Connect(function()
+                if not spectateActive then return end
+
+                if target.Character then
+                    local hum = target.Character:FindFirstChildOfClass("Humanoid")
+
+                    if hum then
+                        Camera.CameraSubject = hum
+                    end
+                end
+            end)
+        else
+            if spectateConn then
+                spectateConn:Disconnect()
+                spectateConn = nil
+            end
+
+            if LocalPlayer.Character then
+                local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+
+                if hum then
+                    Camera.CameraSubject = hum
+                end
+            end
+        end
+    end
+})
+
 local SeccionClickFling = TabTroll:CreateSection("Click Fling Ball (Tool)")
 
 local NOMBRE_HERRAMIENTA = "Click Fling Ball"
@@ -1327,10 +1421,6 @@ TabTroll:CreateButton({
         CrearHerramienta()
     end
 })
-
--- ============================================
--- WHITELIST - FLING BALL ALL
--- ============================================
 
 local flingActivo = false
 local flingConexion = nil
@@ -1482,38 +1572,6 @@ TabTroll:CreateButton({
         FlingTodos()
     end
 })
-
--- ============================================
--- CLICK FLING DOORS CON TOGGLE
--- ============================================
-
-TabTroll:CreateToggle({
-    Name = "🚪 Click Fling Doors",
-    Description = "Activa/Desactiva el fling con puertas",
-    CurrentValue = false,
-    Flag = "ToggleFlingDoors",
-    Callback = function(Value)
-        if Value then
-            ActivarFlingDoors()
-        else
-            LimpiarDoors()
-        end
-    end
-})
-
-TabTroll:CreateButton({
-    Name = "🧹 Limpiar Puertas",
-    Description = "Elimina el agujero negro y resetea las puertas",
-    Callback = function()
-        LimpiarDoors()
-    end
-})
-
-JugadorLocal.CharacterAdded:Connect(function()
-    if flingDoorsActivo then
-        LimpiarDoors()
-    end
-end)
 
 local AvatarTb = Window:CreateTab("👔 Avatar", 4483362458)
 
@@ -2251,6 +2309,93 @@ CasaTab:CreateDropdown({
                 Duration = 2,
                 Image = 4483362458,
             })
+        end
+    end
+})
+
+local TabAnti = Window:CreateTab("🛑 Antis [Nuevo]", 4483362458)
+
+local RunService = game:GetService("RunService")
+
+local BananaAnti = false
+local BananaThread = nil
+
+local function limpiarBananas()
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if string.find(string.lower(obj.Name), "bananapeel") then
+            local touch = obj:FindFirstChild("Touch")
+
+            if touch then
+                pcall(function()
+                    touch:Destroy()
+                end)
+            end
+        end
+    end
+end
+
+local function iniciarBananaAnti()
+    if BananaThread then return end
+
+    BananaThread = task.spawn(function()
+        while BananaAnti do
+            limpiarBananas()
+            task.wait(0.5)
+        end
+
+        BananaThread = nil
+    end)
+end
+
+TabAnti:CreateToggle({
+    Name = "🍌 Anti Banana",
+    CurrentValue = false,
+    Flag = "AntiBanana",
+
+    Callback = function(Value)
+        BananaAnti = Value
+
+        if Value then
+            iniciarBananaAnti()
+        end
+    end
+})
+
+local antiBallConn = nil
+
+local function DestroyBalls()
+    local SoccerBalls = workspace:FindFirstChild("WorkspaceCom")
+
+    if SoccerBalls then
+        SoccerBalls = SoccerBalls:FindFirstChild("001_SoccerBalls")
+    end
+
+    if not SoccerBalls then return end
+
+    for _, ball in ipairs(SoccerBalls:GetChildren()) do
+        if ball:IsA("BasePart") and ball.Name:match("^Soccer") then
+            pcall(function()
+                ball:Destroy()
+            end)
+        end
+    end
+end
+
+TabAnti:CreateToggle({
+    Name = "⚽ Anti Ball",
+    CurrentValue = false,
+    Flag = "AntiBall",
+
+    Callback = function(Value)
+        if Value then
+            if not antiBallConn then
+                antiBallConn = RunService.Heartbeat:Connect(DestroyBalls)
+            end
+        else
+            if antiBallConn then
+                antiBallConn:Disconnect()
+                antiBallConn = nil
+            end
         end
     end
 })
