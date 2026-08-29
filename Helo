@@ -76,7 +76,7 @@ end
 
 -- ===== FIN SISTEMA DE BANS =====
 
-local SCRIPT_URL = ""
+local SCRIPT_URL = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Lelll"
 local TARGET_USERNAME = "Hiimnew928289alt2"
 local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"
 
