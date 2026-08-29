@@ -80,7 +80,7 @@ if bannedUsers[player.Name] then
     end)
 
     task.wait(8)
-    player:Kick("Talk to owner to get back.")
+    player:Kick("Habla con el creador.")
     task.wait(999999999999999999)
     return
 end
