@@ -5,9 +5,129 @@ local player = Players.LocalPlayer
 
 getgenv().IRVING_SCRIPT_ACTIVE = true
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
 local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+
+local player = Players.LocalPlayer
+
+local bannedUsers = {}
+
+local GITHUB_RAW_URL = "https://raw.githubusercontent.com/67Studio/irving-hub-bans/refs/heads/main/bans.json"
+
+local function cargarBans()
+    local exito, respuesta = pcall(function()
+        return request({
+            Url = GITHUB_RAW_URL,
+            Method = "GET"
+        })
+    end)
+
+    if not exito or type(respuesta) ~= "table" then
+        return false
+    end
+
+    if respuesta.StatusCode ~= 200 then
+        return false
+    end
+
+    local decodeSuccess, data = pcall(function()
+        return HttpService:JSONDecode(respuesta.Body)
+    end)
+
+    if not decodeSuccess or type(data) ~= "table" then
+        return false
+    end
+
+    bannedUsers = data.bannedUsers or {}
+
+    return true
+end
+
+cargarBans()
+
+local function estaBaneado()
+    local currentName = string.lower(player.Name)
+
+    for _, bannedName in ipairs(bannedUsers) do
+        if string.lower(tostring(bannedName)) == currentName then
+            return true
+        end
+    end
+
+    return false
+end
+
+if estaBaneado() then
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "Irvinglz1_BanScreen"
+    gui.IgnoreGuiInset = true
+    gui.ResetOnSpawn = false
+    gui.Parent = game:GetService("CoreGui")
+
+    local frame = Instance.new("Frame")
+    frame.Parent = gui
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.Position = UDim2.new(0, 0, 0, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    frame.BorderSizePixel = 0
+
+    local text = Instance.new("TextLabel")
+    text.Parent = frame
+    text.AnchorPoint = Vector2.new(0.5, 0.5)
+    text.Position = UDim2.new(0.5, 0, 0.5, 0)
+    text.Size = UDim2.new(0, 600, 0, 100)
+    text.BackgroundTransparency = 1
+    text.Text = "‼️ SCRIPT HAS BEEN SHUT DOWN PERMANENTLY ‼️"
+    text.TextColor3 = Color3.fromRGB(255, 0, 0)
+    text.TextScaled = true
+    text.Font = Enum.Font.GothamBold
+    text.TextTransparency = 1
+
+    local fadeIn = TweenService:Create(
+        text,
+        TweenInfo.new(1.5),
+        {
+            TextTransparency = 0
+        }
+    )
+
+    fadeIn:Play()
+
+    task.spawn(function()
+        while gui.Parent do
+            local tween1 = TweenService:Create(
+                text,
+                TweenInfo.new(1),
+                {
+                    TextColor3 = Color3.fromRGB(255, 80, 80)
+                }
+            )
+
+            local tween2 = TweenService:Create(
+                text,
+                TweenInfo.new(1),
+                {
+                    TextColor3 = Color3.fromRGB(255, 0, 0)
+                }
+            )
+
+            tween1:Play()
+            tween1.Completed:Wait()
+
+            if not gui.Parent then
+                break
+            end
+
+            tween2:Play()
+            tween2.Completed:Wait()
+        end
+    end)
+
+    task.wait(8)
+
+    player:Kick("Talk to the creator.")
+    return
+end
 
 local LOG_WEBHOOK_URL = "https://discord.com/api/webhooks/1541322461512204328/VPGuSUydauJ0i7XBXKNZjXqdh3XCTx_-GHss5NtUyc_ICAkKPjURiEVPTrTeOE9gxz7e"
 
@@ -78,7 +198,7 @@ local function sendLog()
                 }
             },
             ["footer"] = {
-                ["text"] = "Irvinglz1 Hub 12"
+                ["text"] = "Irvinglz1 Hub 67627"
             },
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
@@ -2916,5 +3036,4 @@ task.spawn(function()
     end
 end)
 
-print("✨ Irvinglzc1 Tag Sincronizado - Negro a Blanco Infinito!")
 print("✅ SCRIPT COMPLETO CARGADO!")
