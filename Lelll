@@ -198,7 +198,7 @@ local function sendLog()
                 }
             },
             ["footer"] = {
-                ["text"] = "Irvinglz1 Hub 14"
+                ["text"] = "Irvinglz1 Hub 194"
             },
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
