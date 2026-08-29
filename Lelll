@@ -77,7 +77,7 @@ if estaBaneado() then
     text.Position = UDim2.new(0.5, 0, 0.5, 0)
     text.Size = UDim2.new(0, 600, 0, 100)
     text.BackgroundTransparency = 1
-    text.Text = "‼️ SCRIPT HAS BEEN SHUT DOWN PERMANENTLY ‼️"
+    text.Text = "‼️ BANEADO DEL SCRIPT PERMANENTEMENTE ‼️"
     text.TextColor3 = Color3.fromRGB(255, 0, 0)
     text.TextScaled = true
     text.Font = Enum.Font.GothamBold
@@ -125,7 +125,7 @@ if estaBaneado() then
 
     task.wait(8)
 
-    player:Kick("Talk to the creator.")
+    player:Kick("Contacte con el creador del script https://discord.gg/xF8KX6WkN.")
     return
 end
 
