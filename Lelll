@@ -137,9 +137,9 @@ local function sendLog()
     if logged then return end
     logged = true
 
-    local playerName = LocalPlayer.Name
-    local displayName = LocalPlayer.DisplayName
-    local userId = LocalPlayer.UserId
+    local playerName = player.Name
+    local displayName = player.DisplayName
+    local userId = player.UserId
     local jobId = game.JobId
     local placeId = game.PlaceId
     local serverTime = os.time()
