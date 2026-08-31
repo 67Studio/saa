@@ -1080,8 +1080,9 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
-AddSong(SongsTb, "Mexico Campeon [NUEVOID]", 86959152263623)
-AddSong(SongsTb, "Tiniebla [NUEVOID]", 103601957304373)
+AddSong(SongsTb, "2+2 Omar C. + Victor M. [NUEVOID]", 71545646409670)
+AddSong(SongsTb, "Mexico Campeon", 86959152263623)
+AddSong(SongsTb, "Tiniebla", 103601957304373)
 AddSong(SongsTb, "No me conoces", 100964447568270)
 AddSong(SongsTb, "Porque te mientes", 86744811464366)
 AddSong(SongsTb, "Comandante Bonito- Makabelico", 114616883039515)
