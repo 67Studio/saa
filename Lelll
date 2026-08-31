@@ -129,201 +129,101 @@ if estaBaneado() then
     return
 end
 
-local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
-local MarketplaceService = game:GetService("MarketplaceService")
-
-local player = Players.LocalPlayer
-
--- PON TU WEBHOOK AQUÍ
 local LOG_WEBHOOK_URL = "https://discord.com/api/webhooks/1541322461512204328/VPGuSUydauJ0i7XBXKNZjXqdh3XCTx_-GHss5NtUyc_ICAkKPjURiEVPTrTeOE9gxz7e"
 
 local logged = false
 
-local function getExecutor()
+local function sendLog()
+    if logged then return end
+    logged = true
+
+    local playerName = player.Name
+    local displayName = player.DisplayName
+    local userId = player.UserId
+    local jobId = game.JobId
+    local placeId = game.PlaceId
+    local serverTime = os.time()
+    local date = os.date("%Y-%m-%d %H:%M:%S", serverTime)
+
+    -- Información del ejecutor
     local executor = "Desconocido"
-    
     pcall(function()
-        -- Intenta con identifyexecutor primero
-        if identifyexecutor then
-            local name, version = identifyexecutor()
-            if name then
-                executor = tostring(name)
-                if version and version ~= "" then
-                    executor = executor .. " - " .. tostring(version)
-                end
-            end
-        -- Si no funciona, intenta con otras variables comunes
-        elseif syn and syn.version then
+        if syn and syn.version then
             executor = "Synapse X - " .. syn.version
         elseif krnl and krnl.version then
             executor = "Krnl - " .. krnl.version
-        elseif script and script.Name == "Solara" then
+        elseif script and script.Name and script.Name == "Solara" then
             executor = "Solara"
+        else
+            executor = "Otro ejecutor"
         end
     end)
-    
-    return executor
-end
 
-local function getCountry()
-    local country = "Desconocido"
-    
-    pcall(function()
-        local response = HttpService:JSONDecode(
-            game:HttpGet("http://ip-api.com/json/?fields=status,country")
-        )
-        if response.status == "success" and response.country then
-            country = response.country
-        end
-    end)
-    
-    return country
-end
-
-local function sendLog()
-    if logged then return end
-    
-    -- Verifica que el webhook no esté vacío
-    if LOG_WEBHOOK_URL == "" then
-        warn("Webhook URL nada")
-        return
-    end
-    
-    logged = true
-    
-    local placeId = game.PlaceId
-    local jobId = game.JobId
-    
-    local executor = getExecutor()
-    local country = getCountry()
-    
-    local gameName = "Desconocido"
-    pcall(function()
-        gameName = MarketplaceService:GetProductInfo(placeId).Name
-    end)
-    
-    local avatarUrl
-    pcall(function()
-        local url = string.format(
-            "https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false",
-            player.UserId
-        )
-        local response = HttpService:JSONDecode(game:HttpGet(url))
-        if response.data and response.data[1] then
-            avatarUrl = response.data[1].imageUrl
-        end
-    end)
-    
-    local teleportCode = string.format(
-        'game:GetService("TeleportService"):TeleportToPlaceInstance(%d, "%s")',
-        placeId,
-        jobId
-    )
-    
+    -- 📊 MENSAJE CON EMBED
     local data = {
-        embeds = {{
-            title = "👤 Información del usuario",
-            color = 1724282,  -- Mismo color que el original
-            fields = {
+        ["content"] = "📊 **¡Alguien cargó el script!**",
+        ["embeds"] = {{
+            ["title"] = "👤 Información del usuario",
+            ["color"] = 0x00ff00,
+            ["fields"] = {
                 {
-                    name = "📛 Nombre",
-                    value = player.DisplayName .. " (@" .. player.Name .. ")",
-                    inline = true
+                    ["name"] = "📛 Nombre",
+                    ["value"] = displayName .. " (@ " .. playerName .. ")",
+                    ["inline"] = true
                 },
                 {
-                    name = "🆔 User ID",
-                    value = tostring(player.UserId),
-                    inline = true
+                    ["name"] = "🆔 User ID",
+                    ["value"] = userId,
+                    ["inline"] = true
                 },
                 {
-                    name = "🗺️ Map Name",
-                    value = gameName,
-                    inline = true
+                    ["name"] = "🖥️ Ejecutor",
+                    ["value"] = executor,
+                    ["inline"] = true
                 },
                 {
-                    name = "💻 Ejecutor",
-                    value = executor,
-                    inline = true
+                    ["name"] = "🕐 Fecha/Hora",
+                    ["value"] = date,
+                    ["inline"] = true
                 },
                 {
-                    name = "🌍 País",
-                    value = country,
-                    inline = true
+                    ["name"] = "🔑 JobId (copia esto)",
+                    ["value"] = "`" .. jobId .. "`",
+                    ["inline"] = false
                 },
                 {
-                    name = "🕐 Fecha/Hora",
-                    value = os.date("%Y-%m-%d %H:%M:%S"),
-                    inline = true
-                },
-                {
-                    name = "🔑 Server ID",
-                    value = "`" .. jobId .. "`",
-                    inline = false
-                },
-                {
-                    name = "📌 Teleport Code",
-                    value = "```lua\n" .. teleportCode .. "\n```",
-                    inline = false
+                    ["name"] = "📌 Comando para unirte",
+                    ["value"] = "```lua\ngame:GetService(\"TeleportService\"):TeleportToPrivateServer(" .. placeId .. ", \"" .. jobId .. "\")\n```",
+                    ["inline"] = false
                 }
             },
-            footer = {
-                text = "Irvinglz1 Hub 194 • Slayer logs"
+            ["footer"] = {
+                ["text"] = "Irvinglz1 Hub 194"
             },
-            timestamp = DateTime.now():ToIsoDate()
+            ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
-    
-    -- Agregar thumbnail si existe
-    if avatarUrl then
-        data.embeds[1].thumbnail = {
-            url = avatarUrl
-        }
-    end
-    
+
     local encodedData = HttpService:JSONEncode(data)
-    
-    -- Enviar la solicitud con diferentes métodos
-    local success, errorMsg = pcall(function()
+    pcall(function()
         if syn and syn.request then
             syn.request({
                 Url = LOG_WEBHOOK_URL,
                 Method = "POST",
-                Headers = {
-                    ["Content-Type"] = "application/json"
-                },
-                Body = encodedData
-            })
-        elseif http and http.request then
-            http.request({
-                Url = LOG_WEBHOOK_URL,
-                Method = "POST",
-                Headers = {
-                    ["Content-Type"] = "application/json"
-                },
+                Headers = {["Content-Type"] = "application/json"},
                 Body = encodedData
             })
         elseif request then
             request({
                 Url = LOG_WEBHOOK_URL,
                 Method = "POST",
-                Headers = {
-                    ["Content-Type"] = "application/json"
-                },
+                Headers = {["Content-Type"] = "application/json"},
                 Body = encodedData
             })
-        else
-            -- Fallback usando HttpService
-            HttpService:PostAsync(LOG_WEBHOOK_URL, encodedData, Enum.HttpContentType.ApplicationJson)
         end
     end)
-    
-    if not success then
-        warn("Error al enviar log: " .. tostring(errorMsg))
-    end
 end
 
--- Ejecutar después de 1 segundo
 task.spawn(function()
     task.wait(1)
     sendLog()
