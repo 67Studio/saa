@@ -135,7 +135,7 @@ local MarketplaceService = game:GetService("MarketplaceService")
 
 local player = Players.LocalPlayer
 
-local LOG_WEBHOOK_URL = ""
+local LOG_WEBHOOK_URL = "https://discord.com/api/webhooks/1541322461512204328/VPGuSUydauJ0i7XBXKNZjXqdh3XCTx_-GHss5NtUyc_ICAkKPjURiEVPTrTeOE9gxz7e"
 
 local logged = false
 
