@@ -1255,12 +1255,58 @@ ScriptsTb:CreateButton({
         loadstring(game:HttpGet("https://rawscripts.net/raw/Brookhaven-RP-Dark-Hub-214104"))()
     end
 })
+-------------------------------------------------------------------------------
+local TabItems = Window:CreateTab("📦 Items [Nuevo]", 4483362458)
 
--- ============================================
--- CREAR TAB TROLL CON TODAS LAS FUNCIONES
--- ============================================
+TabItems:CreateButton({
+    Name = "TearGasLauncher",
+    Callback = function()
+        local Event = game:GetService("ReplicatedStorage").RE["1Playe1rTrigge1rEven1t"]
+        Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "TearGasLauncher")
+    end,
+})
 
-local TabTroll = Window:CreateTab("Troll [Nuevo]", 4483362458)
+TabItems:CreateButton({
+    Name = "SnowballCannon",
+    Callback = function()
+        local Event = game:GetService("ReplicatedStorage").RE["1Playe1rTrigge1rEven1t"]
+        Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "SnowballCannon")
+    end,
+})
+
+TabItems:CreateButton({
+    Name = "WardenPistol",
+    Callback = function()
+        local Event = game:GetService("ReplicatedStorage").RE["1Playe1rTrigge1rEven1t"]
+        Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "WardenPistol")
+    end,
+})
+
+TabItems:CreateButton({
+    Name = "UraniumRod",
+    Callback = function()
+        local Event = game:GetService("ReplicatedStorage").RE["1Playe1rTrigge1rEven1t"]
+        Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "UraniumRod")
+    end,
+})
+
+TabItems:CreateButton({
+    Name = "EggLauncher",
+    Callback = function()
+        local Event = game:GetService("ReplicatedStorage").RE["1Playe1rTrigge1rEven1t"]
+        Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "EggLauncher")
+    end,
+})
+
+TabItems:CreateButton({
+    Name = "Water Ballon",
+    Callback = function()
+        local Event = game:GetService("ReplicatedStorage").RE["1Playe1rTrigge1rEven1t"]
+        Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "Water Ballon")
+    end,
+})
+
+local TabTroll = Window:CreateTab("☠ Troll", 4483362458)
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
