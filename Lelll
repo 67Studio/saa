@@ -1249,10 +1249,10 @@ ScriptsTb:CreateButton({
 
 ScriptsTb:CreateSection("Brookhaven Hubs")
 ScriptsTb:CreateButton({
-    Name = "Dark Hub",
+    Name = "Slayer Hub (mismo creador de kitk4t o darkhub)",
     Callback = function()
         ButtonPSound()
-        loadstring(game:HttpGet("https://rawscripts.net/raw/Brookhaven-RP-Dark-Hub-214104"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Slayerzxz/slayerhub/refs/heads/main/brookhaven.lua"))()
     end
 })
 -------------------------------------------------------------------------------
