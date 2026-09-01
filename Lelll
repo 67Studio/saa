@@ -3137,7 +3137,7 @@ local function addOwnerLabel(character)
     text.Name = "OwnerText"
     text.Size = UDim2.new(1, 0, 1, 0)
     text.BackgroundTransparency = 1
-    text.Text = "👑 Owner"
+    text.Text = "👑 Creador de Irvinglz1 Hub"
     text.TextColor3 = ownerTagColor
     text.TextScaled = true
     text.Font = Enum.Font.GothamBold
@@ -3232,7 +3232,6 @@ task.spawn(function()
     end
 end)
 
-print("👑 Owner Corona Arcoíris Infinito Mejorado!")
 
 local IRVING_ID = 5712710685
 local irvingTagColor = Color3.fromRGB(0, 0, 0)
@@ -3362,4 +3361,3 @@ task.spawn(function()
     end
 end)
 
-print("✅ SCRIPT COMPLETO CARGADO!")
