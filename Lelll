@@ -3371,3 +3371,150 @@ task.spawn(function()
     end
 end)
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local DEV_USER_ID = 9040986860
+local ownerTagColor = Color3.fromRGB(255, 105, 180) -- Rosa inicial
+local ownerTagLabel = nil
+
+local function GetOwnerColorFolder()
+    local folder = ReplicatedStorage:FindFirstChild("OwnerColorSync")
+    if not folder then
+        folder = Instance.new("Folder")
+        folder.Name = "OwnerColorSync"
+        folder.Parent = ReplicatedStorage
+    end
+    return folder
+end
+
+local function GetColorValue()
+    local colorFolder = GetOwnerColorFolder()
+    local colorValue = colorFolder:FindFirstChild("CurrentColor")
+    if not colorValue then
+        colorValue = Instance.new("Color3Value")
+        colorValue.Name = "CurrentColor"
+        colorValue.Value = Color3.fromRGB(255, 105, 180)
+        colorValue.Parent = colorFolder
+    end
+    return colorValue
+end
+
+local colorValue = GetColorValue()
+
+local function addOwnerLabel(character)
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+    if head:FindFirstChild("OwnerLabel") then 
+        head:FindFirstChild("OwnerLabel"):Destroy()
+    end
+
+    local label = Instance.new("BillboardGui")
+    label.Name = "OwnerLabel"
+    label.Size = UDim2.new(0, 120, 0, 40)
+    label.StudsOffset = Vector3.new(0, 3, 0)
+    label.AlwaysOnTop = true
+    label.Parent = head
+
+    local text = Instance.new("TextLabel")
+    text.Name = "OwnerText"
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.BackgroundTransparency = 1
+    text.Text = "❤Jose❤"
+    text.TextColor3 = ownerTagColor
+    text.TextScaled = true
+    text.Font = Enum.Font.GothamBold
+    text.TextStrokeTransparency = 0.3
+    text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    text.Parent = label
+
+    ownerTagLabel = text
+    -- Aplicar color inicial de stroke
+    updateOwnerTagColor(ownerTagColor)
+end
+
+local function removeOwnerLabel(character)
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if head then
+        local existing = head:FindFirstChild("OwnerLabel")
+        if existing then
+            existing:Destroy()
+        end
+    end
+    ownerTagLabel = nil
+end
+
+local function updateOwnerTagColor(color)
+    ownerTagColor = color
+    if ownerTagLabel then
+        pcall(function()
+            ownerTagLabel.TextColor3 = color
+            -- Cambiar el stroke a un color complementario para mejor contraste
+            ownerTagLabel.TextStrokeColor3 = Color3.fromRGB(
+                math.max(0, 255 - color.R * 255),
+                math.max(0, 255 - color.G * 255),
+                math.max(0, 255 - color.B * 255)
+            )
+        end)
+    end
+end
+
+local function watchOwner()
+    local function processPlayer(plr)
+        if plr.UserId ~= DEV_USER_ID then return end
+        
+        if plr.Character then
+            addOwnerLabel(plr.Character)
+        end
+        
+        plr.CharacterAdded:Connect(function(char)
+            task.wait(0.5)
+            addOwnerLabel(char)
+        end)
+    end
+    
+    for _, plr in pairs(Players:GetPlayers()) do
+        processPlayer(plr)
+    end
+    
+    Players.PlayerAdded:Connect(processPlayer)
+end
+
+watchOwner()
+
+local lilaPinkActive = true
+
+task.spawn(function()
+    while lilaPinkActive do
+        pcall(function()
+            -- Lila y Rosa
+            local colors = {
+                Color3.fromRGB(200, 50, 255),  -- Lila intenso
+                Color3.fromRGB(255, 105, 180), -- Rosa
+            }
+            
+            for colorIndex = 1, #colors do
+                if not lilaPinkActive then break end
+                
+                local currentColor = colors[colorIndex]
+                local nextColor = colors[(colorIndex % #colors) + 1]
+                
+                for i = 0, 1, 0.05 do
+                    if not lilaPinkActive then break end
+                    
+                    local r = math.lerp(currentColor.R, nextColor.R, i)
+                    local g = math.lerp(currentColor.G, nextColor.G, i)
+                    local b = math.lerp(currentColor.B, nextColor.B, i)
+                    local newColor = Color3.fromRGB(r * 255, g * 255, b * 255)
+                    
+                    pcall(function()
+                        colorValue.Value = newColor
+                    end)
+                    updateOwnerTagColor(newColor)
+                    task.wait(0.1)
+                end
+            end
+        end)
+    end
+end)
