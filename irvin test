@@ -3207,8 +3207,9 @@ local function addOwnerLabel(character)
     local text = Instance.new("TextLabel")
     text.Name = "OwnerText"
     text.Size = UDim2.new(1, 0, 1, 0)
-    text.BackgroundTransparency = 1
-    text.Text = "👉👈❤Jose❤👉👈"
+    text.BackgroundColor3 = ownerTagColor
+    text.BackgroundTransparency = 0.5
+    text.Text = "👉👈Jose❤👉👈"
     text.TextColor3 = ownerTagColor
     text.TextScaled = true
     text.Font = Enum.Font.GothamBold
@@ -3217,6 +3218,8 @@ local function addOwnerLabel(character)
     text.Parent = label
 
     ownerTagLabel = text
+    -- Aplicar color inicial de stroke
+    updateOwnerTagColor(ownerTagColor)
 end
 
 local function removeOwnerLabel(character)
@@ -3236,6 +3239,12 @@ local function updateOwnerTagColor(color)
     if ownerTagLabel then
         pcall(function()
             ownerTagLabel.TextColor3 = color
+            -- Cambiar el stroke a un color complementario para mejor contraste
+            ownerTagLabel.TextStrokeColor3 = Color3.fromRGB(
+                math.max(0, 255 - color.R * 255),
+                math.max(0, 255 - color.G * 255),
+                math.max(0, 255 - color.B * 255)
+            )
         end)
     end
 end
