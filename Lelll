@@ -521,6 +521,13 @@ Rayfield:Notify({
     Image = 4483362458,
 })
 
+Rayfield:Notify({
+    Title = "IDS",
+    Content = "MUCHAS GRACIAS POR EMMA566944 y luisjuega331 disfruten del script!!",
+    Duration = 5,
+    Image = 4483362458,
+})
+
 local function ButtonPSound()
     local welcomeSound = Instance.new("Sound")
     welcomeSound.Name = "WelcomeSound"
@@ -1087,13 +1094,21 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "BB Trickz Super [NUEVOID]", 78482955772484)
+AddSong(SongsTb, "Ysrael Barajas GPI [NUEVOID]", 114513539517568)
+AddSong(SongsTb, "Nose cuál es [NUEVOID]", 80920308775995)
+AddSong(SongsTb, "La Más Draga CACHITO [NUEVOID]", 111416382711865)
+AddSong(SongsTb, "Nose cuál es [NUEVOID]", 102229631723219)
+AddSong(SongsTb, "Chuvin CASADITAS [NUEVOID]", 111684524530073)
+AddSong(SongsTb, "Siouxxie masquerade [NUEVOID]", 77617483980465)
+AddSong(SongsTb, "Kodak Black Gave It All I Got [NUEVOID]", 92014405792280)
+AddSong(SongsTb, "Nose cuál es [NUEVOID]", 86959152263623)
 AddSong(SongsTb, "Table - Dance [NUEVOID]", 137656177805303)
 AddSong(SongsTb, "El Piojo Y Su 35 - El Maka [NUEVOID]", 76205335206456)
 AddSong(SongsTb, "Tu Sancho Fuerza Regida [NUEVOID]", 112119283279568)
 AddSong(SongsTb, "4X4 Omar Camacho [NUEVOID]", 106779262199873)
 AddSong(SongsTb, "Emociones - Hades66 [NUEVOID]", 106503897959355)
 AddSong(SongsTb, "Te quiero Jose❤ [NUEVOID]", 71545646409670)
-AddSong(SongsTb, "Mexico Campeon", 86959152263623)
 AddSong(SongsTb, "Tiniebla", 103601957304373)
 AddSong(SongsTb, "No me conoces", 100964447568270)
 AddSong(SongsTb, "Porque te mientes", 86744811464366)
@@ -1113,7 +1128,6 @@ AddSong(SongsTb, "topon del diablo - Makabelico", 97210562605927)
 AddSong(SongsTb, "nalguita y teta", 109159861086023)
 AddSong(SongsTb, "tumbayork-natanael", 128146261657955)
 AddSong(SongsTb, "La Navaja Victor Mendieta", 128999238382127)
-AddSong(SongsTb, "Nose cual es", 90034147778391)
 AddSong(SongsTb, "1v1 Victor Mendivil", 105965692492381)
 AddSong(SongsTb, "Rosa Victor Mendieta", 119488315546332)
 AddSong(SongsTb, "Mi niña - Victor Mendivil", 125074061495607)
@@ -1161,11 +1175,9 @@ AddSong(SongsTb, "Luis Carrillo - Contando", 92722772348989)
 AddSong(SongsTb, "Santa Fe Klan - A LA ORDEN", 72408523133623)
 AddSong(SongsTb, "Marcos Villalobos - 614", 111548930003996)
 AddSong(SongsTb, "Tito Double P - DELTAS", 97615700145830)
-AddSong(SongsTb, "ReyCh9 - Me Apesta El Pico", 126605643122142)
 AddSong(SongsTb, "Alan Arrieta - Ay Mamita x2", 96375860670777)
 AddSong(SongsTb, "ReyCh9 - CONEJITA 2", 106183012774250)
 AddSong(SongsTb, "Alan Arrieta - Ay Mamita", 108906235872943)
-AddSong(SongsTb, "El mayor de las ranas", 103622383502249)
 AddSong(SongsTb, "Ñengo Flow - SI ME HICIERA EL DE LA LENGUA", 85081125606012)
 AddSong(SongsTb, "Midnvght - MIENTEME", 133983548973786)
 AddSong(SongsTb, "3AM Remix", 93033474244979)
