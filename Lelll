@@ -2986,115 +2986,6 @@ Players.PlayerAdded:Connect(function(player)
     end
 end)
 
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local player = Players.LocalPlayer
-
-local AUTORIZED_USER_ID = 8744263430
-local COMMAND = "!tp"
-
-local function GetTPFolder()
-    local folder = ReplicatedStorage:FindFirstChild("TPControl")
-    if not folder then
-        folder = Instance.new("Folder")
-        folder.Name = "TPControl"
-        folder.Parent = ReplicatedStorage
-    end
-    return folder
-end
-
-local tpFolder = GetTPFolder()
-
-local function GetTPPosition()
-    local position = tpFolder:FindFirstChild("TargetPosition")
-    if not position then
-        position = Instance.new("Vector3Value")
-        position.Name = "TargetPosition"
-        position.Value = Vector3.new(0, 0, 0)
-        position.Parent = tpFolder
-    end
-    return position
-end
-
-local function RegisterPlayer()
-    local userIdFolder = tpFolder:FindFirstChild(tostring(player.UserId))
-    if not userIdFolder then
-        userIdFolder = Instance.new("BoolValue")
-        userIdFolder.Name = tostring(player.UserId)
-        userIdFolder.Value = true
-        userIdFolder.Parent = tpFolder
-    end
-end
-
-RegisterPlayer()
-
-local targetPosition = GetTPPosition()
-
-local function CountPlayersWithScript()
-    local count = 0
-    for _, child in pairs(tpFolder:GetChildren()) do
-        if child.Name ~= "TargetPosition" then
-            count = count + 1
-        end
-    end
-    return count
-end
-
-local function TeleportToTarget()
-    local character = player.Character
-    if character then
-        local rootPart = character:FindFirstChild("HumanoidRootPart")
-        if rootPart then
-            rootPart.CFrame = CFrame.new(targetPosition.Value + Vector3.new(0, 3, 0))
-            Rayfield:Notify({
-                Title = "🚀 Teletransportado",
-                Content = "Fuiste teletransportado hacia el owner",
-                Duration = 2,
-                Image = 4483362458,
-            })
-        end
-    end
-end
-
-local chatEvent = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
-if chatEvent then
-    local onMessage = chatEvent:FindFirstChild("OnMessageDoneFiltering")
-    if onMessage then
-        onMessage.OnClientEvent:Connect(function(messageData)
-            if messageData and messageData.Message and messageData.FromSpeaker then
-                local speakerPlayer = Players:FindFirstChild(messageData.FromSpeaker)
-                if speakerPlayer and speakerPlayer.UserId == AUTORIZED_USER_ID then
-                    if string.lower(messageData.Message) == COMMAND then
-                        local speakerChar = speakerPlayer.Character
-                        if speakerChar then
-                            local speakerRoot = speakerChar:FindFirstChild("HumanoidRootPart")
-                            if speakerRoot then
-                                targetPosition.Value = speakerRoot.Position
-                                
-                                -- Notificación para el authorized user
-                                local playersCount = CountPlayersWithScript()
-                                Rayfield:Notify({
-                                    Title = "✅ Teletransporte ejecutado",
-                                    Content = playersCount .. " personas fueron teletransportadas",
-                                    Duration = 2,
-                                    Image = 4483362458,
-                                })
-                            end
-                        end
-                    end
-                end
-            end
-        end)
-    end
-end
-
-targetPosition.Changed:Connect(function()
-    TeleportToTarget()
-end)
-
-
-
-
 print("🎵 Irvinglz1 Hub cargado correctamente!")
 print("📱 Discord: " .. DISCORD_INVITE)
 print("🎵 TikTok: " .. TIKTOK_USER)
@@ -3241,7 +3132,6 @@ task.spawn(function()
         end)
     end
 end)
-
 
 local IRVING_ID = 5712710685
 local irvingTagColor = Color3.fromRGB(0, 0, 0)
