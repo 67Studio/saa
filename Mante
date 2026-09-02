@@ -65,7 +65,7 @@ local function ShowLoadingScreen()
         TextTransparency = 0
     }):Play()
 
-    local message = "Script en mantenimiento\nÚnete al Discord:\n" .. DISCORD_INVITE
+    local message = "SCRIPT EN MODO MANTENIMIENTO ACTUALIZACION..." .. DISCORD_INVITE
     for i = 1, #message do
         textLabel.Text = string.sub(message, 1, i)
         task.wait(0.06)
