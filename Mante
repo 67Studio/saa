@@ -210,7 +210,7 @@ local function ShowLoadingScreen()
         TextTransparency = 0
     }):Play()
 
-    local message = "¡MANTENIMIENTO! Algunas preguntas vayan a hablar con noxd901 en roblox le saldra algo como Jose."
+    local message = "¡MANTENIMIENTO! ¿Preguntas?? Vayan a hablar con noxd901 en roblox le saldra algo como Jose"
     for i = 1, #message do
         textLabel.Text = string.sub(message, 1, i)
         task.wait(0.06)
