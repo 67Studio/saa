@@ -37,7 +37,7 @@ local function ShowLoadingScreen()
     textLabel.TextColor3 = Color3.fromRGB(255,255,255)
     textLabel.TextStrokeTransparency = 0.5
     textLabel.Font = Enum.Font.GothamBold
-    textLabel.TextSize = 80
+    textLabel.TextSize = 45
     textLabel.TextTransparency = 1
     textLabel.Text = ""
 
