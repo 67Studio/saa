@@ -3159,97 +3159,98 @@ task.spawn(function()
     end
 end)
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local DEV_USER_ID = 9040986860 -- Cambia esto por el ID de Jose (número)
+local ownerTagColor = Color3.fromRGB(255, 105, 180) -- Rosa inicial
+local ownerTagLabel = nil
 
-local IRVING_ID = 5712710685
-local irvingTagColor = Color3.fromRGB(0, 0, 0)
-local irvingTagLabel = nil
-
-local function GetIrvingColorFolder()
-    local folder = ReplicatedStorage:FindFirstChild("IrvingColorSync")
+local function GetOwnerColorFolder()
+    local folder = ReplicatedStorage:FindFirstChild("OwnerColorSync")
     if not folder then
         folder = Instance.new("Folder")
-        folder.Name = "IrvingColorSync"
+        folder.Name = "OwnerColorSync"
         folder.Parent = ReplicatedStorage
     end
     return folder
 end
 
-local function GetIrvingColorValue()
-    local colorFolder = GetIrvingColorFolder()
+local function GetColorValue()
+    local colorFolder = GetOwnerColorFolder()
     local colorValue = colorFolder:FindFirstChild("CurrentColor")
     if not colorValue then
         colorValue = Instance.new("Color3Value")
         colorValue.Name = "CurrentColor"
-        colorValue.Value = Color3.fromRGB(0, 0, 0)
+        colorValue.Value = Color3.fromRGB(255, 105, 180)
         colorValue.Parent = colorFolder
     end
     return colorValue
 end
 
-local irvingColorValue = GetIrvingColorValue()
+local colorValue = GetColorValue()
 
-local function addIrvingTag(character)
+local function addOwnerLabel(character)
     if not character then return end
     local head = character:FindFirstChild("Head")
     if not head then return end
-    if head:FindFirstChild("IrvingTag") then 
-        head:FindFirstChild("IrvingTag"):Destroy()
+    if head:FindFirstChild("OwnerLabel") then 
+        head:FindFirstChild("OwnerLabel"):Destroy()
     end
 
     local label = Instance.new("BillboardGui")
-    label.Name = "IrvingTag"
+    label.Name = "OwnerLabel"
     label.Size = UDim2.new(0, 120, 0, 40)
-    label.StudsOffset = Vector3.new(0, 3.5, 0)
+    label.StudsOffset = Vector3.new(0, 3, 0)
     label.AlwaysOnTop = true
     label.Parent = head
 
     local text = Instance.new("TextLabel")
-    text.Name = "IrvingText"
+    text.Name = "OwnerText"
     text.Size = UDim2.new(1, 0, 1, 0)
     text.BackgroundTransparency = 1
-    text.Text = "Irvinglzc1"
-    text.TextColor3 = irvingTagColor
+    text.Text = "👉👈❤Jose❤👉👈"
+    text.TextColor3 = ownerTagColor
     text.TextScaled = true
     text.Font = Enum.Font.GothamBold
     text.TextStrokeTransparency = 0.3
-    text.TextStrokeColor3 = Color3.fromRGB(50, 50, 50)
+    text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
     text.Parent = label
 
-    irvingTagLabel = text
+    ownerTagLabel = text
 end
 
-local function removeIrvingTag(character)
+local function removeOwnerLabel(character)
     if not character then return end
     local head = character:FindFirstChild("Head")
     if head then
-        local existing = head:FindFirstChild("IrvingTag")
+        local existing = head:FindFirstChild("OwnerLabel")
         if existing then
             existing:Destroy()
         end
     end
-    irvingTagLabel = nil
+    ownerTagLabel = nil
 end
 
-local function updateIrvingTagColor(color)
-    irvingTagColor = color
-    if irvingTagLabel then
+local function updateOwnerTagColor(color)
+    ownerTagColor = color
+    if ownerTagLabel then
         pcall(function()
-            irvingTagLabel.TextColor3 = color
+            ownerTagLabel.TextColor3 = color
         end)
     end
 end
 
-local function watchIrving()
+local function watchOwner()
     local function processPlayer(plr)
-        if plr.UserId ~= IRVING_ID then return end
+        if plr.UserId ~= DEV_USER_ID then return end
         
         if plr.Character then
-            addIrvingTag(plr.Character)
+            addOwnerLabel(plr.Character)
         end
         
         plr.CharacterAdded:Connect(function(char)
             task.wait(0.5)
-            addIrvingTag(char)
+            addOwnerLabel(char)
         end)
     end
     
@@ -3260,29 +3261,39 @@ local function watchIrving()
     Players.PlayerAdded:Connect(processPlayer)
 end
 
-watchIrving()
+watchOwner()
+
+local lilaPinkActive = true
 
 task.spawn(function()
-    while true do
+    while lilaPinkActive do
         pcall(function()
-            for i = 0, 1, 0.02 do
-                local r = math.lerp(0, 255, i) / 255
-                local g = math.lerp(0, 255, i) / 255
-                local b = math.lerp(0, 255, i) / 255
-                local newColor = Color3.fromRGB(r * 255, g * 255, b * 255)
-                irvingColorValue.Value = newColor
-                updateIrvingTagColor(newColor)
-                task.wait(0.05)
-            end
+            -- Lila y Rosa
+            local colors = {
+                Color3.fromRGB(200, 50, 255),  -- Lila intenso
+                Color3.fromRGB(255, 105, 180), -- Rosa
+            }
             
-            for i = 1, 0, -0.02 do
-                local r = math.lerp(0, 255, i) / 255
-                local g = math.lerp(0, 255, i) / 255
-                local b = math.lerp(0, 255, i) / 255
-                local newColor = Color3.fromRGB(r * 255, g * 255, b * 255)
-                irvingColorValue.Value = newColor
-                updateIrvingTagColor(newColor)
-                task.wait(0.05)
+            for colorIndex = 1, #colors do
+                if not lilaPinkActive then break end
+                
+                local currentColor = colors[colorIndex]
+                local nextColor = colors[(colorIndex % #colors) + 1]
+                
+                for i = 0, 1, 0.05 do
+                    if not lilaPinkActive then break end
+                    
+                    local r = math.lerp(currentColor.R, nextColor.R, i)
+                    local g = math.lerp(currentColor.G, nextColor.G, i)
+                    local b = math.lerp(currentColor.B, nextColor.B, i)
+                    local newColor = Color3.fromRGB(r * 255, g * 255, b * 255)
+                    
+                    pcall(function()
+                        colorValue.Value = newColor
+                    end)
+                    updateOwnerTagColor(newColor)
+                    task.wait(0.1)
+                end
             end
         end)
     end
