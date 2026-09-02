@@ -521,13 +521,6 @@ Rayfield:Notify({
     Image = 4483362458,
 })
 
-Rayfield:Notify({
-    Title = "IDS",
-    Content = "MUCHAS GRACIAS POR EMMA566944 y luisjuega331 disfruten del script!!",
-    Duration = 5,
-    Image = 4483362458,
-})
-
 local function ButtonPSound()
     local welcomeSound = Instance.new("Sound")
     welcomeSound.Name = "WelcomeSound"
