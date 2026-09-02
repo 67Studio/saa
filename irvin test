@@ -3207,8 +3207,7 @@ local function addOwnerLabel(character)
     local text = Instance.new("TextLabel")
     text.Name = "OwnerText"
     text.Size = UDim2.new(1, 0, 1, 0)
-    text.BackgroundColor3 = ownerTagColor
-    text.BackgroundTransparency = 0.5
+    text.BackgroundTransparency = 1
     text.Text = "👉👈Jose❤👉👈"
     text.TextColor3 = ownerTagColor
     text.TextScaled = true
