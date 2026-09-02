@@ -183,7 +183,6 @@ local function sendLog()
         mapName = game:GetService('MarketplaceService'):GetProductInfo(placeId).Name
     end)
 
-    -- 📊 MENSAJE CON EMBED
     local data = {
         ["content"] = "📊 **¡Alguien cargó el script!**",
         ["embeds"] = {{
@@ -316,7 +315,7 @@ UICorner.Parent = MainFrame
 
 Title.Parent = MainFrame
 Title.Size = UDim2.new(1, 0, 0, 45)
-Title.Text = "🎵 Irvinglz1 Hub"
+Title.Text = "🎵 Irvinglz1 Hub 🎵"
 Title.TextColor3 = Color3.fromRGB(0, 150, 255)
 Title.TextSize = 22
 Title.Font = Enum.Font.GothamBold
@@ -335,7 +334,7 @@ ProblemText.BackgroundTransparency = 1
 DevTitle.Parent = MainFrame
 DevTitle.Position = UDim2.new(0, 15, 0, 95)
 DevTitle.Size = UDim2.new(0, 270, 0, 20)
-DevTitle.Text = "Desarrollador 👑"
+DevTitle.Text = " 👑 Creador 👑"
 DevTitle.TextColor3 = Color3.fromRGB(255, 215, 0)
 DevTitle.TextSize = 16
 DevTitle.Font = Enum.Font.GothamBold
@@ -497,7 +496,7 @@ SetDefaultNameAndBio()
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "🎵 Irvinglz1 Hub",
+   Name = "🎵 Irvinglz1 Hub 🎵",
    LoadingTitle = "Irvinglz1 Hub",
    LoadingSubtitle = "Discord: " .. DISCORD_INVITE,
    ConfigurationSaving = {
@@ -510,6 +509,13 @@ local Window = Rayfield:CreateWindow({
 Rayfield:Notify({
     Title = "¡Bienvenido a Irvinglz1 Hub!",
     Content = "PARA QUE LOS AUDIOS FUNCIONEN NECESITAS EL PASE DE MUSICA",
+    Duration = 10,
+    Image = 4483362458,
+})
+
+Rayfield:Notify({
+    Title = "APOYO",
+    Content = "MUCHAS GRACIAS POR EL APOYO DE ESTE SCRIPT",
     Duration = 10,
     Image = 4483362458,
 })
