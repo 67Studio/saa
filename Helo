@@ -49,7 +49,7 @@ local function ShowLoadingScreen()
         TextTransparency = 0
     }):Play()
 
-    local message = "Irving"
+    local message = "script actualizando..."
     for i = 1, #message do
         textLabel.Text = string.sub(message, 1, i)
         task.wait(0.1)
