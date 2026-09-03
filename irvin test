@@ -2020,7 +2020,7 @@ TabTroll:CreateButton({
     Callback = function()
         FlingTodos()
     end
-})
+}))
 
 local AvatarTb = Window:CreateTab("👔 Avatar", 4483362458)
 
