@@ -1371,7 +1371,7 @@ local flingActivo = false
 local flingConexion = nil
 local Whitelist = {}
 
-local SeccionKillBan = TabTroll:CreateSection("☠️ Kill Ban con Props")
+TabTroll:CreateSection("☠️ Kill Ban con Props")
 
 local targetName = ""
 local destPos = Vector3.new(1019.4299926758, 73, -1101.2436523438)
@@ -2020,7 +2020,7 @@ TabTroll:CreateButton({
     Callback = function()
         FlingTodos()
     end
-}))
+})
 
 local AvatarTb = Window:CreateTab("👔 Avatar", 4483362458)
 
