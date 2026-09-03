@@ -1180,13 +1180,11 @@ local spectateConn = nil
 
 local function GetPlayerNames()
     local names = {}
-
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer then
             table.insert(names, player.Name)
         end
     end
-
     return names
 end
 
@@ -1195,7 +1193,6 @@ local Dropdown = TabTroll:CreateDropdown({
     Options = GetPlayerNames(),
     CurrentOption = {},
     MultipleOptions = false,
-
     Callback = function(Options)
         selectedPlayer = Options[1]
     end
@@ -1217,33 +1214,25 @@ TabTroll:CreateToggle({
     Name = "Espectar Jugador",
     CurrentValue = false,
     Flag = "SpectatePlayer",
-
     Callback = function(Value)
         spectateActive = Value
-
         if Value then
             if not selectedPlayer then
                 spectateActive = false
                 return
             end
-
             local target = Players:FindFirstChild(selectedPlayer)
-
             if not target then
                 spectateActive = false
                 return
             end
-
             if spectateConn then
                 spectateConn:Disconnect()
             end
-
             spectateConn = RunService.Heartbeat:Connect(function()
                 if not spectateActive then return end
-
                 if target.Character then
                     local hum = target.Character:FindFirstChildOfClass("Humanoid")
-
                     if hum then
                         Camera.CameraSubject = hum
                     end
@@ -1254,10 +1243,8 @@ TabTroll:CreateToggle({
                 spectateConn:Disconnect()
                 spectateConn = nil
             end
-
             if LocalPlayer.Character then
                 local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-
                 if hum then
                     Camera.CameraSubject = hum
                 end
@@ -1386,12 +1373,6 @@ local Whitelist = {}
 
 local SeccionKillBan = TabTroll:CreateSection("☠️ Kill Ban con Props")
 
-local plrs = game:GetService("Players")
-local ws = game:GetService("Workspace")
-local rs = game:GetService("ReplicatedStorage")
-local me = plrs.LocalPlayer
-local rs2 = game:GetService("RunService")
-
 local targetName = ""
 local destPos = Vector3.new(1019.4299926758, 73, -1101.2436523438)
 local chairModel = "CornerHills"
@@ -1405,145 +1386,54 @@ local houseData = nil
 local myCones = {}
 local waitingCones = false
 local buyingHouse = false
-local antiSit = false
-local antiSitLinks = {}
 local killBanActivo = false
-
-local function antiSitApply(char)
-    if not char then return end
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    local root = char:FindFirstChild("HumanoidRootPart")
-    if not hum or not root then return end
-    
-    for _, v in pairs(antiSitLinks) do
-        pcall(function() v:Disconnect() end)
-    end
-    table.clear(antiSitLinks)
-    
-    pcall(function()
-        hum:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
-    end)
-    
-    antiSitLinks[#antiSitLinks+1] = hum.StateChanged:Connect(function(_, new)
-        if antiSit and new == Enum.HumanoidStateType.Seated then
-            hum.Sit = false
-            hum:ChangeState(Enum.HumanoidStateType.Jumping)
-        end
-    end)
-    
-    antiSitLinks[#antiSitLinks+1] = rs2.Heartbeat:Connect(function()
-        if not antiSit then return end
-        if not char or not char.Parent then return end
-        
-        hum.Sit = false
-        if hum:GetState() == Enum.HumanoidStateType.Seated then
-            hum:ChangeState(Enum.HumanoidStateType.Jumping)
-        end
-        
-        for _, w in pairs(root:GetChildren()) do
-            if w:IsA("Weld") or w:IsA("WeldConstraint") or w:IsA("Motor6D") then
-                if w.Name == "SeatWeld" or w.Name == "VehicleSeat" then
-                    w:Destroy()
-                end
-            end
-        end
-        
-        for _, obj in pairs(char:GetDescendants()) do
-            if (obj:IsA("Weld") or obj:IsA("WeldConstraint")) and obj.Name == "SeatWeld" then
-                obj:Destroy()
-            end
-        end
-    end)
-end
-
-local function antiSitOn()
-    if antiSit then return end
-    antiSit = true
-    if me.Character then
-        antiSitApply(me.Character)
-    end
-end
-
-local function antiSitOff()
-    antiSit = false
-    for _, v in pairs(antiSitLinks) do
-        pcall(function() v:Disconnect() end)
-    end
-    table.clear(antiSitLinks)
-end
-
-me.CharacterAdded:Connect(function(char)
-    if antiSit then
-        task.wait(0.2)
-        antiSitApply(char)
-    end
-end)
 
 local function isSitting(plr)
     if not plr or not plr.Character then return false end
     local char = plr.Character
     local hum = char:FindFirstChildOfClass("Humanoid")
     if not hum then return false end
-    
     if hum.Sit == true then return true end
     if hum.PlatformStand == true then return true end
     if hum.SeatPart then return true end
-    
-    local anim = char:FindFirstChildOfClass("Animator")
-    if anim then
-        for _, track in pairs(anim:GetPlayingAnimationTracks()) do
-            if track.Animation and string.find(string.lower(track.Animation.Name), "sit") then
-                return true
-            end
-        end
-    end
     return false
 end
 
 local function checkHouse()
-    local lots = ws:FindFirstChild("001_Lots")
+    local lots = workspace:FindFirstChild("001_Lots")
     if not lots then return false, nil end
-    
-    local myHouse = lots:FindFirstChild(me.Name.."House")
+    local myHouse = lots:FindFirstChild(LocalPlayer.Name.."House")
     if not myHouse then return false, nil end
-    
     local info = {Name = myHouse.Name, Exists = true, House = myHouse}
-    
     for _, child in pairs(myHouse:GetDescendants()) do
         if child:IsA("NumberValue") and child.Name == "Number" then
             info.Number = child.Value
             break
         end
     end
-    
     local spawn = myHouse:FindFirstChild("HouseSpawnPosition")
     if spawn and spawn:IsA("BasePart") then
         info.Position = spawn.Position
         info.CFrame = spawn.CFrame
     end
-    
     return true, info
 end
 
 local function buyHouse()
     if buyingHouse then return false end
     buyingHouse = true
-    
-    local char = me.Character or me.CharacterAdded:Wait()
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local root = char:FindFirstChild("HumanoidRootPart")
-    local lots = ws:FindFirstChild("001_Lots")
-    
+    local lots = workspace:FindFirstChild("001_Lots")
     if not lots or not root then
         buyingHouse = false
         return false
     end
-    
-    local existing = lots:FindFirstChild(me.Name.."House")
+    local existing = lots:FindFirstChild(LocalPlayer.Name.."House")
     if existing then
         buyingHouse = false
         return true
     end
-    
     local available = {}
     for _, lot in pairs(lots:GetChildren()) do
         if lot.Name == "For Sale" then
@@ -1555,16 +1445,13 @@ local function buyHouse()
             end
         end
     end
-    
     if #available == 0 then
         buyingHouse = false
         return false
     end
-    
     local selected = available[math.random(1, #available)]
     local eLot = selected.Lot
     local houseNum = selected.Number
-    
     local buyDetect = eLot:FindFirstChild("BuyHouse")
     if buyDetect and buyDetect:IsA("BasePart") then
         root.CFrame = buyDetect.CFrame + Vector3.new(0, -6, 0)
@@ -1574,10 +1461,8 @@ local function buyHouse()
             pcall(function() fireclickdetector(click) end)
         end
     end
-    
     task.wait(0.3)
-    
-    local remotes = rs:FindFirstChild("Remotes")
+    local remotes = game:GetService("ReplicatedStorage"):FindFirstChild("Remotes")
     if remotes then
         local build = remotes:FindFirstChild("Lot:BuildProperty")
         if build then
@@ -1586,15 +1471,12 @@ local function buyHouse()
             end)
         end
     end
-    
     task.wait(0.5)
-    
-    local preHouse = lots:FindFirstChild(me.Name.."House")
+    local preHouse = lots:FindFirstChild(LocalPlayer.Name.."House")
     if not preHouse then
         buyingHouse = false
         return false
     end
-    
     local numVal
     for _, x in pairs(preHouse:GetDescendants()) do
         if x.Name == "Number" and x:IsA("NumberValue") then
@@ -1602,15 +1484,12 @@ local function buyHouse()
             break
         end
     end
-    
     if not numVal then
         buyingHouse = false
         return false
     end
-    
     task.wait(0.3)
-    
-    local re = rs:FindFirstChild("RE")
+    local re = game:GetService("ReplicatedStorage"):FindFirstChild("RE")
     if re then
         local getHouse = re:FindFirstChild("1Gettin1gHous1e")
         if getHouse then
@@ -1619,9 +1498,7 @@ local function buyHouse()
             end)
         end
     end
-    
     buyingHouse = false
-    
     local success, info = checkHouse()
     if success then
         hasHouse = true
@@ -1632,15 +1509,14 @@ local function buyHouse()
 end
 
 local function getCones()
-    local tc = ws:FindFirstChild("WorkspaceCom")
+    local tc = workspace:FindFirstChild("WorkspaceCom")
     if tc then
         tc = tc:FindFirstChild("001_TrafficCones")
     end
     if not tc then return {} end
-    
     local cones = {}
     for _, child in pairs(tc:GetChildren()) do
-        if string.find(child.Name, me.Name) then
+        if string.find(child.Name, LocalPlayer.Name) then
             local ev = child:FindFirstChild("SetCurrentCFrame")
             if ev then
                 table.insert(cones, {Object = child, Event = ev, Name = child.Name})
@@ -1672,7 +1548,7 @@ local function moveCones(cones, pos)
 end
 
 local function clearProps()
-    local ev = rs:FindFirstChild("RE")
+    local ev = game:GetService("ReplicatedStorage"):FindFirstChild("RE")
     if ev then
         ev = ev:FindFirstChild("1Clea1rTool1s")
     end
@@ -1684,13 +1560,11 @@ local function clearProps()
 end
 
 local function equipPropMaker()
-    local char = me.Character
+    local char = LocalPlayer.Character
     if not char then return false end
-    
-    local backpack = me:FindFirstChild("Backpack")
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
     local prop = char:FindFirstChild("PropMaker")
     if prop then return true end
-    
     if backpack then
         prop = backpack:FindFirstChild("PropMaker")
         if prop then
@@ -1698,8 +1572,7 @@ local function equipPropMaker()
             return true
         end
     end
-    
-    local re = rs:FindFirstChild("RE")
+    local re = game:GetService("ReplicatedStorage"):FindFirstChild("RE")
     if re then
         local pick = re:FindFirstChild("1Too1l")
         if pick then
@@ -1720,7 +1593,7 @@ local function equipPropMaker()
 end
 
 local function requestChair()
-    local ev = rs:FindFirstChild("RE")
+    local ev = game:GetService("ReplicatedStorage"):FindFirstChild("RE")
     if ev then
         ev = ev:FindFirstChild("1Clea1rTool1s")
     end
@@ -1732,21 +1605,16 @@ local function requestChair()
 end
 
 local function placeChair(pos)
-    local char = me.Character
+    local char = LocalPlayer.Character
     if not char then return false end
-    
     local prop = char:FindFirstChild("PropMaker")
     if not prop then return false end
-    
     local ev = prop:FindFirstChild("Tool_PropMake")
     if not ev then return false end
-    
-    local modelFolder = ws:FindFirstChild("Model")
+    local modelFolder = workspace:FindFirstChild("Model")
     if not modelFolder then return false end
-    
     local model = modelFolder:FindFirstChild(chairModel)
     if not model then return false end
-    
     pcall(function()
         ev:FireServer(model, pos)
     end)
@@ -1754,38 +1622,21 @@ local function placeChair(pos)
 end
 
 local function tpAndPlace()
-    antiSitOn()
-    
-    local char = me.Character
-    if not char then
-        antiSitOff()
-        return false
-    end
-    
+    local char = LocalPlayer.Character
+    if not char then return false end
     local root = char:FindFirstChild("HumanoidRootPart")
-    if not root then
-        antiSitOff()
-        return false
-    end
-    
+    if not root then return false end
     local orig = root.CFrame
-    
     root.CFrame = CFrame.new(destPos)
     task.wait(0.8)
-    
     equipPropMaker()
     task.wait(0.5)
-    
     requestChair()
     task.wait(0.5)
-    
     placeChair(destPos)
     task.wait(0.5)
-    
     root.CFrame = orig
     task.wait(0.5)
-    
-    antiSitOff()
     return true
 end
 
@@ -1794,35 +1645,28 @@ local function createChair()
     task.wait(0.15)
     if not requestChair() then return false end
     task.wait(0.15)
-    
-    local char = me.Character
+    local char = LocalPlayer.Character
     if not char then return false end
     local root = char:FindFirstChild("HumanoidRootPart")
     if not root then return false end
-    
     local look = root.CFrame.LookVector
     local pos = root.Position + look * 3
     pos = Vector3.new(pos.X, 0.5, pos.Z)
-    
     return placeChair(pos)
 end
 
 local function inMyHouse(plr)
     if not plr or not plr.Character then return false end
     if not houseData or not houseData.Position then return false end
-    
     local root = plr.Character:FindFirstChild("HumanoidRootPart")
     if not root then return false end
-    
     return (root.Position - houseData.Position).Magnitude < 10
 end
 
 local function banFromHouse(plr)
     if not plr or not houseData or not houseData.House then return false end
-    
     local myHouse = houseData.House
     local disallow
-    
     local picked = myHouse:FindFirstChild("HousePickedByPlayer")
     if picked then
         local model = picked:FindFirstChild("HouseModel")
@@ -1830,7 +1674,6 @@ local function banFromHouse(plr)
             disallow = model:FindFirstChild("Permissions:Disallow")
         end
     end
-    
     if not disallow then
         for _, child in pairs(myHouse:GetDescendants()) do
             if child.Name == "Permissions:Disallow" then
@@ -1839,9 +1682,7 @@ local function banFromHouse(plr)
             end
         end
     end
-    
     if not disallow then return false end
-    
     pcall(function()
         disallow:FireServer(plr)
     end)
@@ -1851,16 +1692,12 @@ end
 local function tpToHouse(plr)
     if not plr or not plr.Character then return false end
     if not houseData or not houseData.CFrame then return false end
-    
     local root = plr.Character:FindFirstChild("HumanoidRootPart")
     if not root then return false end
-    
     pcall(function()
         root.CFrame = houseData.CFrame + Vector3.new(0, 3, 0)
     end)
-    
     task.wait(0.2)
-    
     if #myCones > 0 then
         for _, cone in ipairs(myCones) do
             pcall(function()
@@ -1868,12 +1705,10 @@ local function tpToHouse(plr)
             end)
         end
     end
-    
     task.wait(0.2)
     clearProps()
     task.wait(0.2)
     banFromHouse(plr)
-    
     return true
 end
 
@@ -1882,14 +1717,10 @@ local function startMonitor()
         task.cancel(monitorThread)
         monitorThread = nil
     end
-    
     if not target then return end
-    
     monitorThread = task.spawn(function()
         while target and target.Parent and killBanActivo do
             local sitting = isSitting(target)
-            local inHouse = inMyHouse(target)
-            
             if sitting and hasHouse then
                 tpToHouse(target)
                 if following then
@@ -1901,7 +1732,6 @@ local function startMonitor()
                 end
                 task.wait(0.3)
             end
-            
             task.wait(0.3)
         end
         monitorThread = nil
@@ -1911,7 +1741,6 @@ end
 local function followCones()
     if following then return end
     if not target then return end
-    
     local has, info = checkHouse()
     if has then
         hasHouse = true
@@ -1922,24 +1751,19 @@ local function followCones()
             return
         end
     end
-    
     task.wait(0.2)
     tpAndPlace()
     task.wait(0.2)
-    
     local cones = waitForCones()
     if #cones == 0 then
         return
     end
-    
     myCones = cones
     following = true
-    
     loopThread = task.spawn(function()
         while following and killBanActivo do
             if not target or not target.Character then break end
             if isSitting(target) then break end
-            
             local root = target.Character:FindFirstChild("HumanoidRootPart")
             if root then
                 moveCones(myCones, root.Position)
@@ -1949,21 +1773,17 @@ local function followCones()
         following = false
         loopThread = nil
     end)
-    
     startMonitor()
 end
 
 local function stopAll()
     following = false
     waitingCones = false
-    antiSitOff()
     killBanActivo = false
-    
     if loopThread then
         task.cancel(loopThread)
         loopThread = nil
     end
-    
     if monitorThread then
         task.cancel(monitorThread)
         monitorThread = nil
@@ -1973,10 +1793,8 @@ end
 local function IniciarKillBan()
     if not target then return end
     if not target.Parent then return end
-    
     stopAll()
     killBanActivo = true
-    
     task.spawn(function()
         createChair()
         task.wait(1)
@@ -1993,7 +1811,7 @@ local DropdownKillBan = TabTroll:CreateDropdown({
     Callback = function(Options)
         if Options and #Options > 0 then
             targetName = Options[1]
-            target = plrs:FindFirstChild(targetName)
+            target = Players:FindFirstChild(targetName)
         end
     end
 })
@@ -2037,13 +1855,11 @@ local DropdownJugadores
 
 local function ObtenerOpcionesWhitelist()
     local opciones = {}
-
     for _, jugador in ipairs(Jugadores:GetPlayers()) do
         if jugador ~= JugadorLocal and not table.find(Whitelist, jugador.Name) then
             table.insert(opciones, jugador.Name)
         end
     end
-
     return opciones
 end
 
@@ -2061,24 +1877,19 @@ DropdownJugadores = TabTroll:CreateDropdown({
     Options = ObtenerOpcionesWhitelist(),
     CurrentOption = {},
     MultipleOptions = false,
-
     Callback = function(Option)
         local nombre
-
         if type(Option) == "table" then
             nombre = Option[1]
         else
             nombre = Option
         end
-
         if not nombre or nombre == "" then
             return
         end
-
         if not table.find(Whitelist, nombre) then
             table.insert(Whitelist, nombre)
         end
-
         ActualizarDropdown()
     end
 })
@@ -2090,80 +1901,49 @@ end)
 
 Jugadores.PlayerRemoving:Connect(function(jugador)
     local index = table.find(Whitelist, jugador.Name)
-
     if index then
         table.remove(Whitelist, index)
     end
-
     task.wait(0.1)
     ActualizarDropdown()
 end)
 
 local function EstaEnWhitelist(jugador)
-    return jugador
-        and table.find(Whitelist, jugador.Name) ~= nil
+    return jugador and table.find(Whitelist, jugador.Name) ~= nil
 end
 
 local function FlingJugador(objetivo)
-    if not objetivo or objetivo == JugadorLocal then
-        return
-    end
-
-    if EstaEnWhitelist(objetivo) then
-        return
-    end
-
+    if not objetivo or objetivo == JugadorLocal then return end
+    if EstaEnWhitelist(objetivo) then return end
     local PelotasServidor = Mundo:WaitForChild("WorkspaceCom"):WaitForChild("001_SoccerBalls")
     local Pelota = PelotasServidor:FindFirstChild("Soccer" .. JugadorLocal.Name)
-
     if not Pelota then
         Pelota = ObtenerPelota()
     end
-
-    if not Pelota then
-        return
-    end
-
-    if EstaEnWhitelist(objetivo) then
-        return
-    end
-
+    if not Pelota then return end
+    if EstaEnWhitelist(objetivo) then return end
     local personajeObjetivo = objetivo.Character
-    if not personajeObjetivo then
-        return
-    end
-
+    if not personajeObjetivo then return end
     local raizObjetivo = personajeObjetivo:FindFirstChild("HumanoidRootPart")
     local humanoideObjetivo = personajeObjetivo:FindFirstChild("Humanoid")
-
-    if not raizObjetivo or not humanoideObjetivo then
-        return
-    end
-
+    if not raizObjetivo or not humanoideObjetivo then return end
     Pelota.CanCollide = false
     Pelota.Massless = true
     Pelota.CustomPhysicalProperties = PhysicalProperties.new(0.0001, 0, 0)
-
     for _, v in ipairs(Pelota:GetChildren()) do
         if v:IsA("BodyVelocity") then
             v:Destroy()
         end
     end
-
     local velocidadCuerpo = Instance.new("BodyVelocity")
     velocidadCuerpo.Name = "FlingPower"
     velocidadCuerpo.Velocity = Vector3.new(9e8, 9e8, 9e8)
     velocidadCuerpo.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
     velocidadCuerpo.P = 9e900
     velocidadCuerpo.Parent = Pelota
-
     local tiempoInicio = tick()
-
     repeat
-        if EstaEnWhitelist(objetivo) then
-            break
-        end
-
+        if EstaEnWhitelist(objetivo) then break end
         if raizObjetivo.Velocity.Magnitude > 0 then
             local pos = raizObjetivo.Position + (raizObjetivo.Velocity / 1.5)
             Pelota.CFrame = CFrame.new(pos)
@@ -2176,14 +1956,8 @@ local function FlingJugador(objetivo)
                 end
             end
         end
-
         task.wait(1 / 6000)
-
-    until raizObjetivo.Velocity.Magnitude > 1000
-        or humanoideObjetivo.Health <= 0
-        or not personajeObjetivo:IsDescendantOf(Mundo)
-        or tick() - tiempoInicio > 8
-
+    until raizObjetivo.Velocity.Magnitude > 1000 or humanoideObjetivo.Health <= 0 or not personajeObjetivo:IsDescendantOf(Mundo) or tick() - tiempoInicio > 8
     if velocidadCuerpo then
         velocidadCuerpo:Destroy()
     end
@@ -2191,13 +1965,11 @@ end
 
 local function ObtenerJugadoresDisponibles()
     local disponibles = {}
-
     for _, jugador in ipairs(Jugadores:GetPlayers()) do
         if jugador ~= JugadorLocal and not EstaEnWhitelist(jugador) then
             table.insert(disponibles, jugador)
         end
     end
-
     return disponibles
 end
 
@@ -2206,18 +1978,13 @@ local function FlingTodos()
         task.spawn(function()
             FlingJugador(jugador)
         end)
-
         task.wait(0.05)
     end
 end
 
 local function IniciarFling()
-    if flingConexion then
-        return
-    end
-
+    if flingConexion then return end
     flingActivo = true
-
     flingConexion = RunService.Heartbeat:Connect(function()
         if flingActivo then
             FlingTodos()
@@ -2227,7 +1994,6 @@ end
 
 local function DetenerFling()
     flingActivo = false
-
     if flingConexion then
         flingConexion:Disconnect()
         flingConexion = nil
@@ -2239,7 +2005,6 @@ TabTroll:CreateToggle({
     Description = "Lanza a los jugadores excepto los de la whitelist",
     CurrentValue = false,
     Flag = "FlingBallAll",
-
     Callback = function(Value)
         if Value then
             IniciarFling()
@@ -2252,7 +2017,6 @@ TabTroll:CreateToggle({
 TabTroll:CreateButton({
     Name = "⚡ Fling All (Una vez)",
     Description = "Lanza una vez a todos excepto los de la whitelist",
-
     Callback = function()
         FlingTodos()
     end
