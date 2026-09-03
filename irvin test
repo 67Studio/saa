@@ -3259,3 +3259,67 @@ task.spawn(function()
         end)
     end
 end)
+
+-- Auto-activar TinCup al cargar y mantenerlo siempre
+task.spawn(function()
+    wait(2)
+    local Players = game:GetService("Players")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local RunService = game:GetService("RunService")
+    local player = Players.LocalPlayer
+    local Event = ReplicatedStorage.RE["1Too1l"]
+    local lastInvoke = 0
+
+    local function CheckTinCup()
+        if not player then return end
+        local backpack = player.Backpack
+        local character = player.Character
+        local hasBackpack = backpack and backpack:FindFirstChild("TinCup")
+        local hasCharacter = character and character:FindFirstChild("TinCup")
+        if not hasBackpack and not hasCharacter then
+            local currentTime = tick()
+            if currentTime - lastInvoke > 0.5 then
+                lastInvoke = currentTime
+                pcall(function()
+                    Event:InvokeServer("PickingTools", "TinCup")
+                end)
+            end
+        end
+    end
+
+    -- Verificar cada frame
+    RunService.Heartbeat:Connect(function()
+        CheckTinCup()
+    end)
+
+    -- Cuando el personaje reaparezca
+    player.CharacterAdded:Connect(function()
+        wait(0.5)
+        CheckTinCup()
+    end)
+
+    -- También cuando se elimine de la mochila
+    if player.Backpack then
+        player.Backpack.ChildRemoved:Connect(function(child)
+            if child.Name == "TinCup" then
+                wait(0.1)
+                CheckTinCup()
+            end
+        end)
+    end
+
+    -- También cuando se elimine del personaje
+    if player.Character then
+        player.Character.ChildRemoved:Connect(function(child)
+            if child.Name == "TinCup" then
+                wait(0.1)
+                CheckTinCup()
+            end
+        end)
+    end
+
+    CheckTinCup()
+    print("TinCup siempre en inventario!")
+end)
+
+print("HOLA MUNDO")
