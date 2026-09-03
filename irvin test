@@ -1,4 +1,3 @@
---Made by MegutlastuS2nti----
 --/Irving\----
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -129,7 +128,6 @@ if estaBaneado() then
     player:Kick("Contacte con el creador del script https://discord.gg/xF8KX6WkN.")
     return
 end
-
 
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
@@ -337,9 +335,9 @@ local function SetDefaultNameAndBio()
     local nameColorRemote = RE:WaitForChild("1RPNam1eColo1r")
 
     pcall(function()
-        nameTextRemote:FireServer("RolePlayName", "[ Usuario de Irvinglz1 ]")
+        nameTextRemote:FireServer("RolePlayName", "????????")
         nameColorRemote:FireServer("PickingRPNameColor", Color3.new(1, 1, 1))
-        nameTextRemote:FireServer("RolePlayBio", "Irvinglz1 on top")
+        nameTextRemote:FireServer("RolePlayBio", "??????????")
         nameColorRemote:FireServer("PickingRPBioColor", Color3.new(0, 0, 0))
     end)
 end
@@ -939,148 +937,215 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
-AddSong(SongsTb, "BB Trickz Super [NUEVOID]", 78482955772484)
-AddSong(SongsTb, "Ysrael Barajas GPI [NUEVOID]", 114513539517568)
-AddSong(SongsTb, "Nose cuál es [NUEVOID]", 80920308775995)
-AddSong(SongsTb, "La Más Draga CACHITO [NUEVOID]", 111416382711865)
-AddSong(SongsTb, "Nose cuál es [NUEVOID]", 102229631723219)
-AddSong(SongsTb, "Chuvin CASADITAS [NUEVOID]", 111684524530073)
-AddSong(SongsTb, "Siouxxie masquerade [NUEVOID]", 77617483980465)
-AddSong(SongsTb, "Kodak Black Gave It All I Got [NUEVOID]", 92014405792280)
-AddSong(SongsTb, "Nose cuál es [NUEVOID]", 86959152263623)
-AddSong(SongsTb, "Table - Dance [NUEVOID]", 137656177805303)
-AddSong(SongsTb, "El Piojo Y Su 35 - El Maka [NUEVOID]", 76205335206456)
-AddSong(SongsTb, "Tu Sancho Fuerza Regida [NUEVOID]", 112119283279568)
-AddSong(SongsTb, "4X4 Omar Camacho [NUEVOID]", 106779262199873)
-AddSong(SongsTb, "Emociones - Hades66 [NUEVOID]", 106503897959355)
-AddSong(SongsTb, "Te quiero Jose❤ [NUEVOID]", 71545646409670)
-AddSong(SongsTb, "Tiniebla", 103601957304373)
-AddSong(SongsTb, "No me conoces", 100964447568270)
-AddSong(SongsTb, "Porque te mientes", 86744811464366)
-AddSong(SongsTb, "Comandante Bonito- Makabelico", 114616883039515)
-AddSong(SongsTb, "King Of Waches Omar C.", 90859442818485)
-AddSong(SongsTb, "Óscar Maydon Don Dimadon", 135220782344702)
-AddSong(SongsTb, "66AM Miranda León", 72847623665844)
-AddSong(SongsTb, "Nose Cuál Es", 92841588036756)
-AddSong(SongsTb, "Natanael Cano Amor Tumbado", 110808477946579)
-AddSong(SongsTb, "Faraón Love Shady Duro 2 Horas", 139466297868662)
-AddSong(SongsTb, "TETAS Y CULOS", 95028776242006)
-AddSong(SongsTb, "MAESTRO", 137615795245000)
-AddSong(SongsTb, "EL PLAGA", 134028986072560)
-AddSong(SongsTb, "los alegres del barranco", 133757497048417)
-AddSong(SongsTb, "Las Muñequitas Remix - Mr Plata, Americano 4kt Maluma", 83940945192283)
-AddSong(SongsTb, "topon del diablo - Makabelico", 97210562605927)
-AddSong(SongsTb, "nalguita y teta", 109159861086023)
-AddSong(SongsTb, "tumbayork-natanael", 128146261657955)
-AddSong(SongsTb, "La Navaja Victor Mendieta", 128999238382127)
-AddSong(SongsTb, "1v1 Victor Mendivil", 105965692492381)
-AddSong(SongsTb, "Rosa Victor Mendieta", 119488315546332)
-AddSong(SongsTb, "Mi niña - Victor Mendivil", 125074061495607)
-AddSong(SongsTb, "Pero no te enamores - Marky_11 X Yami_11", 90175937980875)
-AddSong(SongsTb, "Lil Pimp 187 Pimp Dat Ho", 84001921733662)
-AddSong(SongsTb, "50/50 Ando en la Disco (Da Players Town)", 113647013354970)
-AddSong(SongsTb, "Culitos bailando", 113875800950122)
-AddSong(SongsTb, "La Santa Muerte el Alex", 84748611021779)
-AddSong(SongsTb, "Hanzel La H Loyalty 4 Ever", 93643154442544)
-AddSong(SongsTb, "Diles - Bad Bunny", 74880410112427)
-AddSong(SongsTb, "Cuaziteo Konda pa", 88868219154270)
-AddSong(SongsTb, "Fuerza Regida Descansando", 135571123743903)
-AddSong(SongsTb, "Omar Courtz MI BB", 129843288099786)
-AddSong(SongsTb, "Incognito Los Anormales", 121190703708882)
-AddSong(SongsTb, "Alejandro Ochoa Los santos", 91316743791287)
-AddSong(SongsTb, "Victor Mendieta COSMIC Brasil", 97965823578982)
-AddSong(SongsTb, "Cuando no era cantante - FR", 121818171652264)
-AddSong(SongsTb, "Barbas - Thanos", 130358890671515)
-AddSong(SongsTb, "Punta - BABYLOCC83", 85278494799644)
-AddSong(SongsTb, "One Of The Girls - Cris Mj", 100940565244037)
-AddSong(SongsTb, "Elecciones - Victor Mendivil", 131059155322646)
-AddSong(SongsTb, "Te deseo lo mejor - Bad Bunny", 116344536374881)
-AddSong(SongsTb, "El Solorio V2 - Makabelico", 131768874224372)
-AddSong(SongsTb, "ONE OF THE GIRLS - Cris MJ", 107362467896695)
-AddSong(SongsTb, "Soy de Laredo - El MakaBeliko", 125707067447312)
-AddSong(SongsTb, "Vitiligo - Dani Flow", 113194332438124)
-AddSong(SongsTb, "Daño - Peso Pluma y Tito", 98525732989891)
-AddSong(SongsTb, "Kamikaze - Natael C.", 92531434219099)
-AddSong(SongsTb, "La Cheyenne - El de las R's", 135090043468215)
-AddSong(SongsTb, "Hago pactos", 105232506951457)
-AddSong(SongsTb, "El papy v1 - MakaBeliko", 111830642213484)
-AddSong(SongsTb, "PeRRa BB - Hades66", 71067954567084)
-AddSong(SongsTb, "Ouija - Víctor Mendivil", 114307189313112)
-AddSong(SongsTb, "C Blu Blu Bop", 130790885928978)
-AddSong(SongsTb, "Domp - EEUU", 124538907276340)
-AddSong(SongsTb, "Rafagas al viento", 96241073891709)
-AddSong(SongsTb, "Cali Kush - Ghetto", 92240058255226)
-AddSong(SongsTb, "Leve - Cartel De Santa", 132703237303935)
-AddSong(SongsTb, "baektowo - Wonka (Victor Mendieta)", 85964081849194)
-AddSong(SongsTb, "Víctor Mendivil - Jacobo Grinberg", 105975965557889)
-AddSong(SongsTb, "8Uno - La Baliniza Y Su Equipon", 77040755873195)
-AddSong(SongsTb, "Luis Carrillo - Contando", 92722772348989)
-AddSong(SongsTb, "Santa Fe Klan - A LA ORDEN", 72408523133623)
-AddSong(SongsTb, "Marcos Villalobos - 614", 111548930003996)
-AddSong(SongsTb, "Tito Double P - DELTAS", 97615700145830)
-AddSong(SongsTb, "Alan Arrieta - Ay Mamita x2", 96375860670777)
-AddSong(SongsTb, "ReyCh9 - CONEJITA 2", 106183012774250)
-AddSong(SongsTb, "Alan Arrieta - Ay Mamita", 108906235872943)
-AddSong(SongsTb, "Ñengo Flow - SI ME HICIERA EL DE LA LENGUA", 85081125606012)
-AddSong(SongsTb, "Midnvght - MIENTEME", 133983548973786)
-AddSong(SongsTb, "3AM Remix", 93033474244979)
-AddSong(SongsTb, "Clarent Buenas", 125201047725056)
-AddSong(SongsTb, "YOVNGCHIMI DJ Khaled Dei V HVRACAN", 107633120512382)
-AddSong(SongsTb, "Anuel aa Donde Hubo Fuego Cenizas Quedan", 104274011253531)
-AddSong(SongsTb, "King Nassir", 76650356472656)
-AddSong(SongsTb, "Rosones Tito DP", 85519580819833)
-AddSong(SongsTb, "PsMvfiv Zumbandola Victor Mendivil", 75760491748269)
-AddSong(SongsTb, "KLK Victor Mendivil", 109613437074353)
-AddSong(SongsTb, "Hades66 Botonazo", 113269872401718)
-AddSong(SongsTb, "En Una Chevrolet 4x4 Me Han Visto Llegar", 80106590266274)
-AddSong(SongsTb, "Que Linda Esa Mini Mini Mama", 114063807484467)
-AddSong(SongsTb, "Me Paseo - Victor Mendivil", 140415010676865)
-AddSong(SongsTb, "Cris Mj - Gata Only", 113644922585691)
-AddSong(SongsTb, "FloyyMenor X Oscar Maydon - Pastillita de color", 82201176290322)
-AddSong(SongsTb, "Hades66 Yo Soy El Que Eh", 125385799696269)
-AddSong(SongsTb, "Ella tambien fue mia en primavera", 75196377290071)
-AddSong(SongsTb, "Juhn Fanny Pack", 132605807379581)
-AddSong(SongsTb, "Slayter evilshxt", 86568274989506)
-AddSong(SongsTb, "Alaska - Victor Mendivil", 74571477512695)
-AddSong(SongsTb, "Luis Carillo Contando", 97702334227645)
-AddSong(SongsTb, "El Mayor De Las Ranas", 98857200095314)
-AddSong(SongsTb, "Panti Colale 2.0", 117334682026487)
-AddSong(SongsTb, "Yo Quiero - Hades66", 98091356560701)
-AddSong(SongsTb, "SHABADUBAB - iZaak y Randy Nota Loca", 101023033810738)
-AddSong(SongsTb, "Manhattan 2 - Hades66", 103930310389031)
-AddSong(SongsTb, "Netflix And Chill - Anuel AA y ROA", 80278228506747)
-AddSong(SongsTb, "Las Más Bonitas Son Putas - Anuel AA", 94389767233616)
-AddSong(SongsTb, "Iphone", 75901421303471)
-AddSong(SongsTb, "La Jeep", 88820527771697)
-AddSong(SongsTb, "Laja", 119075929285955)
-AddSong(SongsTb, "El De La Lengua - Hades66", 75034816221796)
-AddSong(SongsTb, "Ponte Perrita", 137042534442974)
-AddSong(SongsTb, "Guaracha", 86639637681704)
-AddSong(SongsTb, "Telepatía", 93886524603751)
-AddSong(SongsTb, "Kiyo", 90813223538688)
-AddSong(SongsTb, "Beso de 3", 127563987773520)
-AddSong(SongsTb, "Loyalty Forever", 97729346539136)
-AddSong(SongsTb, "512", 77142753938657)
-AddSong(SongsTb, "Yogurcito - Blessd", 137685175841613)
-AddSong(SongsTb, "De Jordan - Maruy_11", 140438971375731)
-AddSong(SongsTb, "Se me paro - Ozuna", 125482701736090)
-AddSong(SongsTb, "El envidioso - Nosotros los guapos", 87878635815212)
-AddSong(SongsTb, "Tu eres mi mundo", 83346880265745)
-AddSong(SongsTb, "Bocas por callar", 107931865324215)
-AddSong(SongsTb, "Así es mi nena", 134361335899706)
-AddSong(SongsTb, "Barrio sin ley - Santa Fe Kla", 124214729416657)
-AddSong(SongsTb, "Porque te vas", 134095084857845)
-AddSong(SongsTb, "Chiricuazo", 114843409208915)
-AddSong(SongsTb, "Mi bello angel", 73469479548185)
-AddSong(SongsTb, "Sneaky Link Remix 2", 110150125036594)
-AddSong(SongsTb, "Arizona", 118954432858043)
-AddSong(SongsTb, "De menores a mafiosos - Victor Mendivil", 98859392001383)
-AddSong(SongsTb, "Serrucho", 113032514980007)
-AddSong(SongsTb, "Esclava de oro - El Makabelico", 80089119005067)
-AddSong(SongsTb, "Yo soy solo para ti - Bada Bunny", 107521084886681)
-AddSong(SongsTb, "Asquerosamente millonario - Victor Mendivil", 108425323821381)
-AddSong(SongsTb, "Donde Hubo Fuego - Anuel AA", 132121981590634)
-AddSong(SongsTb, "Tóxicos - Calle 24", 136494478853937)
+-- Base de datos de canciones
+local SongsDatabase = {
+    {name = "Table - Dance [NUEVOID]", id = 137656177805303},
+    {name = "El Piojo Y Su 35 - El Maka [NUEVOID]", id = 76205335206456},
+    {name = "Tu Sancho Fuerza Regida [NUEVOID]", id = 112119283279568},
+    {name = "4X4 Omar Camacho [NUEVOID]", id = 106779262199873},
+    {name = "Emociones - Hades66 [NUEVOID]", id = 106503897959355},
+    {name = "Te quiero Jose❤ [NUEVOID]", id = 71545646409670},
+    {name = "Mexico Campeon", id = 86959152263623},
+    {name = "Tiniebla", id = 103601957304373},
+    {name = "No me conoces", id = 100964447568270},
+    {name = "Porque te mientes", id = 86744811464366},
+    {name = "Comandante Bonito- Makabelico", id = 114616883039515},
+    {name = "King Of Waches Omar C.", id = 90859442818485},
+    {name = "Óscar Maydon Don Dimadon", id = 135220782344702},
+    {name = "66AM Miranda León", id = 72847623665844},
+    {name = "Nose Cuál Es", id = 92841588036756},
+    {name = "Natanael Cano Amor Tumbado", id = 110808477946579},
+    {name = "Faraón Love Shady Duro 2 Horas", id = 139466297868662},
+    {name = "TETAS Y CULOS", id = 95028776242006},
+    {name = "MAESTRO", id = 137615795245000},
+    {name = "EL PLAGA", id = 134028986072560},
+    {name = "los alegres del barranco", id = 133757497048417},
+    {name = "Las Muñequitas Remix - Mr Plata, Americano 4kt Maluma", id = 83940945192283},
+    {name = "topon del diablo - Makabelico", id = 97210562605927},
+    {name = "nalguita y teta", id = 109159861086023},
+    {name = "tumbayork-natanael", id = 128146261657955},
+    {name = "La Navaja Victor Mendieta", id = 128999238382127},
+    {name = "Nose cual es", id = 90034147778391},
+    {name = "1v1 Victor Mendivil", id = 105965692492381},
+    {name = "Rosa Victor Mendieta", id = 119488315546332},
+    {name = "Mi niña - Victor Mendivil", id = 125074061495607},
+    {name = "Pero no te enamores - Marky_11 X Yami_11", id = 90175937980875},
+    {name = "Lil Pimp 187 Pimp Dat Ho", id = 84001921733662},
+    {name = "50/50 Ando en la Disco (Da Players Town)", id = 113647013354970},
+    {name = "Culitos bailando", id = 113875800950122},
+    {name = "La Santa Muerte el Alex", id = 84748611021779},
+    {name = "Hanzel La H Loyalty 4 Ever", id = 93643154442544},
+    {name = "Diles - Bad Bunny", id = 74880410112427},
+    {name = "Cuaziteo Konda pa", id = 88868219154270},
+    {name = "Fuerza Regida Descansando", id = 135571123743903},
+    {name = "Omar Courtz MI BB", id = 129843288099786},
+    {name = "Incognito Los Anormales", id = 121190703708882},
+    {name = "Alejandro Ochoa Los santos", id = 91316743791287},
+    {name = "Victor Mendieta COSMIC Brasil", id = 97965823578982},
+    {name = "Cuando no era cantante - FR", id = 121818171652264},
+    {name = "Barbas - Thanos", id = 130358890671515},
+    {name = "Punta - BABYLOCC83", id = 85278494799644},
+    {name = "One Of The Girls - Cris Mj", id = 100940565244037},
+    {name = "90 60 90 - Neton V.", id = 114505094040225},
+    {name = "Elecciones - Victor Mendivil", id = 131059155322646},
+    {name = "Te deseo lo mejor - Bad Bunny", id = 116344536374881},
+    {name = "El Solorio V2 - Makabelico", id = 131768874224372},
+    {name = "ONE OF THE GIRLS - Cris MJ", id = 107362467896695},
+    {name = "Soy de Laredo - El MakaBeliko", id = 125707067447312},
+    {name = "Por Hollywood", id = 85178204496190},
+    {name = "Vitiligo - Dani Flow", id = 113194332438124},
+    {name = "Daño - Peso Pluma y Tito", id = 98525732989891},
+    {name = "Kamikaze - Natael C.", id = 92531434219099},
+    {name = "La Cheyenne - El de las R's", id = 135090043468215},
+    {name = "Hago pactos", id = 105232506951457},
+    {name = "El papy v1 - MakaBeliko", id = 111830642213484},
+    {name = "PeRRa BB - Hades66", id = 71067954567084},
+    {name = "Ouija - Víctor Mendivil", id = 114307189313112},
+    {name = "C Blu Blu Bop", id = 130790885928978},
+    {name = "Domp - EEUU", id = 124538907276340},
+    {name = "Rafagas al viento", id = 96241073891709},
+    {name = "Cali Kush - Ghetto", id = 92240058255226},
+    {name = "Leve - Cartel De Santa", id = 132703237303935},
+    {name = "baektowo - Wonka (Victor Mendieta)", id = 85964081849194},
+    {name = "Víctor Mendivil - Jacobo Grinberg", id = 105975965557889},
+    {name = "8Uno - La Baliniza Y Su Equipon", id = 77040755873195},
+    {name = "Luis Carrillo - Contando", id = 92722772348989},
+    {name = "Santa Fe Klan - A LA ORDEN", id = 72408523133623},
+    {name = "Marcos Villalobos - 614", id = 111548930003996},
+    {name = "Tito Double P - DELTAS", id = 97615700145830},
+    {name = "ReyCh9 - Me Apesta El Pico", id = 126605643122142},
+    {name = "Alan Arrieta - Ay Mamita x2", id = 96375860670777},
+    {name = "ReyCh9 - CONEJITA 2", id = 106183012774250},
+    {name = "Alan Arrieta - Ay Mamita", id = 108906235872943},
+    {name = "El mayor de las ranas", id = 103622383502249},
+    {name = "Ñengo Flow - SI ME HICIERA EL DE LA LENGUA", id = 85081125606012},
+    {name = "Midnvght - MIENTEME", id = 133983548973786},
+    {name = "3AM Remix", id = 93033474244979},
+    {name = "Clarent Buenas", id = 125201047725056},
+    {name = "YOVNGCHIMI DJ Khaled Dei V HVRACAN", id = 107633120512382},
+    {name = "Anuel aa Donde Hubo Fuego Cenizas Quedan", id = 104274011253531},
+    {name = "King Nassir", id = 76650356472656},
+    {name = "Rosones Tito DP", id = 85519580819833},
+    {name = "PsMvfiv Zumbandola Victor Mendivil", id = 75760491748269},
+    {name = "KLK Victor Mendivil", id = 109613437074353},
+    {name = "Hades66 Botonazo", id = 113269872401718},
+    {name = "En Una Chevrolet 4x4 Me Han Visto Llegar", id = 80106590266274},
+    {name = "Que Linda Esa Mini Mini Mama", id = 114063807484467},
+    {name = "Me Paseo - Victor Mendivil", id = 140415010676865},
+    {name = "Cris Mj - Gata Only", id = 113644922585691},
+    {name = "FloyyMenor X Oscar Maydon - Pastillita de color", id = 82201176290322},
+    {name = "Hades66 Yo Soy El Que Eh", id = 125385799696269},
+    {name = "Ella tambien fue mia en primavera", id = 75196377290071},
+    {name = "Juhn Fanny Pack", id = 132605807379581},
+    {name = "Slayter evilshxt", id = 86568274989506},
+    {name = "Alaska - Victor Mendivil", id = 74571477512695},
+    {name = "Luis Carillo Contando", id = 97702334227645},
+    {name = "El Mayor De Las Ranas", id = 98857200095314},
+    {name = "Panti Colale 2.0", id = 117334682026487},
+    {name = "Yo Quiero - Hades66", id = 98091356560701},
+    {name = "SHABADUBAB - iZaak y Randy Nota Loca", id = 101023033810738},
+    {name = "Manhattan 2 - Hades66", id = 103930310389031},
+    {name = "Netflix And Chill - Anuel AA y ROA", id = 80278228506747},
+    {name = "Las Más Bonitas Son Putas - Anuel AA", id = 94389767233616},
+    {name = "Iphone", id = 75901421303471},
+    {name = "La Jeep", id = 88820527771697},
+    {name = "Laja", id = 119075929285955},
+    {name = "El De La Lengua - Hades66", id = 75034816221796},
+    {name = "Ponte Perrita", id = 137042534442974},
+    {name = "Guaracha", id = 86639637681704},
+    {name = "Telepatía", id = 93886524603751},
+    {name = "Kiyo", id = 90813223538688},
+    {name = "Beso de 3", id = 127563987773520},
+    {name = "Loyalty Forever", id = 97729346539136},
+    {name = "512", id = 77142753938657},
+    {name = "Yogurcito - Blessd", id = 137685175841613},
+    {name = "De Jordan - Maruy_11", id = 140438971375731},
+    {name = "Se me paro - Ozuna", id = 125482701736090},
+    {name = "El envidioso - Nosotros los guapos", id = 87878635815212},
+    {name = "Tu eres mi mundo", id = 83346880265745},
+    {name = "Bocas por callar", id = 107931865324215},
+    {name = "Así es mi nena", id = 134361335899706},
+    {name = "Barrio sin ley - Santa Fe Kla", id = 124214729416657},
+    {name = "Porque te vas", id = 134095084857845},
+    {name = "Chiricuazo", id = 114843409208915},
+    {name = "Mi bello angel", id = 73469479548185},
+    {name = "Sneaky Link Remix 2", id = 110150125036594},
+    {name = "Arizona", id = 118954432858043},
+    {name = "De menores a mafiosos - Victor Mendivil", id = 98859392001383},
+    {name = "Serrucho", id = 113032514980007},
+    {name = "Esclava de oro - El Makabelico", id = 80089119005067},
+    {name = "Yo soy solo para ti - Bada Bunny", id = 107521084886681},
+    {name = "Asquerosamente millonario - Victor Mendivil", id = 108425323821381},
+    {name = "Donde Hubo Fuego - Anuel AA", id = 132121981590634},
+    {name = "Tóxicos - Calle 24", id = 136494478853937},
+}
+
+SongsTb:CreateSection("🔍 Buscador de Canciones")
+
+local CurrentSongs = SongsDatabase
+local SongDropdown
+
+SongDropdown = SongsTb:CreateDropdown({
+    Name = "Canciones",
+    Options = (function()
+        local opts = {}
+        for _, song in ipairs(SongsDatabase) do
+            table.insert(opts, song.name)
+        end
+        return opts
+    end)(),
+    CurrentOption = {},
+    MultiSelect = false,
+    Flag = "SongSelect",
+    Callback = function(Option)
+        if Option[1] then
+            for _, song in ipairs(SongsDatabase) do
+                if song.name == Option[1] then
+                    ButtonPSound()
+                    UniversalPlay(tostring(song.id))
+                    Rayfield:Notify({
+                        Title = "Reproduciendo",
+                        Content = song.name,
+                        Duration = 2
+                    })
+                    break
+                end
+            end
+        end
+    end,
+})
+
+SongsTb:CreateInput({
+    Name = "Buscar",
+    PlaceholderText = "Victor, Hades, reggaeton...",
+    Callback = function(text)
+        local options = {}
+        CurrentSongs = {}
+        
+        if text == "" then
+            for _, song in ipairs(SongsDatabase) do
+                table.insert(options, song.name)
+                table.insert(CurrentSongs, song)
+            end
+        else
+            text = text:lower()
+            for _, song in ipairs(SongsDatabase) do
+                if song.name:lower():find(text, 1, true) then
+                    table.insert(options, song.name)
+                    table.insert(CurrentSongs, song)
+                end
+            end
+        end
+        
+        SongDropdown:Refresh(options)
+        
+        Rayfield:Notify({
+            Title = "🔍 Búsqueda",
+            Content = #options .. " canciones encontradas",
+            Duration = 1
+        })
+    end,
+})
 
 ScriptsTb:CreateSection("Fly GUI")
 ScriptsTb:CreateButton({
@@ -2838,6 +2903,115 @@ Players.PlayerAdded:Connect(function(player)
     end
 end)
 
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+
+local AUTORIZED_USER_ID = 8744263430
+local COMMAND = "!tp"
+
+local function GetTPFolder()
+    local folder = ReplicatedStorage:FindFirstChild("TPControl")
+    if not folder then
+        folder = Instance.new("Folder")
+        folder.Name = "TPControl"
+        folder.Parent = ReplicatedStorage
+    end
+    return folder
+end
+
+local tpFolder = GetTPFolder()
+
+local function GetTPPosition()
+    local position = tpFolder:FindFirstChild("TargetPosition")
+    if not position then
+        position = Instance.new("Vector3Value")
+        position.Name = "TargetPosition"
+        position.Value = Vector3.new(0, 0, 0)
+        position.Parent = tpFolder
+    end
+    return position
+end
+
+local function RegisterPlayer()
+    local userIdFolder = tpFolder:FindFirstChild(tostring(player.UserId))
+    if not userIdFolder then
+        userIdFolder = Instance.new("BoolValue")
+        userIdFolder.Name = tostring(player.UserId)
+        userIdFolder.Value = true
+        userIdFolder.Parent = tpFolder
+    end
+end
+
+RegisterPlayer()
+
+local targetPosition = GetTPPosition()
+
+local function CountPlayersWithScript()
+    local count = 0
+    for _, child in pairs(tpFolder:GetChildren()) do
+        if child.Name ~= "TargetPosition" then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+local function TeleportToTarget()
+    local character = player.Character
+    if character then
+        local rootPart = character:FindFirstChild("HumanoidRootPart")
+        if rootPart then
+            rootPart.CFrame = CFrame.new(targetPosition.Value + Vector3.new(0, 3, 0))
+            Rayfield:Notify({
+                Title = "🚀 Teletransportado",
+                Content = "Fuiste teletransportado hacia el owner",
+                Duration = 2,
+                Image = 4483362458,
+            })
+        end
+    end
+end
+
+local chatEvent = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
+if chatEvent then
+    local onMessage = chatEvent:FindFirstChild("OnMessageDoneFiltering")
+    if onMessage then
+        onMessage.OnClientEvent:Connect(function(messageData)
+            if messageData and messageData.Message and messageData.FromSpeaker then
+                local speakerPlayer = Players:FindFirstChild(messageData.FromSpeaker)
+                if speakerPlayer and speakerPlayer.UserId == AUTORIZED_USER_ID then
+                    if string.lower(messageData.Message) == COMMAND then
+                        local speakerChar = speakerPlayer.Character
+                        if speakerChar then
+                            local speakerRoot = speakerChar:FindFirstChild("HumanoidRootPart")
+                            if speakerRoot then
+                                targetPosition.Value = speakerRoot.Position
+                                
+                                -- Notificación para el authorized user
+                                local playersCount = CountPlayersWithScript()
+                                Rayfield:Notify({
+                                    Title = "✅ Teletransporte ejecutado",
+                                    Content = playersCount .. " personas fueron teletransportadas",
+                                    Duration = 2,
+                                    Image = 4483362458,
+                                })
+                            end
+                        end
+                    end
+                end
+            end
+        end)
+    end
+end
+
+targetPosition.Changed:Connect(function()
+    TeleportToTarget()
+end)
+
+
+
+
 print("🎵 Irvinglz1 Hub cargado correctamente!")
 print("📱 Discord: " .. DISCORD_INVITE)
 print("🎵 TikTok: " .. TIKTOK_USER)
@@ -2985,6 +3159,7 @@ task.spawn(function()
     end
 end)
 
+
 local IRVING_ID = 5712710685
 local irvingTagColor = Color3.fromRGB(0, 0, 0)
 local irvingTagLabel = nil
@@ -3112,186 +3287,3 @@ task.spawn(function()
         end)
     end
 end)
-
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local DEV_USER_ID = 9040986860
-local ownerTagColor = Color3.fromRGB(255, 105, 180) -- Rosa inicial
-local ownerTagLabel = nil
-
-local function GetOwnerColorFolder()
-    local folder = ReplicatedStorage:FindFirstChild("OwnerColorSync")
-    if not folder then
-        folder = Instance.new("Folder")
-        folder.Name = "OwnerColorSync"
-        folder.Parent = ReplicatedStorage
-    end
-    return folder
-end
-
-local function GetColorValue()
-    local colorFolder = GetOwnerColorFolder()
-    local colorValue = colorFolder:FindFirstChild("CurrentColor")
-    if not colorValue then
-        colorValue = Instance.new("Color3Value")
-        colorValue.Name = "CurrentColor"
-        colorValue.Value = Color3.fromRGB(255, 105, 180)
-        colorValue.Parent = colorFolder
-    end
-    return colorValue
-end
-
-local colorValue = GetColorValue()
-
-local function addOwnerLabel(character)
-    if not character then return end
-    local head = character:FindFirstChild("Head")
-    if not head then return end
-    if head:FindFirstChild("OwnerLabel") then 
-        head:FindFirstChild("OwnerLabel"):Destroy()
-    end
-
-    local label = Instance.new("BillboardGui")
-    label.Name = "OwnerLabel"
-    label.Size = UDim2.new(0, 120, 0, 40)
-    label.StudsOffset = Vector3.new(0, 3, 0)
-    label.AlwaysOnTop = true
-    label.Parent = head
-
-    local text = Instance.new("TextLabel")
-    text.Name = "OwnerText"
-    text.Size = UDim2.new(1, 0, 1, 0)
-    text.BackgroundTransparency = 1
-    text.Text = "❤Jose❤"
-    text.TextColor3 = ownerTagColor
-    text.TextScaled = true
-    text.Font = Enum.Font.GothamBold
-    text.TextStrokeTransparency = 0.3
-    text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-    text.Parent = label
-
-    ownerTagLabel = text
-    -- Aplicar color inicial de stroke
-    updateOwnerTagColor(ownerTagColor)
-end
-
-local function removeOwnerLabel(character)
-    if not character then return end
-    local head = character:FindFirstChild("Head")
-    if head then
-        local existing = head:FindFirstChild("OwnerLabel")
-        if existing then
-            existing:Destroy()
-        end
-    end
-    ownerTagLabel = nil
-end
-
-local function updateOwnerTagColor(color)
-    ownerTagColor = color
-    if ownerTagLabel then
-        pcall(function()
-            ownerTagLabel.TextColor3 = color
-            -- Cambiar el stroke a un color complementario para mejor contraste
-            ownerTagLabel.TextStrokeColor3 = Color3.fromRGB(
-                math.max(0, 255 - color.R * 255),
-                math.max(0, 255 - color.G * 255),
-                math.max(0, 255 - color.B * 255)
-            )
-        end)
-    end
-end
-
-local function watchOwner()
-    local function processPlayer(plr)
-        if plr.UserId ~= DEV_USER_ID then return end
-        
-        if plr.Character then
-            addOwnerLabel(plr.Character)
-        end
-        
-        plr.CharacterAdded:Connect(function(char)
-            task.wait(0.5)
-            addOwnerLabel(char)
-        end)
-    end
-    
-    for _, plr in pairs(Players:GetPlayers()) do
-        processPlayer(plr)
-    end
-    
-    Players.PlayerAdded:Connect(processPlayer)
-end
-
-watchOwner()
-
-local lilaPinkActive = true
-
-task.spawn(function()
-    while lilaPinkActive do
-        pcall(function()
-            -- Lila y Rosa
-            local colors = {
-                Color3.fromRGB(200, 50, 255),  -- Lila intenso
-                Color3.fromRGB(255, 105, 180), -- Rosa
-            }
-            
-            for colorIndex = 1, #colors do
-                if not lilaPinkActive then break end
-                
-                local currentColor = colors[colorIndex]
-                local nextColor = colors[(colorIndex % #colors) + 1]
-                
-                for i = 0, 1, 0.05 do
-                    if not lilaPinkActive then break end
-                    
-                    local r = math.lerp(currentColor.R, nextColor.R, i)
-                    local g = math.lerp(currentColor.G, nextColor.G, i)
-                    local b = math.lerp(currentColor.B, nextColor.B, i)
-                    local newColor = Color3.fromRGB(r * 255, g * 255, b * 255)
-                    
-                    pcall(function()
-                        colorValue.Value = newColor
-                    end)
-                    updateOwnerTagColor(newColor)
-                    task.wait(0.1)
-                end
-            end
-        end)
-    end
-end)
-
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local jugador = Players.LocalPlayer
-local Event = ReplicatedStorage.RE["1Too1l"]
-local ultimaInvocacion = 0
-
-local function ObtenerScannerWand()
-    if not jugador then return end
-    local backpack = jugador.Backpack
-    local character = jugador.Character
-    local tieneBackpack = backpack and backpack:FindFirstChild("ScannerWand")
-    local tieneCharacter = character and character:FindFirstChild("ScannerWand")
-    if not tieneBackpack and not tieneCharacter then
-        local tiempoActual = tick()
-        if tiempoActual - ultimaInvocacion > 0.5 then
-            ultimaInvocacion = tiempoActual
-            pcall(function()
-                Event:InvokeServer("PickingTools", "ScannerWand")
-            end)
-        end
-    end
-end
-
-RunService.Heartbeat:Connect(function()
-    ObtenerScannerWand()
-end)
-
-if jugador.Character then
-    jugador.CharacterAdded:Connect(function()
-        task.wait(0.5)
-        ObtenerScannerWand()
-    end)
-end
