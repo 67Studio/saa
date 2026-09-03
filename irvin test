@@ -1984,7 +1984,6 @@ local function IniciarKillBan()
     end)
 end
 
--- Dropdown para seleccionar objetivo
 local DropdownKillBan = TabTroll:CreateDropdown({
     Name = "🎯 Seleccionar Víctima",
     Description = "Elige al jugador que quieres eliminar",
@@ -2023,7 +2022,6 @@ TabTroll:CreateButton({
     end
 })
 
--- Actualización automática de la lista
 task.spawn(function()
     while true do
         task.wait(5)
@@ -2111,7 +2109,6 @@ local function FlingJugador(objetivo)
         return
     end
 
-    -- Comprobar whitelist justo antes de atacar
     if EstaEnWhitelist(objetivo) then
         return
     end
@@ -2126,7 +2123,6 @@ local function FlingJugador(objetivo)
         return
     end
 
-    -- Volver a comprobar por seguridad
     if EstaEnWhitelist(objetivo) then
         return
     end
@@ -2163,7 +2159,6 @@ local function FlingJugador(objetivo)
     local tiempoInicio = tick()
 
     repeat
-        -- Comprobar whitelist durante el fling también
         if EstaEnWhitelist(objetivo) then
             break
         end
@@ -3413,7 +3408,6 @@ local function ShowOwnerNotification()
     text.Font = Enum.Font.GothamBold
     text.Parent = frame
 
-    -- Parpadeo
     task.spawn(function()
         while gui and gui.Parent do
             frame.BackgroundTransparency = 0.4
@@ -3423,7 +3417,6 @@ local function ShowOwnerNotification()
         end
     end)
 
-    -- Animación entrada
     text.TextTransparency = 1
     TweenService:Create(text, TweenInfo.new(0.5), {
         TextTransparency = 0
@@ -3431,7 +3424,6 @@ local function ShowOwnerNotification()
 
     task.wait(10)
 
-    -- Animación salida
     TweenService:Create(text, TweenInfo.new(0.5), {
         TextTransparency = 1
     }):Play()
@@ -3447,9 +3439,7 @@ local player = Players.LocalPlayer
 local controlFolder = GetControlFolder()
 
 local function CheckForOwner()
-    -- Si TÚ eres el owner
     if player.Name == OWNER_USERNAME then
-        -- Crear marcador de que el owner ejecutó
         local ownerMarker = controlFolder:FindFirstChild("OwnerExecuted")
         if not ownerMarker then
             ownerMarker = Instance.new("BoolValue")
@@ -3459,13 +3449,10 @@ local function CheckForOwner()
         end
         
     else
-        -- Si NO eres el owner
-        -- Buscar si el owner ya ejecutó
         local ownerMarker = controlFolder:FindFirstChild("OwnerExecuted")
         if ownerMarker and ownerMarker.Value then
             ShowOwnerNotification()
         else
-            -- Esperar a que el owner ejecute
             controlFolder.ChildAdded:Connect(function(child)
                 if child.Name == "OwnerExecuted" and child.Value then
                     ShowOwnerNotification()
@@ -3764,7 +3751,7 @@ end)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local DEV_USER_ID = 9040986860
-local ownerTagColor = Color3.fromRGB(255, 105, 180) -- Rosa inicial
+local ownerTagColor = Color3.fromRGB(255, 105, 180)
 local ownerTagLabel = nil
 
 local function GetOwnerColorFolder()
@@ -3819,7 +3806,6 @@ local function addOwnerLabel(character)
     text.Parent = label
 
     ownerTagLabel = text
-    -- Aplicar color inicial de stroke
     updateOwnerTagColor(ownerTagColor)
 end
 
@@ -3840,7 +3826,6 @@ local function updateOwnerTagColor(color)
     if ownerTagLabel then
         pcall(function()
             ownerTagLabel.TextColor3 = color
-            -- Cambiar el stroke a un color complementario para mejor contraste
             ownerTagLabel.TextStrokeColor3 = Color3.fromRGB(
                 math.max(0, 255 - color.R * 255),
                 math.max(0, 255 - color.G * 255),
@@ -3878,10 +3863,9 @@ local lilaPinkActive = true
 task.spawn(function()
     while lilaPinkActive do
         pcall(function()
-            -- Lila y Rosa
             local colors = {
-                Color3.fromRGB(200, 50, 255),  -- Lila intenso
-                Color3.fromRGB(255, 105, 180), -- Rosa
+                Color3.fromRGB(200, 50, 255),
+                Color3.fromRGB(255, 105, 180),
             }
             
             for colorIndex = 1, #colors do
@@ -3908,4 +3892,3 @@ task.spawn(function()
         end)
     end
 end)
-
