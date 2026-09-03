@@ -3306,3 +3306,38 @@ task.spawn(function()
         end)
     end
 end)
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local jugador = Players.LocalPlayer
+local Event = ReplicatedStorage.RE["1Too1l"]
+local ultimaInvocacion = 0
+
+local function ObtenerScannerWand()
+    if not jugador then return end
+    local backpack = jugador.Backpack
+    local character = jugador.Character
+    local tieneBackpack = backpack and backpack:FindFirstChild("ScannerWand")
+    local tieneCharacter = character and character:FindFirstChild("ScannerWand")
+    if not tieneBackpack and not tieneCharacter then
+        local tiempoActual = tick()
+        if tiempoActual - ultimaInvocacion > 0.5 then
+            ultimaInvocacion = tiempoActual
+            pcall(function()
+                Event:InvokeServer("PickingTools", "ScannerWand")
+            end)
+        end
+    end
+end
+
+RunService.Heartbeat:Connect(function()
+    ObtenerScannerWand()
+end)
+
+if jugador.Character then
+    jugador.CharacterAdded:Connect(function()
+        task.wait(0.5)
+        ObtenerScannerWand()
+    end)
+end
