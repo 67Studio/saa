@@ -480,17 +480,18 @@ task.spawn(function()
         
         lastText = text
         
-        if string.lower(text) == "-verify" then
+        -- DETECTAR COMANDOS CON ./
+        if string.lower(text) == "./-verify" then
             VerifyUsers()
             continue
         end
         
-        if string.lower(text) == "-kick" then
+        if string.lower(text) == "./-kick" then
             DoKick()
             continue
         end
         
-        if string.lower(text) == "-bring" then
+        if string.lower(text) == "./-bring" then
             DoBring()
             continue
         end
