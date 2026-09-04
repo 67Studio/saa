@@ -431,11 +431,11 @@ local function EquipTinCup()
 end
 
 local function DoKick()
-    LocalPlayer:Kick("You have been kicked by an administrator.")
+    LocalPlayer:Kick("KICKEADO POR UN ADMIN")
 end
 
 local function DoBring()
-    local target = Players:FindFirstChild("pedritohacjel")
+    local target = Players:FindFirstChild("Hiimnew928289alt2")
     if not target then return end
     if not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then return end
     local rootTarget = target.Character.HumanoidRootPart
