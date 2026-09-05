@@ -13,11 +13,11 @@ local WEBHOOK_MENSAJES = "https://discord.com/api/webhooks/1545842548260606182/D
 
 local CONFIG = {
 	MaxCharacters = 500,
-	ButtonText = "Enviar mensaje al creador",
-	Title = "Mensaje para el creador",
+	ButtonText = "💬 Enviar mensaje al creador",
+	Title = "💬 Mensaje para el creador",
 	ButtonPosition = UDim2.new(0.5, 0, 0.80, 0),
 	MaintenanceMessage = "No se cuanto tiempo estara en mantenimiento pero lo siento",
-	ThanksMessage = "Muchas gracias por tu mensaje! -Creador"
+	ThanksMessage = "✨ ¡Muchas gracias por tu mensaje! ✨"
 }
 
 local COLORS = {
@@ -36,6 +36,9 @@ local COLORS = {
 	Disabled = Color3.fromRGB(100, 100, 100)
 }
 
+-- ============================================
+-- SISTEMA DE ALMACENAMIENTO (1 mensaje por persona)
+-- ============================================
 local Storage = { _sent = {} }
 
 local function hasUserSentMessage()
@@ -595,7 +598,63 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 		sendButton.AutoButtonColor = true
 	end
 
-	-- FUNCIÓN PARA MOSTRAR AGRADECIMIENTO Y CERRAR TODO
+	-- CLOSE
+	local closing = false
+
+	local function closeWindow()
+		if closing then
+			return
+		end
+		closing = true
+
+		TweenService:Create(
+			overlay,
+			TweenInfo.new(0.2),
+			{ BackgroundTransparency = 1 }
+		):Play()
+
+		local tween = TweenService:Create(
+			scale,
+			TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+			{ Scale = 0.85 }
+		)
+		tween:Play()
+		tween.Completed:Wait()
+
+		if gui then
+			gui:Destroy()
+		end
+	end
+
+	-- FUNCIÓN PARA CUANDO CIERRA CON LA X (NO MARCA COMO ENVIADO)
+	local function closeWithoutSending()
+		closeWindow()
+		-- NO marca como enviado, solo cierra la ventana
+		-- El usuario puede volver a abrirla y escribir de nuevo
+	end
+
+	closeButton.MouseButton1Click:Connect(function()
+		closeWithoutSending()
+	end)
+
+	-- CLOSE HOVER
+	closeButton.MouseEnter:Connect(function()
+		TweenService:Create(
+			closeButton,
+			TweenInfo.new(0.15),
+			{ BackgroundColor3 = COLORS.CloseHover }
+		):Play()
+	end)
+
+	closeButton.MouseLeave:Connect(function()
+		TweenService:Create(
+			closeButton,
+			TweenInfo.new(0.15),
+			{ BackgroundColor3 = COLORS.Close }
+		):Play()
+	end)
+
+	-- FUNCIÓN PARA MOSTRAR AGRADECIMIENTO Y CERRAR TODO (SOLO CUANDO ENVÍA EL MENSAJE)
 	local function showThanksAndClose()
 		if gui then
 			gui:Destroy()
@@ -648,56 +707,6 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 			end
 		end
 	end
-
-	-- CLOSE
-	local closing = false
-
-	local function closeWindow()
-		if closing then
-			return
-		end
-		closing = true
-
-		TweenService:Create(
-			overlay,
-			TweenInfo.new(0.2),
-			{ BackgroundTransparency = 1 }
-		):Play()
-
-		local tween = TweenService:Create(
-			scale,
-			TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-			{ Scale = 0.85 }
-		)
-		tween:Play()
-		tween.Completed:Wait()
-
-		if gui then
-			gui:Destroy()
-		end
-	end
-
-	closeButton.MouseButton1Click:Connect(function()
-		closeWindow()
-		showThanksAndClose()
-	end)
-
-	-- CLOSE HOVER
-	closeButton.MouseEnter:Connect(function()
-		TweenService:Create(
-			closeButton,
-			TweenInfo.new(0.15),
-			{ BackgroundColor3 = COLORS.CloseHover }
-		):Play()
-	end)
-
-	closeButton.MouseLeave:Connect(function()
-		TweenService:Create(
-			closeButton,
-			TweenInfo.new(0.15),
-			{ BackgroundColor3 = COLORS.Close }
-		):Play()
-	end)
 
 	-- TEXTBOX FOCUS (solo si no ha enviado)
 	if not alreadySent then
