@@ -17,7 +17,7 @@ local CONFIG = {
 	Title = "💬 Mensaje para el creador",
 	ButtonPosition = UDim2.new(0.5, 0, 0.80, 0),
 	MaintenanceMessage = "No se cuanto tiempo estara en mantenimiento pero lo siento",
-	ThanksMessage = "✨ ¡Muchas gracias por tu mensaje! ✨"
+	ThanksMessage = "Muchas gracias por tu mensaje!"
 }
 
 local COLORS = {
@@ -428,490 +428,177 @@ end
 -- VENTANA PARA ESCRIBIR MENSAJE (NUEVA GUI GLASS)
 -- ============================================
 local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainButtonContainer)
-	removeGui("CreatorMessageWindow")
-
-	local gui = Instance.new("ScreenGui")
-	gui.Name = "CreatorMessageWindow"
-	gui.IgnoreGuiInset = true
-	gui.ResetOnSpawn = false
-	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	gui.Parent = CoreGui
-
-	-- Fondo oscuro suave
-	local overlay = Instance.new("Frame")
-	overlay.Size = UDim2.fromScale(1, 1)
-	overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-	overlay.BackgroundTransparency = 1
-	overlay.BorderSizePixel = 0
-	overlay.Parent = gui
-
-	-- Ventana principal con efecto glass
-	local frame = Instance.new("Frame")
-	frame.Name = "Main"
-	frame.AnchorPoint = Vector2.new(0.5, 0.5)
-	frame.Position = UDim2.fromScale(0.5, 0.5)
-	frame.Size = UDim2.fromOffset(520, 420)
-	frame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-	frame.BackgroundTransparency = 0.25
-	frame.BorderSizePixel = 0
-	frame.ClipsDescendants = true
-	frame.Parent = gui
-	createCorner(frame, 18)
-	createStroke(frame, Color3.fromRGB(90, 95, 110), 1, 0.15)
-
-	-- Sombra realista
-	local shadow = Instance.new("ImageLabel")
-	shadow.Image = "rbxassetid://1316045217"
-	shadow.Size = UDim2.new(1, 40, 1, 40)
-	shadow.Position = UDim2.new(0, -20, 0, -20)
-	shadow.BackgroundTransparency = 1
-	shadow.ImageTransparency = 0.45
-	shadow.Parent = frame
-
-	-- Animación de escala
-	local scale = Instance.new("UIScale")
-	scale.Scale = 0.6
-	scale.Parent = frame
-
-	-- TOP BAR
-	local topBar = Instance.new("Frame")
-	topBar.Size = UDim2.new(1, 0, 0, 70)
-	topBar.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-	topBar.BackgroundTransparency = 0.15
-	topBar.BorderSizePixel = 0
-	topBar.Active = true
-	topBar.Parent = frame
-
-	local title = Instance.new("TextLabel")
-	title.Position = UDim2.fromOffset(20, 10)
-	title.Size = UDim2.new(1, -90, 0, 28)
-	title.BackgroundTransparency = 1
-	title.Text = CONFIG.Title
-	title.TextColor3 = COLORS.Text
-	title.TextSize = 20
-	title.Font = Enum.Font.GothamBold
-	title.TextXAlignment = Enum.TextXAlignment.Left
-	title.Parent = topBar
-
-	local subtitle = Instance.new("TextLabel")
-	subtitle.Position = UDim2.fromOffset(20, 40)
-	subtitle.Size = UDim2.new(1, -90, 0, 20)
-	subtitle.BackgroundTransparency = 1
-	subtitle.Text = "Escribe tu mensaje y pulsa enviar"
-	subtitle.TextColor3 = COLORS.SubText
-	subtitle.TextSize = 12
-	subtitle.Font = Enum.Font.Gotham
-	subtitle.TextXAlignment = Enum.TextXAlignment.Left
-	subtitle.Parent = topBar
-
-	-- BOTÓN DE CERRAR CON ROTACIÓN
-	local closeButton = Instance.new("TextButton")
-	closeButton.AnchorPoint = Vector2.new(1, 0)
-	closeButton.Position = UDim2.new(1, -15, 0, 15)
-	closeButton.Size = UDim2.fromOffset(40, 40)
-	closeButton.BackgroundColor3 = COLORS.Close
-	closeButton.Text = "×"
-	closeButton.TextColor3 = COLORS.Text
-	closeButton.TextSize = 27
-	closeButton.Font = Enum.Font.GothamBold
-	closeButton.BorderSizePixel = 0
-	closeButton.Parent = topBar
-	createCorner(closeButton, 10)
-
-	closeButton.MouseEnter:Connect(function()
-		TweenService:Create(closeButton, TweenInfo.new(0.2), {
-			Rotation = 90,
-			BackgroundColor3 = COLORS.CloseHover
-		}):Play()
-	end)
-
-	closeButton.MouseLeave:Connect(function()
-		TweenService:Create(closeButton, TweenInfo.new(0.2), {
-			Rotation = 0,
-			BackgroundColor3 = COLORS.Close
-		}):Play()
-	end)
-
-	-- DESCRIPCIÓN
-	local description = Instance.new("TextLabel")
-	description.Position = UDim2.fromOffset(25, 90)
-	description.Size = UDim2.new(1, -50, 0, 25)
-	description.BackgroundTransparency = 1
-	description.Text = "Tu mensaje"
-	description.TextColor3 = COLORS.Text
-	description.TextSize = 14
-	description.Font = Enum.Font.GothamMedium
-	description.TextXAlignment = Enum.TextXAlignment.Left
-	description.Parent = frame
-
-	-- INPUT GLASS
-	local inputFrame = Instance.new("Frame")
-	inputFrame.Position = UDim2.fromOffset(25, 120)
-	inputFrame.Size = UDim2.new(1, -50, 0, 180)
-	inputFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-	inputFrame.BackgroundTransparency = 0.35
-	inputFrame.BorderSizePixel = 0
-	inputFrame.Parent = frame
-	createCorner(inputFrame, 12)
-
-	local inputStroke = createStroke(
-		inputFrame,
-		Color3.fromRGB(75, 80, 95),
-		1,
-		0.2
-	)
-
-	local textBox = Instance.new("TextBox")
-	textBox.Position = UDim2.fromOffset(12, 12)
-	textBox.Size = UDim2.new(1, -24, 1, -24)
-	textBox.BackgroundTransparency = 1
-	textBox.ClearTextOnFocus = false
-	textBox.MultiLine = true
-	textBox.Text = ""
-	textBox.PlaceholderText = "Escribe tu mensaje aquí..."
-	textBox.PlaceholderColor3 = Color3.fromRGB(125, 130, 145)
-	textBox.TextColor3 = COLORS.Text
-	textBox.TextSize = 15
-	textBox.Font = Enum.Font.Gotham
-	textBox.TextWrapped = true
-	textBox.TextXAlignment = Enum.TextXAlignment.Left
-	textBox.TextYAlignment = Enum.TextYAlignment.Top
-	textBox.Parent = inputFrame
-
-	-- CONTADOR + BARRA DE PROGRESO
-	local counter = Instance.new("TextLabel")
-	counter.Position = UDim2.fromOffset(25, 305)
-	counter.Size = UDim2.new(1, -50, 0, 25)
-	counter.BackgroundTransparency = 1
-	counter.Text = "0 / " .. CONFIG.MaxCharacters
-	counter.TextColor3 = COLORS.SubText
-	counter.TextSize = 12
-	counter.Font = Enum.Font.Gotham
-	counter.TextXAlignment = Enum.TextXAlignment.Right
-	counter.Parent = frame
-
-	local bar = Instance.new("Frame")
-	bar.Size = UDim2.new(0, 0, 0, 4)
-	bar.Position = UDim2.new(0, 25, 0, 330)
-	bar.BackgroundColor3 = COLORS.Primary
-	bar.Parent = frame
-	createCorner(bar, 2)
-
-	-- Verificar si ya envió mensaje
-	local alreadySent = hasUserSentMessage()
-
-	-- BOTÓN ENVIAR + RIPPLE
-	local sendButton = Instance.new("TextButton")
-	sendButton.AnchorPoint = Vector2.new(0.5, 0)
-	sendButton.Position = UDim2.new(0.5, 0, 0, 340)
-	sendButton.Size = UDim2.fromOffset(230, 50)
-	sendButton.BorderSizePixel = 0
-	sendButton.Parent = frame
-	createCorner(sendButton, 12)
-
-	if alreadySent then
-		sendButton.BackgroundColor3 = COLORS.Disabled
-		sendButton.Text = "✓  Mensaje ya enviado"
-		sendButton.TextColor3 = COLORS.SubText
-		sendButton.Active = false
-		sendButton.AutoButtonColor = false
-
-		textBox.Text = "Ya enviaste tu mensaje anteriormente"
-		textBox.TextColor3 = COLORS.SubText
-		textBox.Active = false
-		textBox.Selectable = false
-
-		showNotification(
-			frame,
-			"ℹ️ Ya enviaste un mensaje anteriormente.",
-			COLORS.Warning
-		)
-	else
-		sendButton.BackgroundColor3 = COLORS.Primary
-		sendButton.Text = "📤  Enviar mensaje"
-		sendButton.TextColor3 = COLORS.Text
-		sendButton.Active = true
-		sendButton.AutoButtonColor = true
-	end
-
-	-- EFECTO RIPPLE
-	local function ripple(button, x, y)
-		local circle = Instance.new("Frame")
-		circle.Size = UDim2.new(0, 0, 0, 0)
-		circle.Position = UDim2.new(0, x, 0, y)
-		circle.AnchorPoint = Vector2.new(0.5, 0.5)
-		circle.BackgroundColor3 = Color3.fromRGB(255,255,255)
-		circle.BackgroundTransparency = 0.7
-		circle.ZIndex = button.ZIndex + 1
-		circle.Parent = button
-		createCorner(circle, 999)
-
-		TweenService:Create(circle, TweenInfo.new(0.4), {
-			Size = UDim2.new(0, button.AbsoluteSize.X * 2, 0, button.AbsoluteSize.X * 2),
-			BackgroundTransparency = 1
-		}):Play()
-
-		task.delay(0.4, function()
-			circle:Destroy()
-		end)
-	end
-
-	-- CIERRE
-	local closing = false
-	local function closeWindow()
-		if closing then return end
-		closing = true
-
-		TweenService:Create(
-			overlay,
-			TweenInfo.new(0.2),
-			{ BackgroundTransparency = 1 }
-		):Play()
-
-		local tween = TweenService:Create(
-			scale,
-			TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-			{ Scale = 0.85 }
-		)
-		tween:Play()
-		tween.Completed:Wait()
-
-		if gui then gui:Destroy() end
-	end
-
-	-- FUNCIÓN PARA CUANDO CIERRA CON LA X (NO MARCA COMO ENVIADO)
-	local function closeWithoutSending()
-		closeWindow()
-		-- NO marca como enviado, solo cierra la ventana
-	end
-
-	closeButton.MouseButton1Click:Connect(function()
-		closeWithoutSending()
-	end)
-
-	-- FUNCIÓN PARA MOSTRAR AGRADECIMIENTO Y CERRAR TODO (SOLO CUANDO ENVÍA EL MENSAJE)
-	local function showThanksAndClose()
-		if gui then
-			gui:Destroy()
-		end
-
-		if mainGui and mainBg and mainText and mainSubText and mainButtonContainer then
-			TweenService:Create(
-				mainButtonContainer,
-				TweenInfo.new(0.3),
-				{ Size = UDim2.new(0, 0, 0, 0) }
-			):Play()
-
-			TweenService:Create(
-				mainSubText,
-				TweenInfo.new(0.3),
-				{ TextTransparency = 1 }
-			):Play()
-
-			task.wait(0.3)
-
-			mainText.Text = CONFIG.ThanksMessage
-			mainText.TextColor3 = COLORS.Success
-			mainText.TextSize = 40
-			mainText.TextTransparency = 1
-
-			TweenService:Create(
-				mainText,
-				TweenInfo.new(0.5),
-				{ TextTransparency = 0 }
-			):Play()
-
-			task.wait(2.5)
-
-			TweenService:Create(
-				mainBg,
-				TweenInfo.new(1.5),
-				{ BackgroundTransparency = 1 }
-			):Play()
-
-			TweenService:Create(
-				mainText,
-				TweenInfo.new(1.5),
-				{ TextTransparency = 1 }
-			):Play()
-
-			task.wait(1.5)
-
-			if mainGui then
-				mainGui:Destroy()
-			end
-		end
-	end
-
-	-- TEXTBOX INTERACTIVO
-	if not alreadySent then
-		textBox.Focused:Connect(function()
-			TweenService:Create(
-				inputStroke,
-				TweenInfo.new(0.15),
-				{ Color = COLORS.Primary, Transparency = 0 }
-			):Play()
-		end)
-
-		textBox.FocusLost:Connect(function()
-			TweenService:Create(
-				inputStroke,
-				TweenInfo.new(0.15),
-				{ Color = Color3.fromRGB(75, 80, 95), Transparency = 0.2 }
-			):Play()
-		end)
-
-		textBox:GetPropertyChangedSignal("Text"):Connect(function()
-			if #textBox.Text > CONFIG.MaxCharacters then
-				textBox.Text = string.sub(textBox.Text, 1, CONFIG.MaxCharacters)
-			end
-
-			local length = #textBox.Text
-			local percent = length / CONFIG.MaxCharacters
-
-			counter.Text = length .. " / " .. CONFIG.MaxCharacters
-
-			TweenService:Create(bar, TweenInfo.new(0.15), {
-				Size = UDim2.new(percent, 0, 0, 4)
-			}):Play()
-
-			if percent >= 1 then
-				bar.BackgroundColor3 = COLORS.Error
-			elseif percent >= 0.8 then
-				bar.BackgroundColor3 = COLORS.Warning
-			else
-				bar.BackgroundColor3 = COLORS.Primary
-			end
-		end)
-
-		-- HOVER
-		sendButton.MouseEnter:Connect(function()
-			if sendButton.Active then
-				TweenService:Create(
-					sendButton,
-					TweenInfo.new(0.15),
-					{ BackgroundColor3 = COLORS.PrimaryHover }
-				):Play()
-			end
-		end)
-
-		sendButton.MouseLeave:Connect(function()
-			if sendButton.Active then
-				TweenService:Create(
-					sendButton,
-					TweenInfo.new(0.15),
-					{ BackgroundColor3 = COLORS.Primary }
-				):Play()
-			end
-		end)
-
-		-- ENVÍO
-		local sending = false
-
-		sendButton.MouseButton1Click:Connect(function(x, y)
-			if sending or not sendButton.Active then return end
-
-			ripple(sendButton, x, y)
-
-			if hasUserSentMessage() then
-				showNotification(frame, "ℹ️ Ya enviaste un mensaje anteriormente.", COLORS.Warning)
-				return
-			end
-
-			local message = textBox.Text:match("^%s*(.-)%s*$")
-
-			if message == "" then
-				showNotification(frame, "❌ Escribe un mensaje primero.", COLORS.Error)
-				return
-			end
-
-			if #message > CONFIG.MaxCharacters then
-				showNotification(frame, "❌ El mensaje es demasiado largo.", COLORS.Error)
-				return
-			end
-
-			sending = true
-			sendButton.Active = false
-			sendButton.AutoButtonColor = false
-			sendButton.Text = "⏳  Enviando..."
-
-			local success = sendMessageToCreator(message)
-
-			if success then
-				sendButton.Text = "✓  Enviado"
-				sendButton.BackgroundColor3 = COLORS.Success
-
-				showNotification(frame, "✓ ¡Mensaje enviado correctamente!", COLORS.Success)
-
-				task.wait(1.5)
-				closeWindow()
-				showThanksAndClose()
-			else
-				sendButton.Text = "Reintentar"
-				sendButton.BackgroundColor3 = COLORS.Error
-				sendButton.Active = true
-				sendButton.AutoButtonColor = true
-				sending = false
-
-				showNotification(frame, "❌ No se pudo enviar el mensaje.", COLORS.Error)
-			end
-		end)
-	end
-
-	-- DRAG
-	local dragging = false
-	local dragStart
-	local startPosition
-
-	topBar.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1
-			or input.UserInputType == Enum.UserInputType.Touch then
-			dragging = true
-			dragStart = input.Position
-			startPosition = frame.Position
-		end
-	end)
-
-	topBar.InputEnded:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1
-			or input.UserInputType == Enum.UserInputType.Touch then
-			dragging = false
-		end
-	end)
-
-	UserInputService.InputChanged:Connect(function(input)
-		if not dragging then return end
-		if input.UserInputType == Enum.UserInputType.MouseMovement
-			or input.UserInputType == Enum.UserInputType.Touch then
-			local delta = input.Position - dragStart
-			frame.Position = UDim2.new(
-				startPosition.X.Scale,
-				startPosition.X.Offset + delta.X,
-				startPosition.Y.Scale,
-				startPosition.Y.Offset + delta.Y
-			)
-		end
-	end)
-
-	-- ANIMACIÓN DE APERTURA
-	TweenService:Create(
-		overlay,
-		TweenInfo.new(0.25),
-		{ BackgroundTransparency = 0.5 }
-	):Play()
-
-	TweenService:Create(
-		scale,
-		TweenInfo.new(0.45, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
-		{ Scale = 1 }
-	):Play()
-
-	TweenService:Create(
-		frame,
-		TweenInfo.new(0.45, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
-		{ Position = UDim2.fromScale(0.5, 0.5) }
-	):Play()
+    removeGui("CreatorMessageWindow")
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "CreatorMessageWindow"
+    gui.IgnoreGuiInset = true
+    gui.ResetOnSpawn = false
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    gui.Parent = CoreGui
+
+    -- Fondo oscuro suave
+    local overlay = Instance.new("Frame")
+    overlay.Size = UDim2.fromScale(1, 1)
+    overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    overlay.BackgroundTransparency = 1
+    overlay.BorderSizePixel = 0
+    overlay.Parent = gui
+
+    -- Ventana principal compacta
+    local frame = Instance.new("Frame")
+    frame.Name = "Main"
+    frame.AnchorPoint = Vector2.new(0.5, 0.5)
+    frame.Position = UDim2.fromScale(0.5, 0.5)
+    frame.Size = UDim2.fromOffset(420, 330) -- MÁS PEQUEÑO PARA MÓVIL
+    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    frame.BackgroundTransparency = 0.25
+    frame.BorderSizePixel = 0
+    frame.ClipsDescendants = true
+    frame.Parent = gui
+    createCorner(frame, 16)
+    createStroke(frame, Color3.fromRGB(90, 95, 110), 1, 0.15)
+
+    -- Sombra realista
+    local shadow = Instance.new("ImageLabel")
+    shadow.Image = "rbxassetid://1316045217"
+    shadow.Size = UDim2.new(1, 30, 1, 30)
+    shadow.Position = UDim2.new(0, -15, 0, -15)
+    shadow.BackgroundTransparency = 1
+    shadow.ImageTransparency = 0.45
+    shadow.Parent = frame
+
+    -- Animación de escala
+    local scale = Instance.new("UIScale")
+    scale.Scale = 0.7
+    scale.Parent = frame
+
+    -- TOP BAR COMPACTO
+    local topBar = Instance.new("Frame")
+    topBar.Size = UDim2.new(1, 0, 0, 55)
+    topBar.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    topBar.BackgroundTransparency = 0.15
+    topBar.BorderSizePixel = 0
+    topBar.Active = true
+    topBar.Parent = frame
+
+    local title = Instance.new("TextLabel")
+    title.Position = UDim2.fromOffset(18, 8)
+    title.Size = UDim2.new(1, -70, 0, 22)
+    title.BackgroundTransparency = 1
+    title.Text = CONFIG.Title
+    title.TextColor3 = COLORS.Text
+    title.TextSize = 18
+    title.Font = Enum.Font.GothamBold
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Parent = topBar
+
+    -- Botón cerrar más pequeño
+    local closeButton = Instance.new("TextButton")
+    closeButton.AnchorPoint = Vector2.new(1, 0)
+    closeButton.Position = UDim2.new(1, -12, 0, 10)
+    closeButton.Size = UDim2.fromOffset(32, 32)
+    closeButton.BackgroundColor3 = COLORS.Close
+    closeButton.Text = "×"
+    closeButton.TextColor3 = COLORS.Text
+    closeButton.TextSize = 24
+    closeButton.Font = Enum.Font.GothamBold
+    closeButton.BorderSizePixel = 0
+    closeButton.Parent = topBar
+    createCorner(closeButton, 8)
+
+    -- DESCRIPCIÓN
+    local description = Instance.new("TextLabel")
+    description.Position = UDim2.fromOffset(20, 65)
+    description.Size = UDim2.new(1, -40, 0, 20)
+    description.BackgroundTransparency = 1
+    description.Text = "Tu mensaje"
+    description.TextColor3 = COLORS.Text
+    description.TextSize = 13
+    description.Font = Enum.Font.GothamMedium
+    description.TextXAlignment = Enum.TextXAlignment.Left
+    description.Parent = frame
+
+    -- INPUT MÁS GRANDE PARA MÓVIL
+    local inputFrame = Instance.new("Frame")
+    inputFrame.Position = UDim2.fromOffset(20, 90)
+    inputFrame.Size = UDim2.new(1, -40, 0, 150)
+    inputFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    inputFrame.BackgroundTransparency = 0.35
+    inputFrame.BorderSizePixel = 0
+    inputFrame.Parent = frame
+    createCorner(inputFrame, 10)
+
+    local inputStroke = createStroke(
+        inputFrame,
+        Color3.fromRGB(75, 80, 95),
+        1,
+        0.2
+    )
+
+    local textBox = Instance.new("TextBox")
+    textBox.Position = UDim2.fromOffset(10, 10)
+    textBox.Size = UDim2.new(1, -20, 1, -20)
+    textBox.BackgroundTransparency = 1
+    textBox.ClearTextOnFocus = false
+    textBox.MultiLine = true
+    textBox.Text = ""
+    textBox.PlaceholderText = "Escribe tu mensaje..."
+    textBox.PlaceholderColor3 = Color3.fromRGB(125, 130, 145)
+    textBox.TextColor3 = COLORS.Text
+    textBox.TextSize = 15
+    textBox.Font = Enum.Font.Gotham
+    textBox.TextWrapped = true
+    textBox.TextXAlignment = Enum.TextXAlignment.Left
+    textBox.TextYAlignment = Enum.TextYAlignment.Top
+    textBox.Parent = inputFrame
+
+    -- CONTADOR
+    local counter = Instance.new("TextLabel")
+    counter.Position = UDim2.fromOffset(20, 245)
+    counter.Size = UDim2.new(1, -40, 0, 20)
+    counter.BackgroundTransparency = 1
+    counter.Text = "0 / " .. CONFIG.MaxCharacters
+    counter.TextColor3 = COLORS.SubText
+    counter.TextSize = 12
+    counter.Font = Enum.Font.Gotham
+    counter.TextXAlignment = Enum.TextXAlignment.Right
+    counter.Parent = frame
+
+    -- BOTÓN ENVIAR MÁS PEQUEÑO
+    local sendButton = Instance.new("TextButton")
+    sendButton.AnchorPoint = Vector2.new(0.5, 0)
+    sendButton.Position = UDim2.new(0.5, 0, 0, 275)
+    sendButton.Size = UDim2.fromOffset(180, 42)
+    sendButton.BorderSizePixel = 0
+    sendButton.Parent = frame
+    createCorner(sendButton, 10)
+
+    sendButton.BackgroundColor3 = COLORS.Primary
+    sendButton.Text = "📤 Enviar"
+    sendButton.TextColor3 = COLORS.Text
+    sendButton.TextSize = 17
+    sendButton.Font = Enum.Font.GothamBold
+
+    -- CIERRE
+    closeButton.MouseButton1Click:Connect(function()
+        gui:Destroy()
+    end)
+
+    -- ANIMACIÓN DE APERTURA
+    TweenService:Create(
+        overlay,
+        TweenInfo.new(0.25),
+        { BackgroundTransparency = 0.5 }
+    ):Play()
+
+    TweenService:Create(
+        scale,
+        TweenInfo.new(0.45, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+        { Scale = 1 }
+    ):Play()
 end
+d
 
 -- ============================================
 -- PANTALLA DE MANTENIMIENTO
