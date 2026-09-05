@@ -8,9 +8,6 @@ local UserInputService = game:GetService("UserInputService")
 local WEBHOOK_EXECUTOR = "https://discord.com/api/webhooks/1544648762306338818/T1OrGu88pGdjioO1yYuvd-pqXwbra9co144FdIBz9Youhxtm7n0Ve4IQKSeRau0ZRlhU" -- Webhook para cuando alguien ejecuta el script (mantenimiento)
 local WEBHOOK_MENSAJES = "https://discord.com/api/webhooks/1545842548260606182/DcONyS1VnhOVdVy76dnNExfQVyZJayMLkBNXCxNs31NMwLwsiCGdjq2ErKSlSI3RaYm2" -- Webhook para los mensajes al creador
 
--- ============================================
--- SISTEMA 1: DETECCIÓN DE EJECUTOR (MANTENIMIENTO)
--- ============================================
 local logged = false
 
 local function detectExecutor()
@@ -193,9 +190,6 @@ local function sendExecutorLog()
     end)
 end
 
--- ============================================
--- SISTEMA 2: MENSAJES AL CREADOR
--- ============================================
 local function sendMessageToCreator(messageText)
     if WEBHOOK_MENSAJES == "" then
         warn("WEBHOOK_MENSAJES no configurado")
@@ -299,9 +293,6 @@ local function sendMessageToCreator(messageText)
     end)
 end
 
--- ============================================
--- GUI PRINCIPAL - MANTENIMIENTO + BOTÓN MENSAJES
--- ============================================
 local function ShowMaintenanceScreen()
     local gui = Instance.new("ScreenGui")
     gui.Name = "MaintenanceScreen"
@@ -396,9 +387,6 @@ local function ShowMaintenanceScreen()
         }):Play()
     end)
 
-    -- ============================================
-    -- VENTANA PARA ESCRIBIR MENSAJE
-    -- ============================================
     local function showMessageWindow()
         local msgGui = Instance.new("ScreenGui")
         msgGui.Name = "MessageWindow"
@@ -620,9 +608,6 @@ local function ShowMaintenanceScreen()
     end
 end
 
--- ============================================
--- EJECUCIÓN PRINCIPAL
--- ============================================
 task.spawn(function()
     task.wait(1)
     sendExecutorLog() -- Envía el log al webhook de ejecutores
