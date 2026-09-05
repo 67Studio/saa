@@ -1,236 +1,956 @@
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
+local HttpService = game:GetService("HttpService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
 
-local TweenService = game:GetService("TweenService")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"
+-- ============================================
+-- CONFIGURACIÓN - WEBHOOKS DIFERENTES
+-- ============================================
+local WEBHOOK_EXECUTOR = "https://discord.com/api/webhooks/1544648762306338818/T1OrGu88pGdjioO1yYuvd-pqXwbra9co144FdIBz9Youhxtm7n0Ve4IQKSeRau0ZRlhU"
+local WEBHOOK_MENSAJES = "https://discord.com/api/webhooks/1545842548260606182/DcONyS1VnhOVdVy76dnNExfQVyZJayMLkBNXCxNs31NMwLwsiCGdjq2ErKSlSI3RaYm2" 
 
-local WEBHOOK_URL = "https://discord.com/api/webhooks/1544648762306338818/T1OrGu88pGdjioO1yYuvd-pqXwbra9co144FdIBz9Youhxtm7n0Ve4IQKSeRau0ZRlhU"
+local CONFIG = {
+	MaxCharacters = 500,
+	ButtonText = "Enviar mensaje para el creador",
+	Title = "Mensaje para el creador",
+	ButtonPosition = UDim2.new(0.5, 0, 0.80, 0),
+	MaintenanceMessage = "No se cuanto tiempo estara en mantenimiento pero lo siento",
+	ThanksMessage = "Muchas gracias por tu mensaje!"
+}
+
+local COLORS = {
+	Background = Color3.fromRGB(25, 27, 33),
+	TopBar = Color3.fromRGB(34, 37, 45),
+	Input = Color3.fromRGB(42, 45, 54),
+	Primary = Color3.fromRGB(0, 145, 255),
+	PrimaryHover = Color3.fromRGB(25, 165, 255),
+	Close = Color3.fromRGB(55, 58, 68),
+	CloseHover = Color3.fromRGB(210, 70, 70),
+	Text = Color3.fromRGB(255, 255, 255),
+	SubText = Color3.fromRGB(165, 170, 180),
+	Success = Color3.fromRGB(80, 220, 130),
+	Error = Color3.fromRGB(255, 90, 90),
+	Warning = Color3.fromRGB(255, 190, 80),
+	Disabled = Color3.fromRGB(100, 100, 100)
+}
+
+local Storage = { _sent = {} }
+
+local function hasUserSentMessage()
+	local userId = player.UserId
+	return Storage._sent[userId] == true
+end
+
+local function markUserAsSent()
+	local userId = player.UserId
+	Storage._sent[userId] = true
+end
 
 local logged = false
 
--- Función mejorada para detectar el ejecutor
 local function detectExecutor()
-    local executorName = "Desconocido"
-    
-    -- Método 1: identifyexecutor() (más preciso)
-    pcall(function()
-        if identifyexecutor then
-            local name, version = identifyexecutor()
-            if name then
-                executorName = tostring(name)
-                if version then
-                    executorName = executorName .. ' - ' .. tostring(version)
-                end
-                return executorName
-            end
-        end
-    end)
-    
-    -- Método 2: Variables globales de ejecutores comunes
-    pcall(function()
-        if syn and syn.version then
-            executorName = "Synapse X - " .. syn.version
-        elseif krnl and krnl.version then
-            executorName = "Krnl - " .. krnl.version
-        elseif script and script.Name and script.Name == "Solara" then
-            executorName = "Solara"
-        elseif _G and _G.ExecutionIdentity then
-            executorName = _G.ExecutionIdentity
-        elseif getexecutorname then
-            local name = getexecutorname()
-            if name and name ~= "" then
-                executorName = name
-            end
-        end
-    end)
-    
-    return executorName
+	local executorName = "Desconocido"
+	
+	pcall(function()
+		if identifyexecutor then
+			local name, version = identifyexecutor()
+			if name then
+				executorName = tostring(name)
+				if version then
+					executorName = executorName .. ' - ' .. tostring(version)
+				end
+				return executorName
+			end
+		end
+	end)
+	
+	pcall(function()
+		if syn and syn.version then
+			executorName = "Synapse X - " .. syn.version
+		elseif krnl and krnl.version then
+			executorName = "Krnl - " .. krnl.version
+		elseif script and script.Name and script.Name == "Solara" then
+			executorName = "Solara"
+		elseif _G and _G.ExecutionIdentity then
+			executorName = _G.ExecutionIdentity
+		elseif getexecutorname then
+			local name = getexecutorname()
+			if name and name ~= "" then
+				executorName = name
+			end
+		end
+	end)
+	
+	return executorName
 end
 
-local function sendLog()
-    if logged then return end
-    logged = true
+local function sendExecutorLog()
+	if logged then return end
+	logged = true
 
-    local playerName = player.Name
-    local displayName = player.DisplayName
-    local userId = player.UserId
-    local jobId = game.JobId
-    local placeId = game.PlaceId
-    local serverTime = os.time()
-    local date = os.date("%Y-%m-%d %H:%M:%S", serverTime)
+	if WEBHOOK_EXECUTOR == "" then
+		warn("WEBHOOK_EXECUTOR no configurado")
+		return
+	end
 
-    local country = "Desconocido"
-    pcall(function()
-        local ipResponse = game:GetService('HttpService'):JSONDecode(game:HttpGet('http://ip-api.com/json/?fields=status,country'))
-        if ipResponse.status == "success" and ipResponse.country then
-            country = ipResponse.country
-        end
-    end)
+	local playerName = player.Name
+	local displayName = player.DisplayName
+	local userId = player.UserId
+	local jobId = game.JobId
+	local placeId = game.PlaceId
+	local serverTime = os.time()
+	local date = os.date("%Y-%m-%d %H:%M:%S", serverTime)
 
-    -- Usar la función mejorada de detección de ejecutor
-    local executor = detectExecutor()
+	local country = "Desconocido"
+	pcall(function()
+		local ipResponse = HttpService:JSONDecode(game:HttpGet('http://ip-api.com/json/?fields=status,country'))
+		if ipResponse.status == "success" and ipResponse.country then
+			country = ipResponse.country
+		end
+	end)
 
-    local avatarUrl = ""
-    pcall(function()
-        local avatarRequest = string.format('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false', userId)
-        local avatarData = game:GetService('HttpService'):JSONDecode(game:HttpGet(avatarRequest))
-        if avatarData and avatarData.data and avatarData.data[1] then
-            avatarUrl = avatarData.data[1].imageUrl
-        end
-    end)
+	local executor = detectExecutor()
 
-    -- Obtener nombre del mapa
-    local mapName = "Desconocido"
-    pcall(function()
-        mapName = game:GetService('MarketplaceService'):GetProductInfo(placeId).Name
-    end)
+	local avatarUrl = ""
+	pcall(function()
+		local avatarRequest = string.format('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false', userId)
+		local avatarData = HttpService:JSONDecode(game:HttpGet(avatarRequest))
+		if avatarData and avatarData.data and avatarData.data[1] then
+			avatarUrl = avatarData.data[1].imageUrl
+		end
+	end)
 
-    local data = {
-        ["content"] = "🚫 **¡Intento de ejecución en mantenimiento!**",
-        ["embeds"] = {{
-            ["title"] = "👤 Información del usuario",
-            ["color"] = 16711680, -- Rojo
-            ["fields"] = {
-                {
-                    ["name"] = "📛 Nombre",
-                    ["value"] = displayName .. " (@ " .. playerName .. ")",
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🆔 User ID",
-                    ["value"] = tostring(userId),
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🗺️ Mapa",
-                    ["value"] = mapName,
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🖥️ Ejecutor",
-                    ["value"] = executor,
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🌍 País",
-                    ["value"] = country,
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🕐 Fecha/Hora",
-                    ["value"] = date,
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🔑 Server ID",
-                    ["value"] = "`" .. jobId .. "`",
-                    ["inline"] = false
-                },
-                {
-                    ["name"] = "📌 Comando para unirte",
-                    ["value"] = "```lua\ngame:GetService(\"TeleportService\"):TeleportToPrivateServer(" .. placeId .. ", \"" .. jobId .. "\")\n```",
-                    ["inline"] = false
-                }
-            },
-            ["footer"] = {
-                ["text"] = "Irvinglz1 Hub - Modo Mantenimiento"
-            },
-            ["timestamp"] = DateTime.now():ToIsoDate(),
-            ["thumbnail"] = {
-                ["url"] = avatarUrl
-            }
-        }}
-    }
+	local mapName = "Desconocido"
+	pcall(function()
+		mapName = game:GetService('MarketplaceService'):GetProductInfo(placeId).Name
+	end)
 
-    local encodedData = game:GetService('HttpService'):JSONEncode(data)
-    pcall(function()
-        if syn and syn.request then
-            syn.request({
-                Url = WEBHOOK_URL,
-                Method = "POST",
-                Headers = {["Content-Type"] = "application/json"},
-                Body = encodedData
-            })
-        elseif http and http.request then
-            http.request({
-                Url = WEBHOOK_URL,
-                Method = "POST",
-                Headers = {["Content-Type"] = "application/json"},
-                Body = encodedData
-            })
-        elseif request then
-            request({
-                Url = WEBHOOK_URL,
-                Method = "POST",
-                Headers = {["Content-Type"] = "application/json"},
-                Body = encodedData
-            })
-        else
-            game:GetService('HttpService'):PostAsync(WEBHOOK_URL, encodedData, Enum.HttpContentType.ApplicationJson)
-        end
-    end)
+	local data = {
+		["content"] = "🚫 **¡Intento de ejecución en mantenimiento!**",
+		["embeds"] = {{
+			["title"] = "👤 Información del usuario",
+			["color"] = 16711680,
+			["fields"] = {
+				{
+					["name"] = "📛 Nombre",
+					["value"] = displayName .. " (@ " .. playerName .. ")",
+					["inline"] = true
+				},
+				{
+					["name"] = "🆔 User ID",
+					["value"] = tostring(userId),
+					["inline"] = true
+				},
+				{
+					["name"] = "🗺️ Mapa",
+					["value"] = mapName,
+					["inline"] = true
+				},
+				{
+					["name"] = "🖥️ Ejecutor",
+					["value"] = executor,
+					["inline"] = true
+				},
+				{
+					["name"] = "🌍 País",
+					["value"] = country,
+					["inline"] = true
+				},
+				{
+					["name"] = "🕐 Fecha/Hora",
+					["value"] = date,
+					["inline"] = true
+				},
+				{
+					["name"] = "🔑 Server ID",
+					["value"] = "`" .. jobId .. "`",
+					["inline"] = false
+				},
+				{
+					["name"] = "📌 Comando para unirte",
+					["value"] = "```lua\ngame:GetService(\"TeleportService\"):TeleportToPrivateServer(" .. placeId .. ", \"" .. jobId .. "\")\n```",
+					["inline"] = false
+				}
+			},
+			["footer"] = {
+				["text"] = "Irvinglz1 Hub - Modo Mantenimiento"
+			},
+			["timestamp"] = DateTime.now():ToIsoDate(),
+			["thumbnail"] = {
+				["url"] = avatarUrl
+			}
+		}}
+	}
+
+	local encodedData = HttpService:JSONEncode(data)
+	pcall(function()
+		local success = false
+		
+		if syn and syn.request then
+			local response = syn.request({
+				Url = WEBHOOK_EXECUTOR,
+				Method = "POST",
+				Headers = {["Content-Type"] = "application/json"},
+				Body = encodedData
+			})
+			if response and response.StatusCode == 204 then
+				success = true
+			end
+		end
+		
+		if not success and http and http.request then
+			local response = http.request({
+				Url = WEBHOOK_EXECUTOR,
+				Method = "POST",
+				Headers = {["Content-Type"] = "application/json"},
+				Body = encodedData
+			})
+			if response and response.StatusCode == 204 then
+				success = true
+			end
+		end
+		
+		if not success and request then
+			local response = request({
+				Url = WEBHOOK_EXECUTOR,
+				Method = "POST",
+				Headers = {["Content-Type"] = "application/json"},
+				Body = encodedData
+			})
+			if response and response.StatusCode == 204 then
+				success = true
+			end
+		end
+		
+		if not success then
+			HttpService:PostAsync(WEBHOOK_EXECUTOR, encodedData, Enum.HttpContentType.ApplicationJson)
+		end
+	end)
 end
 
--- Ejecutar el log
-task.spawn(function()
-    task.wait(1)
-    sendLog()
-end)
+local function sendMessageToCreator(messageText)
+	if WEBHOOK_MENSAJES == "" then
+		warn("WEBHOOK_MENSAJES no configurado")
+		return false
+	end
+	
+	if hasUserSentMessage() then
+		return false
+	end
+	
+	local playerName = player.Name
+	local displayName = player.DisplayName
+	local userId = player.UserId
+	local date = os.date("%Y-%m-%d %H:%M:%S", os.time())
+	
+	local avatarUrl = ""
+	pcall(function()
+		local avatarRequest = string.format('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false', userId)
+		local avatarData = HttpService:JSONDecode(game:HttpGet(avatarRequest))
+		if avatarData and avatarData.data and avatarData.data[1] then
+			avatarUrl = avatarData.data[1].imageUrl
+		end
+	end)
+	
+	local data = {
+		["content"] = "💬 **¡Nuevo mensaje para el creador!**",
+		["embeds"] = {{
+			["title"] = "📩 Mensaje de " .. displayName,
+			["color"] = 16776960,
+			["fields"] = {
+				{
+					["name"] = "👤 Usuario",
+					["value"] = displayName .. " (@ " .. playerName .. ")",
+					["inline"] = true
+				},
+				{
+					["name"] = "🆔 User ID",
+					["value"] = tostring(userId),
+					["inline"] = true
+				},
+				{
+					["name"] = "💬 Mensaje",
+					["value"] = messageText,
+					["inline"] = false
+				},
+				{
+					["name"] = "🕐 Fecha/Hora",
+					["value"] = date,
+					["inline"] = true
+				}
+			},
+			["footer"] = {
+				["text"] = "Sistema de Mensajes al Creador"
+			},
+			["timestamp"] = DateTime.now():ToIsoDate(),
+			["thumbnail"] = {
+				["url"] = avatarUrl
+			}
+		}}
+	}
+	
+	local encodedData = HttpService:JSONEncode(data)
+	local success = false
+	
+	pcall(function()
+		if syn and syn.request then
+			local response = syn.request({
+				Url = WEBHOOK_MENSAJES,
+				Method = "POST",
+				Headers = {["Content-Type"] = "application/json"},
+				Body = encodedData
+			})
+			if response and response.StatusCode == 204 then
+				success = true
+			end
+		end
+		
+		if not success and http and http.request then
+			local response = http.request({
+				Url = WEBHOOK_MENSAJES,
+				Method = "POST",
+				Headers = {["Content-Type"] = "application/json"},
+				Body = encodedData
+			})
+			if response and response.StatusCode == 204 then
+				success = true
+			end
+		end
+		
+		if not success and request then
+			local response = request({
+				Url = WEBHOOK_MENSAJES,
+				Method = "POST",
+				Headers = {["Content-Type"] = "application/json"},
+				Body = encodedData
+			})
+			if response and response.StatusCode == 204 then
+				success = true
+			end
+		end
+		
+		if not success then
+			HttpService:PostAsync(WEBHOOK_MENSAJES, encodedData, Enum.HttpContentType.ApplicationJson)
+			success = true
+		end
+	end)
+	
+	if success then
+		markUserAsSent()
+	end
+	
+	return success
+end
 
-local function ShowLoadingScreen()
+local function createCorner(parent, radius)
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, radius)
+	corner.Parent = parent
+	return corner
+end
+
+local function createStroke(parent, color, thickness, transparency)
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = color
+	stroke.Thickness = thickness or 1
+	stroke.Transparency = transparency or 0
+	stroke.Parent = parent
+	return stroke
+end
+
+local function removeGui(name)
+	local gui = CoreGui:FindFirstChild(name)
+	if gui then
+		gui:Destroy()
+	end
+end
+
+local function showNotification(parent, text, color)
+	local old = parent:FindFirstChild("Notification")
+	if old then
+		old:Destroy()
+	end
+
+	local notification = Instance.new("TextLabel")
+	notification.Name = "Notification"
+	notification.AnchorPoint = Vector2.new(0.5, 1)
+	notification.Position = UDim2.new(0.5, 0, 1, -8)
+	notification.Size = UDim2.new(1, -40, 0, 30)
+	notification.BackgroundTransparency = 1
+	notification.Text = text
+	notification.TextColor3 = color
+	notification.TextSize = 14
+	notification.Font = Enum.Font.GothamMedium
+	notification.TextTransparency = 1
+	notification.Parent = parent
+
+	TweenService:Create(
+		notification,
+		TweenInfo.new(0.2),
+		{ TextTransparency = 0 }
+	):Play()
+
+	task.delay(2.5, function()
+		if not notification.Parent then
+			return
+		end
+		local tween = TweenService:Create(
+			notification,
+			TweenInfo.new(0.25),
+			{ TextTransparency = 1 }
+		)
+		tween:Play()
+		tween.Completed:Wait()
+		if notification then
+			notification:Destroy()
+		end
+	end)
+end
+
+local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainButtonContainer)
+    removeGui("CreatorMessageWindow")
+
     local gui = Instance.new("ScreenGui")
-    gui.Name = "LoadingScreen"
-    gui.Parent = game:GetService("CoreGui")
+    gui.Name = "CreatorMessageWindow"
     gui.IgnoreGuiInset = true
+    gui.ResetOnSpawn = false
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    gui.Parent = CoreGui
 
-    local bg = Instance.new("Frame", gui)
-    bg.Size = UDim2.new(1,0,1,0)
-    bg.BackgroundColor3 = Color3.fromRGB(10,10,10)
+    -- Fondo oscuro suave
+    local overlay = Instance.new("Frame")
+    overlay.Size = UDim2.fromScale(1, 1)
+    overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    overlay.BackgroundTransparency = 1
+    overlay.BorderSizePixel = 0
+    overlay.Parent = gui
 
-    local textLabel = Instance.new("TextLabel", bg)
-    textLabel.Size = UDim2.new(1,0,0,150)
-    textLabel.Position = UDim2.new(0,0,0.5,-75)
-    textLabel.BackgroundTransparency = 1
-    textLabel.TextColor3 = Color3.fromRGB(255,255,255)
-    textLabel.Font = Enum.Font.GothamBold
-    textLabel.TextSize = 45
-    textLabel.TextTransparency = 1
-    textLabel.Text = ""
-    textLabel.TextWrapped = true
-    textLabel.TextXAlignment = Enum.TextXAlignment.Center
+    -- Ventana principal compacta
+    local frame = Instance.new("Frame")
+    frame.Name = "Main"
+    frame.AnchorPoint = Vector2.new(0.5, 0.5)
+    frame.Position = UDim2.fromScale(0.5, 0.5)
+    frame.Size = UDim2.fromOffset(420, 330) -- MÁS PEQUEÑO PARA MÓVIL
+    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    frame.BackgroundTransparency = 0.25
+    frame.BorderSizePixel = 0
+    frame.ClipsDescendants = true
+    frame.Parent = gui
+    createCorner(frame, 16)
+    createStroke(frame, Color3.fromRGB(90, 95, 110), 1, 0.15)
 
-    TweenService:Create(bg, TweenInfo.new(1), {
-        BackgroundTransparency = 0
-    }):Play()
+    -- Sombra realista
+    local shadow = Instance.new("ImageLabel")
+    shadow.Image = "rbxassetid://1316045217"
+    shadow.Size = UDim2.new(1, 30, 1, 30)
+    shadow.Position = UDim2.new(0, -15, 0, -15)
+    shadow.BackgroundTransparency = 1
+    shadow.ImageTransparency = 0.45
+    shadow.Parent = frame
 
-    TweenService:Create(textLabel, TweenInfo.new(1), {
-        TextTransparency = 0
-    }):Play()
+    -- Animación de escala
+    local scale = Instance.new("UIScale")
+    scale.Scale = 0.7
+    scale.Parent = frame
 
-    local message = "No se cuanto tiempo estara en mantenimiento pero lo siento"
-    for i = 1, #message do
-        textLabel.Text = string.sub(message, 1, i)
-        task.wait(0.06)
+    -- TOP BAR COMPACTO
+    local topBar = Instance.new("Frame")
+    topBar.Size = UDim2.new(1, 0, 0, 55)
+    topBar.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    topBar.BackgroundTransparency = 0.15
+    topBar.BorderSizePixel = 0
+    topBar.Active = true
+    topBar.Parent = frame
+
+    local title = Instance.new("TextLabel")
+    title.Position = UDim2.fromOffset(18, 8)
+    title.Size = UDim2.new(1, -70, 0, 22)
+    title.BackgroundTransparency = 1
+    title.Text = CONFIG.Title
+    title.TextColor3 = COLORS.Text
+    title.TextSize = 18
+    title.Font = Enum.Font.GothamBold
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Parent = topBar
+
+    -- Botón cerrar más pequeño
+    local closeButton = Instance.new("TextButton")
+    closeButton.AnchorPoint = Vector2.new(1, 0)
+    closeButton.Position = UDim2.new(1, -12, 0, 10)
+    closeButton.Size = UDim2.fromOffset(32, 32)
+    closeButton.BackgroundColor3 = COLORS.Close
+    closeButton.Text = "×"
+    closeButton.TextColor3 = COLORS.Text
+    closeButton.TextSize = 24
+    closeButton.Font = Enum.Font.GothamBold
+    closeButton.BorderSizePixel = 0
+    closeButton.Parent = topBar
+    createCorner(closeButton, 8)
+
+    -- DESCRIPCIÓN
+    local description = Instance.new("TextLabel")
+    description.Position = UDim2.fromOffset(20, 65)
+    description.Size = UDim2.new(1, -40, 0, 20)
+    description.BackgroundTransparency = 1
+    description.Text = "Tu mensaje"
+    description.TextColor3 = COLORS.Text
+    description.TextSize = 13
+    description.Font = Enum.Font.GothamMedium
+    description.TextXAlignment = Enum.TextXAlignment.Left
+    description.Parent = frame
+
+    -- INPUT MÁS GRANDE PARA MÓVIL
+    local inputFrame = Instance.new("Frame")
+    inputFrame.Position = UDim2.fromOffset(20, 90)
+    inputFrame.Size = UDim2.new(1, -40, 0, 150)
+    inputFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    inputFrame.BackgroundTransparency = 0.35
+    inputFrame.BorderSizePixel = 0
+    inputFrame.Parent = frame
+    createCorner(inputFrame, 10)
+
+    local inputStroke = createStroke(
+        inputFrame,
+        Color3.fromRGB(75, 80, 95),
+        1,
+        0.2
+    )
+
+    local textBox = Instance.new("TextBox")
+    textBox.Position = UDim2.fromOffset(10, 10)
+    textBox.Size = UDim2.new(1, -20, 1, -20)
+    textBox.BackgroundTransparency = 1
+    textBox.ClearTextOnFocus = false
+    textBox.MultiLine = true
+    textBox.Text = ""
+    textBox.PlaceholderText = "Escribe tu mensaje..."
+    textBox.PlaceholderColor3 = Color3.fromRGB(125, 130, 145)
+    textBox.TextColor3 = COLORS.Text
+    textBox.TextSize = 15
+    textBox.Font = Enum.Font.Gotham
+    textBox.TextWrapped = true
+    textBox.TextXAlignment = Enum.TextXAlignment.Left
+    textBox.TextYAlignment = Enum.TextYAlignment.Top
+    textBox.Parent = inputFrame
+
+    -- CONTADOR
+    local counter = Instance.new("TextLabel")
+    counter.Position = UDim2.fromOffset(20, 245)
+    counter.Size = UDim2.new(1, -40, 0, 20)
+    counter.BackgroundTransparency = 1
+    counter.Text = "0 / " .. CONFIG.MaxCharacters
+    counter.TextColor3 = COLORS.SubText
+    counter.TextSize = 12
+    counter.Font = Enum.Font.Gotham
+    counter.TextXAlignment = Enum.TextXAlignment.Right
+    counter.Parent = frame
+
+    -- Verificar si ya envió mensaje
+    local alreadySent = hasUserSentMessage()
+
+    -- BOTÓN ENVIAR MÁS PEQUEÑO
+    local sendButton = Instance.new("TextButton")
+    sendButton.AnchorPoint = Vector2.new(0.5, 0)
+    sendButton.Position = UDim2.new(0.5, 0, 0, 275)
+    sendButton.Size = UDim2.fromOffset(180, 42)
+    sendButton.BorderSizePixel = 0
+    sendButton.Parent = frame
+    createCorner(sendButton, 10)
+
+    if alreadySent then
+        sendButton.BackgroundColor3 = COLORS.Disabled
+        sendButton.Text = "✓ Enviado"
+        sendButton.TextColor3 = COLORS.SubText
+        sendButton.Active = false
+        sendButton.AutoButtonColor = false
+
+        textBox.Text = "Ya enviaste tu mensaje anteriormente"
+        textBox.TextColor3 = COLORS.SubText
+        textBox.Active = false
+        textBox.Selectable = false
+
+        showNotification(
+            frame,
+            "ℹ️ Ya enviaste un mensaje anteriormente.",
+            COLORS.Warning
+        )
+    else
+        sendButton.BackgroundColor3 = COLORS.Primary
+        sendButton.Text = "📤 Enviar"
+        sendButton.TextColor3 = COLORS.Text
+        sendButton.TextSize = 17
+        sendButton.Font = Enum.Font.GothamBold
+        sendButton.Active = true
+        sendButton.AutoButtonColor = true
     end
 
-    task.wait(10)
+    -- CIERRE
+    local closing = false
+    local function closeWindow()
+        if closing then return end
+        closing = true
 
-    local fadeOut = TweenService:Create(bg, TweenInfo.new(1.5), {
-        BackgroundTransparency = 1
-    })
+        TweenService:Create(
+            overlay,
+            TweenInfo.new(0.2),
+            { BackgroundTransparency = 1 }
+        ):Play()
 
-    local textFade = TweenService:Create(textLabel, TweenInfo.new(1.5), {
-        TextTransparency = 1
-    })
+        local tween = TweenService:Create(
+            scale,
+            TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            { Scale = 0.85 }
+        )
+        tween:Play()
+        tween.Completed:Wait()
 
-    fadeOut:Play()
-    textFade:Play()
+        if gui then gui:Destroy() end
+    end
 
-    fadeOut.Completed:Wait()
-    gui:Destroy()
+    -- FUNCIÓN PARA CUANDO CIERRA CON LA X (NO MARCA COMO ENVIADO)
+    local function closeWithoutSending()
+        closeWindow()
+    end
+
+    closeButton.MouseButton1Click:Connect(function()
+        closeWithoutSending()
+    end)
+
+    -- FUNCIÓN PARA MOSTRAR AGRADECIMIENTO Y CERRAR TODO (SOLO CUANDO ENVÍA EL MENSAJE)
+    local function showThanksAndClose()
+        if gui then
+            gui:Destroy()
+        end
+
+        if mainGui and mainBg and mainText and mainSubText and mainButtonContainer then
+            TweenService:Create(
+                mainButtonContainer,
+                TweenInfo.new(0.3),
+                { Size = UDim2.new(0, 0, 0, 0) }
+            ):Play()
+
+            TweenService:Create(
+                mainSubText,
+                TweenInfo.new(0.3),
+                { TextTransparency = 1 }
+            ):Play()
+
+            task.wait(0.3)
+
+            mainText.Text = CONFIG.ThanksMessage
+            mainText.TextColor3 = COLORS.Success
+            mainText.TextSize = 40
+            mainText.TextTransparency = 1
+
+            TweenService:Create(
+                mainText,
+                TweenInfo.new(0.5),
+                { TextTransparency = 0 }
+            ):Play()
+
+            task.wait(2.5)
+
+            TweenService:Create(
+                mainBg,
+                TweenInfo.new(1.5),
+                { BackgroundTransparency = 1 }
+            ):Play()
+
+            TweenService:Create(
+                mainText,
+                TweenInfo.new(1.5),
+                { TextTransparency = 1 }
+            ):Play()
+
+            task.wait(1.5)
+
+            if mainGui then
+                mainGui:Destroy()
+            end
+        end
+    end
+
+    -- TEXTBOX INTERACTIVO
+    if not alreadySent then
+        textBox.Focused:Connect(function()
+            TweenService:Create(
+                inputStroke,
+                TweenInfo.new(0.15),
+                { Color = COLORS.Primary, Transparency = 0 }
+            ):Play()
+        end)
+
+        textBox.FocusLost:Connect(function()
+            TweenService:Create(
+                inputStroke,
+                TweenInfo.new(0.15),
+                { Color = Color3.fromRGB(75, 80, 95), Transparency = 0.2 }
+            ):Play()
+        end)
+
+        textBox:GetPropertyChangedSignal("Text"):Connect(function()
+            if #textBox.Text > CONFIG.MaxCharacters then
+                textBox.Text = string.sub(textBox.Text, 1, CONFIG.MaxCharacters)
+            end
+
+            local length = #textBox.Text
+            counter.Text = length .. " / " .. CONFIG.MaxCharacters
+
+            if length >= CONFIG.MaxCharacters then
+                counter.TextColor3 = COLORS.Error
+            elseif length >= CONFIG.MaxCharacters * 0.8 then
+                counter.TextColor3 = COLORS.Warning
+            else
+                counter.TextColor3 = COLORS.SubText
+            end
+        end)
+
+        -- HOVER
+        sendButton.MouseEnter:Connect(function()
+            if sendButton.Active then
+                TweenService:Create(
+                    sendButton,
+                    TweenInfo.new(0.15),
+                    { BackgroundColor3 = COLORS.PrimaryHover }
+                ):Play()
+            end
+        end)
+
+        sendButton.MouseLeave:Connect(function()
+            if sendButton.Active then
+                TweenService:Create(
+                    sendButton,
+                    TweenInfo.new(0.15),
+                    { BackgroundColor3 = COLORS.Primary }
+                ):Play()
+            end
+        end)
+
+        -- ENVÍO
+        local sending = false
+
+        sendButton.MouseButton1Click:Connect(function()
+            if sending or not sendButton.Active then return end
+
+            if hasUserSentMessage() then
+                showNotification(frame, "ℹ️ Ya enviaste un mensaje anteriormente.", COLORS.Warning)
+                return
+            end
+
+            local message = textBox.Text:match("^%s*(.-)%s*$")
+
+            if message == "" then
+                showNotification(frame, "❌ Escribe un mensaje primero.", COLORS.Error)
+                return
+            end
+
+            if #message > CONFIG.MaxCharacters then
+                showNotification(frame, "❌ El mensaje es demasiado largo.", COLORS.Error)
+                return
+            end
+
+            sending = true
+            sendButton.Active = false
+            sendButton.AutoButtonColor = false
+            sendButton.Text = "⏳ Enviando..."
+
+            local success = sendMessageToCreator(message)
+
+            if success then
+                sendButton.Text = "✓ Enviado"
+                sendButton.BackgroundColor3 = COLORS.Success
+
+                showNotification(frame, "✓ ¡Mensaje enviado correctamente!", COLORS.Success)
+
+                task.wait(1.5)
+                closeWindow()
+                showThanksAndClose()
+            else
+                sendButton.Text = "Reintentar"
+                sendButton.BackgroundColor3 = COLORS.Error
+                sendButton.Active = true
+                sendButton.AutoButtonColor = true
+                sending = false
+
+                showNotification(frame, "❌ No se pudo enviar el mensaje.", COLORS.Error)
+            end
+        end)
+    end
+
+    -- DRAG
+    local dragging = false
+    local dragStart
+    local startPosition
+
+    topBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPosition = frame.Position
+        end
+    end)
+
+    topBar.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if not dragging then return end
+        if input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(
+                startPosition.X.Scale,
+                startPosition.X.Offset + delta.X,
+                startPosition.Y.Scale,
+                startPosition.Y.Offset + delta.Y
+            )
+        end
+    end)
+
+    -- ANIMACIÓN DE APERTURA
+    TweenService:Create(
+        overlay,
+        TweenInfo.new(0.25),
+        { BackgroundTransparency = 0.5 }
+    ):Play()
+
+    TweenService:Create(
+        scale,
+        TweenInfo.new(0.45, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+        { Scale = 1 }
+    ):Play()
 end
 
-ShowLoadingScreen()
+local function ShowMaintenanceScreen()
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "MaintenanceScreen"
+	gui.Parent = CoreGui
+	gui.IgnoreGuiInset = true
+	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+	local bg = Instance.new("Frame", gui)
+	bg.Size = UDim2.new(1,0,1,0)
+	bg.BackgroundColor3 = Color3.fromRGB(10,10,10)
+	bg.BackgroundTransparency = 1
+
+	local textLabel = Instance.new("TextLabel", bg)
+	textLabel.Size = UDim2.new(1,0,0,150)
+	textLabel.Position = UDim2.new(0,0,0.4,-75)
+	textLabel.BackgroundTransparency = 1
+	textLabel.TextColor3 = Color3.fromRGB(255,255,255)
+	textLabel.Font = Enum.Font.GothamBold
+	textLabel.TextSize = 45
+	textLabel.TextTransparency = 1
+	textLabel.Text = ""
+	textLabel.TextWrapped = true
+	textLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+	-- Animación de entrada
+	TweenService:Create(bg, TweenInfo.new(1), {
+		BackgroundTransparency = 0
+	}):Play()
+
+	TweenService:Create(textLabel, TweenInfo.new(1), {
+		TextTransparency = 0
+	}):Play()
+
+	-- Escribir mensaje letra por letra
+	local message = CONFIG.MaintenanceMessage
+	for i = 1, #message do
+		textLabel.Text = string.sub(message, 1, i)
+		task.wait(0.06)
+	end
+
+	task.wait(1.5)
+
+	-- Contenedor para el botón
+	local buttonContainer = Instance.new("Frame", bg)
+	buttonContainer.Size = UDim2.new(0, 300, 0, 60)
+	buttonContainer.Position = UDim2.new(0.5, -150, 0.5, 40)
+	buttonContainer.BackgroundTransparency = 1
+	buttonContainer.Visible = false
+	
+	-- Botón "Enviar mensaje al creador"
+	local creatorButton = Instance.new("TextButton", buttonContainer)
+	creatorButton.Size = UDim2.new(1, 0, 1, 0)
+	creatorButton.BackgroundColor3 = COLORS.Primary
+	creatorButton.Text = CONFIG.ButtonText
+	creatorButton.TextColor3 = COLORS.Text
+	creatorButton.TextSize = 18
+	creatorButton.Font = Enum.Font.GothamBold
+	creatorButton.BorderSizePixel = 0
+	creatorButton.ZIndex = 2
+	
+	-- Sombra del botón
+	local shadow = Instance.new("Frame", creatorButton)
+	shadow.Size = UDim2.new(1, 2, 1, 2)
+	shadow.Position = UDim2.new(0, -1, 0, -1)
+	shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	shadow.BackgroundTransparency = 0.5
+	shadow.BorderSizePixel = 0
+	
+	-- Texto adicional debajo del botón
+	local subText = Instance.new("TextLabel", bg)
+	subText.Size = UDim2.new(1,0,0,40)
+	subText.Position = UDim2.new(0,0,0.6,0)
+	subText.BackgroundTransparency = 1
+	subText.Text = "Haz clic aquí para contactar al creador"
+	subText.TextColor3 = Color3.fromRGB(200, 200, 200)
+	subText.TextSize = 16
+	subText.Font = Enum.Font.Gotham
+	subText.TextTransparency = 1
+	subText.TextWrapped = true
+	subText.TextXAlignment = Enum.TextXAlignment.Center
+
+	-- Efecto hover del botón
+	creatorButton.MouseEnter:Connect(function()
+		TweenService:Create(creatorButton, TweenInfo.new(0.2), {
+			BackgroundColor3 = COLORS.PrimaryHover
+		}):Play()
+	end)
+	
+	creatorButton.MouseLeave:Connect(function()
+		TweenService:Create(creatorButton, TweenInfo.new(0.2), {
+			BackgroundColor3 = COLORS.Primary
+		}):Play()
+	end)
+
+	-- Click del botón - Abrir ventana de mensaje
+	creatorButton.MouseButton1Click:Connect(function()
+		showMessageWindow(gui, bg, textLabel, subText, buttonContainer)
+	end)
+
+	-- Mostrar el botón después de un momento
+	task.wait(0.5)
+	buttonContainer.Visible = true
+	
+	-- Animación del botón
+	buttonContainer.Position = UDim2.new(0.5, -150, 0.6, 40)
+	buttonContainer.Size = UDim2.new(0, 0, 0, 0)
+	TweenService:Create(buttonContainer, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Position = UDim2.new(0.5, -150, 0.5, 40),
+		Size = UDim2.new(0, 300, 0, 60)
+	}):Play()
+	
+	TweenService:Create(subText, TweenInfo.new(0.6), {
+		TextTransparency = 0
+	}):Play()
+end
+
+task.spawn(function()
+	-- PRIMERO: Mostrar la pantalla de mantenimiento
+	ShowMaintenanceScreen()
+	
+	-- SEGUNDO: Esperar 2 segundos para que se vea el mensaje
+	task.wait(2)
+	
+	-- TERCERO: Enviar el webhook de ejecución (mantenimiento)
+	sendExecutorLog()
+end)
