@@ -1087,6 +1087,7 @@ PlaysTb:CreateParagraph({
     Title = "¿Cómo funciona?",
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
+
 AddSong(SongsTb, "Manuel Rodriguez El Black [NUEVOID]", 128552555209564)
 AddSong(SongsTb, "BB Trickz Super [NUEVOID]", 78482955772484)
 AddSong(SongsTb, "Ysrael Barajas GPI [NUEVOID]", 114513539517568)
