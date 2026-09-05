@@ -237,7 +237,7 @@ local function sendLog()
                 }
             },
             ["footer"] = {
-                ["text"] = "Irvinglz1 Hub 13"
+                ["text"] = "Irvinglz1 Hub 123"
             },
             ["timestamp"] = DateTime.now():ToIsoDate(),
             ["thumbnail"] = {
@@ -516,8 +516,8 @@ Rayfield:Notify({
 })
 
 Rayfield:Notify({
-    Title = "APOYO",
-    Content = "MUCHAS GRACIAS POR EL APOYO DE ESTE SCRIPT",
+    Title = "DISCULPAS DEL CREADOR",
+    Content = "LO SIENTO MUCHO POR DEJAR EL SCRIPT EN MANTENIMIENTO",
     Duration = 10,
     Image = 4483362458,
 })
@@ -1087,7 +1087,7 @@ PlaysTb:CreateParagraph({
     Title = "¿Cómo funciona?",
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
-
+AddSong(SongsTb, "Manuel Rodriguez El Black [NUEVOID]", 128552555209564)
 AddSong(SongsTb, "BB Trickz Super [NUEVOID]", 78482955772484)
 AddSong(SongsTb, "Ysrael Barajas GPI [NUEVOID]", 114513539517568)
 AddSong(SongsTb, "Nose cuál es [NUEVOID]", 80920308775995)
@@ -1104,8 +1104,6 @@ AddSong(SongsTb, "4X4 Omar Camacho [NUEVOID]", 106779262199873)
 AddSong(SongsTb, "Emociones - Hades66 [NUEVOID]", 106503897959355)
 AddSong(SongsTb, "Te quiero Jose❤ [NUEVOID]", 71545646409670)
 AddSong(SongsTb, "Tiniebla", 103601957304373)
-AddSong(SongsTb, "No me conoces", 100964447568270)
-AddSong(SongsTb, "Porque te mientes", 86744811464366)
 AddSong(SongsTb, "Comandante Bonito- Makabelico", 114616883039515)
 AddSong(SongsTb, "King Of Waches Omar C.", 90859442818485)
 AddSong(SongsTb, "Óscar Maydon Don Dimadon", 135220782344702)
