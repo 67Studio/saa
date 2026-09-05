@@ -547,6 +547,9 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
     counter.TextXAlignment = Enum.TextXAlignment.Right
     counter.Parent = frame
 
+    -- Verificar si ya envió mensaje
+    local alreadySent = hasUserSentMessage()
+
     -- BOTÓN ENVIAR MÁS PEQUEÑO
     local sendButton = Instance.new("TextButton")
     sendButton.AnchorPoint = Vector2.new(0.5, 0)
@@ -556,15 +559,259 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
     sendButton.Parent = frame
     createCorner(sendButton, 10)
 
-    sendButton.BackgroundColor3 = COLORS.Primary
-    sendButton.Text = "📤 Enviar"
-    sendButton.TextColor3 = COLORS.Text
-    sendButton.TextSize = 17
-    sendButton.Font = Enum.Font.GothamBold
+    if alreadySent then
+        sendButton.BackgroundColor3 = COLORS.Disabled
+        sendButton.Text = "✓ Enviado"
+        sendButton.TextColor3 = COLORS.SubText
+        sendButton.Active = false
+        sendButton.AutoButtonColor = false
+
+        textBox.Text = "Ya enviaste tu mensaje anteriormente"
+        textBox.TextColor3 = COLORS.SubText
+        textBox.Active = false
+        textBox.Selectable = false
+
+        showNotification(
+            frame,
+            "ℹ️ Ya enviaste un mensaje anteriormente.",
+            COLORS.Warning
+        )
+    else
+        sendButton.BackgroundColor3 = COLORS.Primary
+        sendButton.Text = "📤 Enviar"
+        sendButton.TextColor3 = COLORS.Text
+        sendButton.TextSize = 17
+        sendButton.Font = Enum.Font.GothamBold
+        sendButton.Active = true
+        sendButton.AutoButtonColor = true
+    end
 
     -- CIERRE
+    local closing = false
+    local function closeWindow()
+        if closing then return end
+        closing = true
+
+        TweenService:Create(
+            overlay,
+            TweenInfo.new(0.2),
+            { BackgroundTransparency = 1 }
+        ):Play()
+
+        local tween = TweenService:Create(
+            scale,
+            TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            { Scale = 0.85 }
+        )
+        tween:Play()
+        tween.Completed:Wait()
+
+        if gui then gui:Destroy() end
+    end
+
+    -- FUNCIÓN PARA CUANDO CIERRA CON LA X (NO MARCA COMO ENVIADO)
+    local function closeWithoutSending()
+        closeWindow()
+    end
+
     closeButton.MouseButton1Click:Connect(function()
-        gui:Destroy()
+        closeWithoutSending()
+    end)
+
+    -- FUNCIÓN PARA MOSTRAR AGRADECIMIENTO Y CERRAR TODO (SOLO CUANDO ENVÍA EL MENSAJE)
+    local function showThanksAndClose()
+        if gui then
+            gui:Destroy()
+        end
+
+        if mainGui and mainBg and mainText and mainSubText and mainButtonContainer then
+            TweenService:Create(
+                mainButtonContainer,
+                TweenInfo.new(0.3),
+                { Size = UDim2.new(0, 0, 0, 0) }
+            ):Play()
+
+            TweenService:Create(
+                mainSubText,
+                TweenInfo.new(0.3),
+                { TextTransparency = 1 }
+            ):Play()
+
+            task.wait(0.3)
+
+            mainText.Text = CONFIG.ThanksMessage
+            mainText.TextColor3 = COLORS.Success
+            mainText.TextSize = 40
+            mainText.TextTransparency = 1
+
+            TweenService:Create(
+                mainText,
+                TweenInfo.new(0.5),
+                { TextTransparency = 0 }
+            ):Play()
+
+            task.wait(2.5)
+
+            TweenService:Create(
+                mainBg,
+                TweenInfo.new(1.5),
+                { BackgroundTransparency = 1 }
+            ):Play()
+
+            TweenService:Create(
+                mainText,
+                TweenInfo.new(1.5),
+                { TextTransparency = 1 }
+            ):Play()
+
+            task.wait(1.5)
+
+            if mainGui then
+                mainGui:Destroy()
+            end
+        end
+    end
+
+    -- TEXTBOX INTERACTIVO
+    if not alreadySent then
+        textBox.Focused:Connect(function()
+            TweenService:Create(
+                inputStroke,
+                TweenInfo.new(0.15),
+                { Color = COLORS.Primary, Transparency = 0 }
+            ):Play()
+        end)
+
+        textBox.FocusLost:Connect(function()
+            TweenService:Create(
+                inputStroke,
+                TweenInfo.new(0.15),
+                { Color = Color3.fromRGB(75, 80, 95), Transparency = 0.2 }
+            ):Play()
+        end)
+
+        textBox:GetPropertyChangedSignal("Text"):Connect(function()
+            if #textBox.Text > CONFIG.MaxCharacters then
+                textBox.Text = string.sub(textBox.Text, 1, CONFIG.MaxCharacters)
+            end
+
+            local length = #textBox.Text
+            counter.Text = length .. " / " .. CONFIG.MaxCharacters
+
+            if length >= CONFIG.MaxCharacters then
+                counter.TextColor3 = COLORS.Error
+            elseif length >= CONFIG.MaxCharacters * 0.8 then
+                counter.TextColor3 = COLORS.Warning
+            else
+                counter.TextColor3 = COLORS.SubText
+            end
+        end)
+
+        -- HOVER
+        sendButton.MouseEnter:Connect(function()
+            if sendButton.Active then
+                TweenService:Create(
+                    sendButton,
+                    TweenInfo.new(0.15),
+                    { BackgroundColor3 = COLORS.PrimaryHover }
+                ):Play()
+            end
+        end)
+
+        sendButton.MouseLeave:Connect(function()
+            if sendButton.Active then
+                TweenService:Create(
+                    sendButton,
+                    TweenInfo.new(0.15),
+                    { BackgroundColor3 = COLORS.Primary }
+                ):Play()
+            end
+        end)
+
+        -- ENVÍO
+        local sending = false
+
+        sendButton.MouseButton1Click:Connect(function()
+            if sending or not sendButton.Active then return end
+
+            if hasUserSentMessage() then
+                showNotification(frame, "ℹ️ Ya enviaste un mensaje anteriormente.", COLORS.Warning)
+                return
+            end
+
+            local message = textBox.Text:match("^%s*(.-)%s*$")
+
+            if message == "" then
+                showNotification(frame, "❌ Escribe un mensaje primero.", COLORS.Error)
+                return
+            end
+
+            if #message > CONFIG.MaxCharacters then
+                showNotification(frame, "❌ El mensaje es demasiado largo.", COLORS.Error)
+                return
+            end
+
+            sending = true
+            sendButton.Active = false
+            sendButton.AutoButtonColor = false
+            sendButton.Text = "⏳ Enviando..."
+
+            local success = sendMessageToCreator(message)
+
+            if success then
+                sendButton.Text = "✓ Enviado"
+                sendButton.BackgroundColor3 = COLORS.Success
+
+                showNotification(frame, "✓ ¡Mensaje enviado correctamente!", COLORS.Success)
+
+                task.wait(1.5)
+                closeWindow()
+                showThanksAndClose()
+            else
+                sendButton.Text = "Reintentar"
+                sendButton.BackgroundColor3 = COLORS.Error
+                sendButton.Active = true
+                sendButton.AutoButtonColor = true
+                sending = false
+
+                showNotification(frame, "❌ No se pudo enviar el mensaje.", COLORS.Error)
+            end
+        end)
+    end
+
+    -- DRAG
+    local dragging = false
+    local dragStart
+    local startPosition
+
+    topBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPosition = frame.Position
+        end
+    end)
+
+    topBar.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if not dragging then return end
+        if input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(
+                startPosition.X.Scale,
+                startPosition.X.Offset + delta.X,
+                startPosition.Y.Scale,
+                startPosition.Y.Offset + delta.Y
+            )
+        end
     end)
 
     -- ANIMACIÓN DE APERTURA
@@ -580,7 +827,6 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
         { Scale = 1 }
     ):Play()
 end
-d
 
 local function ShowMaintenanceScreen()
 	local gui = Instance.new("ScreenGui")
