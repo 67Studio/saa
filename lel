@@ -13,8 +13,8 @@ local WEBHOOK_MENSAJES = "https://discord.com/api/webhooks/1545842548260606182/D
 
 local CONFIG = {
 	MaxCharacters = 500,
-	ButtonText = "💬 Enviar mensaje al creador",
-	Title = "💬 Mensaje para el creador",
+	ButtonText = "Enviar mensaje para el creador",
+	Title = "Mensaje para el creador",
 	ButtonPosition = UDim2.new(0.5, 0, 0.80, 0),
 	MaintenanceMessage = "No se cuanto tiempo estara en mantenimiento pero lo siento",
 	ThanksMessage = "Muchas gracias por tu mensaje!"
@@ -36,9 +36,6 @@ local COLORS = {
 	Disabled = Color3.fromRGB(100, 100, 100)
 }
 
--- ============================================
--- SISTEMA DE ALMACENAMIENTO (1 mensaje por persona)
--- ============================================
 local Storage = { _sent = {} }
 
 local function hasUserSentMessage()
@@ -51,9 +48,6 @@ local function markUserAsSent()
 	Storage._sent[userId] = true
 end
 
--- ============================================
--- SISTEMA 1: DETECCIÓN DE EJECUTOR (MANTENIMIENTO)
--- ============================================
 local logged = false
 
 local function detectExecutor()
@@ -236,9 +230,6 @@ local function sendExecutorLog()
 	end)
 end
 
--- ============================================
--- SISTEMA 2: MENSAJES AL CREADOR
--- ============================================
 local function sendMessageToCreator(messageText)
 	if WEBHOOK_MENSAJES == "" then
 		warn("WEBHOOK_MENSAJES no configurado")
@@ -353,9 +344,6 @@ local function sendMessageToCreator(messageText)
 	return success
 end
 
--- ============================================
--- UTILIDADES
--- ============================================
 local function createCorner(parent, radius)
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0, radius)
@@ -379,9 +367,6 @@ local function removeGui(name)
 	end
 end
 
--- ============================================
--- NOTIFICACIÓN
--- ============================================
 local function showNotification(parent, text, color)
 	local old = parent:FindFirstChild("Notification")
 	if old then
@@ -424,9 +409,6 @@ local function showNotification(parent, text, color)
 	end)
 end
 
--- ============================================
--- VENTANA PARA ESCRIBIR MENSAJE (NUEVA GUI GLASS)
--- ============================================
 local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainButtonContainer)
     removeGui("CreatorMessageWindow")
 
@@ -600,9 +582,6 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 end
 d
 
--- ============================================
--- PANTALLA DE MANTENIMIENTO
--- ============================================
 local function ShowMaintenanceScreen()
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "MaintenanceScreen"
@@ -719,9 +698,6 @@ local function ShowMaintenanceScreen()
 	}):Play()
 end
 
--- ============================================
--- EJECUCIÓN PRINCIPAL
--- ============================================
 task.spawn(function()
 	-- PRIMERO: Mostrar la pantalla de mantenimiento
 	ShowMaintenanceScreen()
