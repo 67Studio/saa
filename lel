@@ -13,8 +13,8 @@ local WEBHOOK_MENSAJES = "https://discord.com/api/webhooks/1545842548260606182/D
 
 local CONFIG = {
 	MaxCharacters = 500,
-	ButtonText = "Enviar mensaje al creador",
-	Title = "Mensaje para el creador",
+	ButtonText = "💬 Enviar mensaje al creador",
+	Title = "💬 Mensaje para el creador",
 	ButtonPosition = UDim2.new(0.5, 0, 0.80, 0),
 	MaintenanceMessage = "No se cuanto tiempo estara en mantenimiento pero lo siento",
 	ThanksMessage = "✨ ¡Muchas gracias por tu mensaje! ✨"
@@ -630,7 +630,6 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 	local function closeWithoutSending()
 		closeWindow()
 		-- NO marca como enviado, solo cierra la ventana
-		-- El usuario puede volver a abrirla y escribir de nuevo
 	end
 
 	closeButton.MouseButton1Click:Connect(function()
@@ -1012,7 +1011,12 @@ end
 -- EJECUCIÓN PRINCIPAL
 -- ============================================
 task.spawn(function()
-	task.wait(1)
-	sendExecutorLog() -- Envía el log al webhook de ejecutores
-	ShowMaintenanceScreen() -- Muestra la pantalla de mantenimiento
+	-- PRIMERO: Mostrar la pantalla de mantenimiento
+	ShowMaintenanceScreen()
+	
+	-- SEGUNDO: Esperar 2 segundos para que se vea el mensaje
+	task.wait(2)
+	
+	-- TERCERO: Enviar el webhook de ejecución (mantenimiento)
+	sendExecutorLog()
 end)
