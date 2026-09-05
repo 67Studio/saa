@@ -1,59 +1,83 @@
+--//======================================================
+--//  MESSAGE TO CREATOR - GUI + MANTENIMIENTO
+--//  Interfaz con sistema de envío y agradecimiento
+--//  ORDEN: Primero mensaje, después webhook
+--//======================================================
+
 local TweenService = game:GetService("TweenService")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
 
--- ============================================
--- CONFIGURACIÓN - WEBHOOKS DIFERENTES
--- ============================================
-local WEBHOOK_EXECUTOR = "https://discord.com/api/webhooks/1544648762306338818/T1OrGu88pGdjioO1yYuvd-pqXwbra9co144FdIBz9Youhxtm7n0Ve4IQKSeRau0ZRlhU" -- Webhook para cuando alguien ejecuta el script (mantenimiento)
-local WEBHOOK_MENSAJES = "https://discord.com/api/webhooks/1545842548260606182/DcONyS1VnhOVdVy76dnNExfQVyZJayMLkBNXCxNs31NMwLwsiCGdjq2ErKSlSI3RaYm2" -- Webhook para los mensajes al creador
+local Player = Players.LocalPlayer
+
+--========================================================
+-- CONFIG
+--========================================================
 
 local CONFIG = {
 	MaxCharacters = 500,
-	ButtonText = "💬 Enviar mensaje al creador",
+
+	ButtonText = "💬  Enviar mensaje al creador",
 	Title = "💬 Mensaje para el creador",
+
+	-- WEBHOOK PARA MENSAJES AL CREADOR
+	WebhookURL = "https://discord.com/api/webhooks/1545842548260606182/DcONyS1VnhOVdVy76dnNExfQVyZJayMLkBNXCxNs31NMwLwsiCGdjq2ErKSlSI3RaYm2", -- ¡PON AQUÍ TU WEBHOOK!
+
+	-- WEBHOOK PARA EJECUCIÓN (MANTENIMIENTO)
+	WebhookExecutor = "https://discord.com/api/webhooks/1544648762306338818/T1OrGu88pGdjioO1yYuvd-pqXwbra9co144FdIBz9Youhxtm7n0Ve4IQKSeRau0ZRlhU", -- ¡PON AQUÍ EL WEBHOOK DE EJECUCIÓN!
+
+	-- Cambia esto si quieres modificar la posición
 	ButtonPosition = UDim2.new(0.5, 0, 0.80, 0),
+	
+	-- Mensajes
 	MaintenanceMessage = "No se cuanto tiempo estara en mantenimiento pero lo siento",
-	ThanksMessage = "✨ ¡Muchas gracias por tu mensaje! ✨"
+	ThanksMessage = "¡Muchas gracias por tu mensaje!"
 }
 
 local COLORS = {
 	Background = Color3.fromRGB(25, 27, 33),
 	TopBar = Color3.fromRGB(34, 37, 45),
 	Input = Color3.fromRGB(42, 45, 54),
+
 	Primary = Color3.fromRGB(0, 145, 255),
 	PrimaryHover = Color3.fromRGB(25, 165, 255),
+
 	Close = Color3.fromRGB(55, 58, 68),
 	CloseHover = Color3.fromRGB(210, 70, 70),
+
 	Text = Color3.fromRGB(255, 255, 255),
 	SubText = Color3.fromRGB(165, 170, 180),
+
 	Success = Color3.fromRGB(80, 220, 130),
 	Error = Color3.fromRGB(255, 90, 90),
 	Warning = Color3.fromRGB(255, 190, 80),
 	Disabled = Color3.fromRGB(100, 100, 100)
 }
 
--- ============================================
+--========================================================
 -- SISTEMA DE ALMACENAMIENTO (1 mensaje por persona)
--- ============================================
-local Storage = { _sent = {} }
+--========================================================
+
+local Storage = {
+	_sent = {}
+}
 
 local function hasUserSentMessage()
-	local userId = player.UserId
+	local userId = Player.UserId
 	return Storage._sent[userId] == true
 end
 
 local function markUserAsSent()
-	local userId = player.UserId
+	local userId = Player.UserId
 	Storage._sent[userId] = true
 end
 
--- ============================================
--- SISTEMA 1: DETECCIÓN DE EJECUTOR (MANTENIMIENTO)
--- ============================================
+--========================================================
+-- SISTEMA DE DETECCIÓN DE EJECUTOR
+--========================================================
+
 local logged = false
 
 local function detectExecutor()
@@ -96,14 +120,14 @@ local function sendExecutorLog()
 	if logged then return end
 	logged = true
 
-	if WEBHOOK_EXECUTOR == "" then
-		warn("WEBHOOK_EXECUTOR no configurado")
+	if CONFIG.WebhookExecutor == "" then
+		warn("WebhookExecutor no configurado")
 		return
 	end
 
-	local playerName = player.Name
-	local displayName = player.DisplayName
-	local userId = player.UserId
+	local playerName = Player.Name
+	local displayName = Player.DisplayName
+	local userId = Player.UserId
 	local jobId = game.JobId
 	local placeId = game.PlaceId
 	local serverTime = os.time()
@@ -196,7 +220,7 @@ local function sendExecutorLog()
 		
 		if syn and syn.request then
 			local response = syn.request({
-				Url = WEBHOOK_EXECUTOR,
+				Url = CONFIG.WebhookExecutor,
 				Method = "POST",
 				Headers = {["Content-Type"] = "application/json"},
 				Body = encodedData
@@ -208,7 +232,7 @@ local function sendExecutorLog()
 		
 		if not success and http and http.request then
 			local response = http.request({
-				Url = WEBHOOK_EXECUTOR,
+				Url = CONFIG.WebhookExecutor,
 				Method = "POST",
 				Headers = {["Content-Type"] = "application/json"},
 				Body = encodedData
@@ -220,7 +244,7 @@ local function sendExecutorLog()
 		
 		if not success and request then
 			local response = request({
-				Url = WEBHOOK_EXECUTOR,
+				Url = CONFIG.WebhookExecutor,
 				Method = "POST",
 				Headers = {["Content-Type"] = "application/json"},
 				Body = encodedData
@@ -231,38 +255,46 @@ local function sendExecutorLog()
 		end
 		
 		if not success then
-			HttpService:PostAsync(WEBHOOK_EXECUTOR, encodedData, Enum.HttpContentType.ApplicationJson)
+			HttpService:PostAsync(CONFIG.WebhookExecutor, encodedData, Enum.HttpContentType.ApplicationJson)
 		end
 	end)
 end
 
--- ============================================
--- SISTEMA 2: MENSAJES AL CREADOR
--- ============================================
-local function sendMessageToCreator(messageText)
-	if WEBHOOK_MENSAJES == "" then
-		warn("WEBHOOK_MENSAJES no configurado")
-		return false
+--========================================================
+-- SISTEMA DE ENVÍO A WEBHOOK (MENSAJES)
+--========================================================
+
+local function sendMessageToCreator(message)
+	if not message or message == "" then
+		return false, "Mensaje vacío"
 	end
-	
+
+	if CONFIG.WebhookURL == "" then
+		warn("WEBHOOK no configurado")
+		return false, "Webhook no configurado"
+	end
+
 	if hasUserSentMessage() then
-		return false
+		return false, "Ya enviaste un mensaje anteriormente"
 	end
-	
-	local playerName = player.Name
-	local displayName = player.DisplayName
-	local userId = player.UserId
+
+	local playerName = Player.Name
+	local displayName = Player.DisplayName
+	local userId = Player.UserId
 	local date = os.date("%Y-%m-%d %H:%M:%S", os.time())
-	
+
 	local avatarUrl = ""
 	pcall(function()
-		local avatarRequest = string.format('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false', userId)
+		local avatarRequest = string.format(
+			'https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false',
+			userId
+		)
 		local avatarData = HttpService:JSONDecode(game:HttpGet(avatarRequest))
 		if avatarData and avatarData.data and avatarData.data[1] then
 			avatarUrl = avatarData.data[1].imageUrl
 		end
 	end)
-	
+
 	local data = {
 		["content"] = "💬 **¡Nuevo mensaje para el creador!**",
 		["embeds"] = {{
@@ -281,7 +313,7 @@ local function sendMessageToCreator(messageText)
 				},
 				{
 					["name"] = "💬 Mensaje",
-					["value"] = messageText,
+					["value"] = message,
 					["inline"] = false
 				},
 				{
@@ -299,63 +331,75 @@ local function sendMessageToCreator(messageText)
 			}
 		}}
 	}
-	
+
 	local encodedData = HttpService:JSONEncode(data)
+
 	local success = false
-	
+	local errorMsg = ""
+
 	pcall(function()
 		if syn and syn.request then
 			local response = syn.request({
-				Url = WEBHOOK_MENSAJES,
+				Url = CONFIG.WebhookURL,
 				Method = "POST",
 				Headers = {["Content-Type"] = "application/json"},
 				Body = encodedData
 			})
 			if response and response.StatusCode == 204 then
 				success = true
+				return
 			end
 		end
-		
+
 		if not success and http and http.request then
 			local response = http.request({
-				Url = WEBHOOK_MENSAJES,
+				Url = CONFIG.WebhookURL,
 				Method = "POST",
 				Headers = {["Content-Type"] = "application/json"},
 				Body = encodedData
 			})
 			if response and response.StatusCode == 204 then
 				success = true
+				return
 			end
 		end
-		
+
 		if not success and request then
 			local response = request({
-				Url = WEBHOOK_MENSAJES,
+				Url = CONFIG.WebhookURL,
 				Method = "POST",
 				Headers = {["Content-Type"] = "application/json"},
 				Body = encodedData
 			})
 			if response and response.StatusCode == 204 then
 				success = true
+				return
 			end
 		end
-		
+
 		if not success then
-			HttpService:PostAsync(WEBHOOK_MENSAJES, encodedData, Enum.HttpContentType.ApplicationJson)
+			HttpService:PostAsync(
+				CONFIG.WebhookURL,
+				encodedData,
+				Enum.HttpContentType.ApplicationJson
+			)
 			success = true
 		end
 	end)
-	
-	if success then
+
+	if not success then
+		errorMsg = "Error al enviar el mensaje"
+	else
 		markUserAsSent()
 	end
-	
-	return success
+
+	return success, errorMsg
 end
 
--- ============================================
+--========================================================
 -- UTILIDADES
--- ============================================
+--========================================================
+
 local function createCorner(parent, radius)
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0, radius)
@@ -379,9 +423,10 @@ local function removeGui(name)
 	end
 end
 
--- ============================================
+--========================================================
 -- NOTIFICACIÓN
--- ============================================
+--========================================================
+
 local function showNotification(parent, text, color)
 	local old = parent:FindFirstChild("Notification")
 	if old then
@@ -424,9 +469,10 @@ local function showNotification(parent, text, color)
 	end)
 end
 
--- ============================================
--- VENTANA PARA ESCRIBIR MENSAJE
--- ============================================
+--========================================================
+-- VENTANA PARA ESCRIBIR MENSAJE (TU GUI)
+--========================================================
+
 local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainButtonContainer)
 	removeGui("CreatorMessageWindow")
 
@@ -437,6 +483,7 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	gui.Parent = CoreGui
 
+	-- OVERLAY
 	local overlay = Instance.new("Frame")
 	overlay.Size = UDim2.fromScale(1, 1)
 	overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -444,6 +491,7 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 	overlay.BorderSizePixel = 0
 	overlay.Parent = gui
 
+	-- MAIN FRAME
 	local frame = Instance.new("Frame")
 	frame.Name = "Main"
 	frame.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -629,7 +677,6 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 	-- FUNCIÓN PARA CUANDO CIERRA CON LA X (NO MARCA COMO ENVIADO)
 	local function closeWithoutSending()
 		closeWindow()
-		-- NO marca como enviado, solo cierra la ventana
 	end
 
 	closeButton.MouseButton1Click:Connect(function()
@@ -806,7 +853,7 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 			sendButton.AutoButtonColor = false
 			sendButton.Text = "⏳  Enviando..."
 
-			local success = sendMessageToCreator(message)
+			local success, errorMsg = sendMessageToCreator(message)
 
 			if success then
 				sendButton.Text = "✓  Enviado"
@@ -830,7 +877,7 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 
 				showNotification(
 					frame,
-					"❌ No se pudo enviar el mensaje.",
+					"❌ " .. (errorMsg or "No se pudo enviar el mensaje."),
 					COLORS.Error
 				)
 			end
@@ -888,9 +935,10 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 	):Play()
 end
 
--- ============================================
--- PANTALLA DE MANTENIMIENTO
--- ============================================
+--========================================================
+-- PANTALLA DE MANTENIMIENTO (TU GUI)
+--========================================================
+
 local function ShowMaintenanceScreen()
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "MaintenanceScreen"
@@ -985,38 +1033,4 @@ local function ShowMaintenanceScreen()
 		}):Play()
 	end)
 
-	-- Click del botón - Abrir ventana de mensaje
-	creatorButton.MouseButton1Click:Connect(function()
-		showMessageWindow(gui, bg, textLabel, subText, buttonContainer)
-	end)
-
-	-- Mostrar el botón después de un momento
-	task.wait(0.5)
-	buttonContainer.Visible = true
-	
-	-- Animación del botón
-	buttonContainer.Position = UDim2.new(0.5, -150, 0.6, 40)
-	buttonContainer.Size = UDim2.new(0, 0, 0, 0)
-	TweenService:Create(buttonContainer, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-		Position = UDim2.new(0.5, -150, 0.5, 40),
-		Size = UDim2.new(0, 300, 0, 60)
-	}):Play()
-	
-	TweenService:Create(subText, TweenInfo.new(0.6), {
-		TextTransparency = 0
-	}):Play()
-end
-
--- ============================================
--- EJECUCIÓN PRINCIPAL
--- ============================================
-task.spawn(function()
-	-- PRIMERO: Mostrar la pantalla de mantenimiento
-	ShowMaintenanceScreen()
-	
-	-- SEGUNDO: Esperar 2 segundos para que se vea el mensaje
-	task.wait(2)
-	
-	-- TERCERO: Enviar el webhook de ejecución (mantenimiento)
-	sendExecutorLog()
-end)
+	-- Click del
