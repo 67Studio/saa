@@ -13,8 +13,8 @@ local WEBHOOK_MENSAJES = "https://discord.com/api/webhooks/1545842548260606182/D
 
 local CONFIG = {
 	MaxCharacters = 500,
-	ButtonText = "💬 Enviar mensaje al creador",
-	Title = "💬 Mensaje para el creador",
+	ButtonText = "Enviar mensaje al creador",
+	Title = "Mensaje para el creador",
 	ButtonPosition = UDim2.new(0.5, 0, 0.80, 0),
 	MaintenanceMessage = "No se cuanto tiempo estara en mantenimiento pero lo siento",
 	ThanksMessage = "✨ ¡Muchas gracias por tu mensaje! ✨"
