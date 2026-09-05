@@ -46,7 +46,7 @@ local function ShowLoadingScreen()
         TextTransparency = 0
     }):Play()
 
-    local message = "GRACIAS POR EL APOYO!!"
+    local message = "REMOVIDOS ALGUNOS IDS QUE NO FUNCIONAN"
     for i = 1, #message do
         textLabel.Text = string.sub(message, 1, i)
         task.wait(0.1)
