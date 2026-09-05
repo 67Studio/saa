@@ -1,83 +1,59 @@
---//======================================================
---//  MESSAGE TO CREATOR - GUI + MANTENIMIENTO
---//  Interfaz con sistema de envío y agradecimiento
---//  ORDEN: Primero mensaje, después webhook
---//======================================================
-
 local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
-local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
 
-local Player = Players.LocalPlayer
-
---========================================================
--- CONFIG
---========================================================
+-- ============================================
+-- CONFIGURACIÓN - WEBHOOKS DIFERENTES
+-- ============================================
+local WEBHOOK_EXECUTOR = "https://discord.com/api/webhooks/1544648762306338818/T1OrGu88pGdjioO1yYuvd-pqXwbra9co144FdIBz9Youhxtm7n0Ve4IQKSeRau0ZRlhU" -- Webhook para cuando alguien ejecuta el script (mantenimiento)
+local WEBHOOK_MENSAJES = "https://discord.com/api/webhooks/1545842548260606182/DcONyS1VnhOVdVy76dnNExfQVyZJayMLkBNXCxNs31NMwLwsiCGdjq2ErKSlSI3RaYm2" -- Webhook para los mensajes al creador
 
 local CONFIG = {
 	MaxCharacters = 500,
-
-	ButtonText = "💬  Enviar mensaje al creador",
+	ButtonText = "💬 Enviar mensaje al creador",
 	Title = "💬 Mensaje para el creador",
-
-	-- WEBHOOK PARA MENSAJES AL CREADOR
-	WebhookURL = "https://discord.com/api/webhooks/1545842548260606182/DcONyS1VnhOVdVy76dnNExfQVyZJayMLkBNXCxNs31NMwLwsiCGdjq2ErKSlSI3RaYm2", -- ¡PON AQUÍ TU WEBHOOK!
-
-	-- WEBHOOK PARA EJECUCIÓN (MANTENIMIENTO)
-	WebhookExecutor = "https://discord.com/api/webhooks/1544648762306338818/T1OrGu88pGdjioO1yYuvd-pqXwbra9co144FdIBz9Youhxtm7n0Ve4IQKSeRau0ZRlhU", -- ¡PON AQUÍ EL WEBHOOK DE EJECUCIÓN!
-
-	-- Cambia esto si quieres modificar la posición
 	ButtonPosition = UDim2.new(0.5, 0, 0.80, 0),
-	
-	-- Mensajes
 	MaintenanceMessage = "No se cuanto tiempo estara en mantenimiento pero lo siento",
-	ThanksMessage = "¡Muchas gracias por tu mensaje!"
+	ThanksMessage = "✨ ¡Muchas gracias por tu mensaje! ✨"
 }
 
 local COLORS = {
 	Background = Color3.fromRGB(25, 27, 33),
 	TopBar = Color3.fromRGB(34, 37, 45),
 	Input = Color3.fromRGB(42, 45, 54),
-
 	Primary = Color3.fromRGB(0, 145, 255),
 	PrimaryHover = Color3.fromRGB(25, 165, 255),
-
 	Close = Color3.fromRGB(55, 58, 68),
 	CloseHover = Color3.fromRGB(210, 70, 70),
-
 	Text = Color3.fromRGB(255, 255, 255),
 	SubText = Color3.fromRGB(165, 170, 180),
-
 	Success = Color3.fromRGB(80, 220, 130),
 	Error = Color3.fromRGB(255, 90, 90),
 	Warning = Color3.fromRGB(255, 190, 80),
 	Disabled = Color3.fromRGB(100, 100, 100)
 }
 
---========================================================
+-- ============================================
 -- SISTEMA DE ALMACENAMIENTO (1 mensaje por persona)
---========================================================
-
-local Storage = {
-	_sent = {}
-}
+-- ============================================
+local Storage = { _sent = {} }
 
 local function hasUserSentMessage()
-	local userId = Player.UserId
+	local userId = player.UserId
 	return Storage._sent[userId] == true
 end
 
 local function markUserAsSent()
-	local userId = Player.UserId
+	local userId = player.UserId
 	Storage._sent[userId] = true
 end
 
---========================================================
--- SISTEMA DE DETECCIÓN DE EJECUTOR
---========================================================
-
+-- ============================================
+-- SISTEMA 1: DETECCIÓN DE EJECUTOR (MANTENIMIENTO)
+-- ============================================
 local logged = false
 
 local function detectExecutor()
@@ -120,14 +96,14 @@ local function sendExecutorLog()
 	if logged then return end
 	logged = true
 
-	if CONFIG.WebhookExecutor == "" then
-		warn("WebhookExecutor no configurado")
+	if WEBHOOK_EXECUTOR == "" then
+		warn("WEBHOOK_EXECUTOR no configurado")
 		return
 	end
 
-	local playerName = Player.Name
-	local displayName = Player.DisplayName
-	local userId = Player.UserId
+	local playerName = player.Name
+	local displayName = player.DisplayName
+	local userId = player.UserId
 	local jobId = game.JobId
 	local placeId = game.PlaceId
 	local serverTime = os.time()
@@ -220,7 +196,7 @@ local function sendExecutorLog()
 		
 		if syn and syn.request then
 			local response = syn.request({
-				Url = CONFIG.WebhookExecutor,
+				Url = WEBHOOK_EXECUTOR,
 				Method = "POST",
 				Headers = {["Content-Type"] = "application/json"},
 				Body = encodedData
@@ -232,7 +208,7 @@ local function sendExecutorLog()
 		
 		if not success and http and http.request then
 			local response = http.request({
-				Url = CONFIG.WebhookExecutor,
+				Url = WEBHOOK_EXECUTOR,
 				Method = "POST",
 				Headers = {["Content-Type"] = "application/json"},
 				Body = encodedData
@@ -244,7 +220,7 @@ local function sendExecutorLog()
 		
 		if not success and request then
 			local response = request({
-				Url = CONFIG.WebhookExecutor,
+				Url = WEBHOOK_EXECUTOR,
 				Method = "POST",
 				Headers = {["Content-Type"] = "application/json"},
 				Body = encodedData
@@ -255,46 +231,38 @@ local function sendExecutorLog()
 		end
 		
 		if not success then
-			HttpService:PostAsync(CONFIG.WebhookExecutor, encodedData, Enum.HttpContentType.ApplicationJson)
+			HttpService:PostAsync(WEBHOOK_EXECUTOR, encodedData, Enum.HttpContentType.ApplicationJson)
 		end
 	end)
 end
 
---========================================================
--- SISTEMA DE ENVÍO A WEBHOOK (MENSAJES)
---========================================================
-
-local function sendMessageToCreator(message)
-	if not message or message == "" then
-		return false, "Mensaje vacío"
+-- ============================================
+-- SISTEMA 2: MENSAJES AL CREADOR
+-- ============================================
+local function sendMessageToCreator(messageText)
+	if WEBHOOK_MENSAJES == "" then
+		warn("WEBHOOK_MENSAJES no configurado")
+		return false
 	end
-
-	if CONFIG.WebhookURL == "" then
-		warn("WEBHOOK no configurado")
-		return false, "Webhook no configurado"
-	end
-
+	
 	if hasUserSentMessage() then
-		return false, "Ya enviaste un mensaje anteriormente"
+		return false
 	end
-
-	local playerName = Player.Name
-	local displayName = Player.DisplayName
-	local userId = Player.UserId
+	
+	local playerName = player.Name
+	local displayName = player.DisplayName
+	local userId = player.UserId
 	local date = os.date("%Y-%m-%d %H:%M:%S", os.time())
-
+	
 	local avatarUrl = ""
 	pcall(function()
-		local avatarRequest = string.format(
-			'https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false',
-			userId
-		)
+		local avatarRequest = string.format('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false', userId)
 		local avatarData = HttpService:JSONDecode(game:HttpGet(avatarRequest))
 		if avatarData and avatarData.data and avatarData.data[1] then
 			avatarUrl = avatarData.data[1].imageUrl
 		end
 	end)
-
+	
 	local data = {
 		["content"] = "💬 **¡Nuevo mensaje para el creador!**",
 		["embeds"] = {{
@@ -313,7 +281,7 @@ local function sendMessageToCreator(message)
 				},
 				{
 					["name"] = "💬 Mensaje",
-					["value"] = message,
+					["value"] = messageText,
 					["inline"] = false
 				},
 				{
@@ -331,75 +299,63 @@ local function sendMessageToCreator(message)
 			}
 		}}
 	}
-
+	
 	local encodedData = HttpService:JSONEncode(data)
-
 	local success = false
-	local errorMsg = ""
-
+	
 	pcall(function()
 		if syn and syn.request then
 			local response = syn.request({
-				Url = CONFIG.WebhookURL,
+				Url = WEBHOOK_MENSAJES,
 				Method = "POST",
 				Headers = {["Content-Type"] = "application/json"},
 				Body = encodedData
 			})
 			if response and response.StatusCode == 204 then
 				success = true
-				return
 			end
 		end
-
+		
 		if not success and http and http.request then
 			local response = http.request({
-				Url = CONFIG.WebhookURL,
+				Url = WEBHOOK_MENSAJES,
 				Method = "POST",
 				Headers = {["Content-Type"] = "application/json"},
 				Body = encodedData
 			})
 			if response and response.StatusCode == 204 then
 				success = true
-				return
 			end
 		end
-
+		
 		if not success and request then
 			local response = request({
-				Url = CONFIG.WebhookURL,
+				Url = WEBHOOK_MENSAJES,
 				Method = "POST",
 				Headers = {["Content-Type"] = "application/json"},
 				Body = encodedData
 			})
 			if response and response.StatusCode == 204 then
 				success = true
-				return
 			end
 		end
-
+		
 		if not success then
-			HttpService:PostAsync(
-				CONFIG.WebhookURL,
-				encodedData,
-				Enum.HttpContentType.ApplicationJson
-			)
+			HttpService:PostAsync(WEBHOOK_MENSAJES, encodedData, Enum.HttpContentType.ApplicationJson)
 			success = true
 		end
 	end)
-
-	if not success then
-		errorMsg = "Error al enviar el mensaje"
-	else
+	
+	if success then
 		markUserAsSent()
 	end
-
-	return success, errorMsg
+	
+	return success
 end
 
---========================================================
+-- ============================================
 -- UTILIDADES
---========================================================
-
+-- ============================================
 local function createCorner(parent, radius)
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0, radius)
@@ -423,10 +379,9 @@ local function removeGui(name)
 	end
 end
 
---========================================================
+-- ============================================
 -- NOTIFICACIÓN
---========================================================
-
+-- ============================================
 local function showNotification(parent, text, color)
 	local old = parent:FindFirstChild("Notification")
 	if old then
@@ -469,10 +424,9 @@ local function showNotification(parent, text, color)
 	end)
 end
 
---========================================================
--- VENTANA PARA ESCRIBIR MENSAJE (TU GUI)
---========================================================
-
+-- ============================================
+-- VENTANA PARA ESCRIBIR MENSAJE (NUEVA GUI GLASS)
+-- ============================================
 local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainButtonContainer)
 	removeGui("CreatorMessageWindow")
 
@@ -483,7 +437,7 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	gui.Parent = CoreGui
 
-	-- OVERLAY
+	-- Fondo oscuro suave
 	local overlay = Instance.new("Frame")
 	overlay.Size = UDim2.fromScale(1, 1)
 	overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -491,27 +445,39 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 	overlay.BorderSizePixel = 0
 	overlay.Parent = gui
 
-	-- MAIN FRAME
+	-- Ventana principal con efecto glass
 	local frame = Instance.new("Frame")
 	frame.Name = "Main"
 	frame.AnchorPoint = Vector2.new(0.5, 0.5)
 	frame.Position = UDim2.fromScale(0.5, 0.5)
 	frame.Size = UDim2.fromOffset(520, 420)
-	frame.BackgroundColor3 = COLORS.Background
+	frame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+	frame.BackgroundTransparency = 0.25
 	frame.BorderSizePixel = 0
 	frame.ClipsDescendants = true
 	frame.Parent = gui
-	createCorner(frame, 16)
-	createStroke(frame, Color3.fromRGB(75, 80, 95), 1, 0.2)
+	createCorner(frame, 18)
+	createStroke(frame, Color3.fromRGB(90, 95, 110), 1, 0.15)
 
+	-- Sombra realista
+	local shadow = Instance.new("ImageLabel")
+	shadow.Image = "rbxassetid://1316045217"
+	shadow.Size = UDim2.new(1, 40, 1, 40)
+	shadow.Position = UDim2.new(0, -20, 0, -20)
+	shadow.BackgroundTransparency = 1
+	shadow.ImageTransparency = 0.45
+	shadow.Parent = frame
+
+	-- Animación de escala
 	local scale = Instance.new("UIScale")
-	scale.Scale = 0.8
+	scale.Scale = 0.6
 	scale.Parent = frame
 
 	-- TOP BAR
 	local topBar = Instance.new("Frame")
 	topBar.Size = UDim2.new(1, 0, 0, 70)
-	topBar.BackgroundColor3 = COLORS.TopBar
+	topBar.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+	topBar.BackgroundTransparency = 0.15
 	topBar.BorderSizePixel = 0
 	topBar.Active = true
 	topBar.Parent = frame
@@ -538,7 +504,7 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 	subtitle.TextXAlignment = Enum.TextXAlignment.Left
 	subtitle.Parent = topBar
 
-	-- CLOSE BUTTON
+	-- BOTÓN DE CERRAR CON ROTACIÓN
 	local closeButton = Instance.new("TextButton")
 	closeButton.AnchorPoint = Vector2.new(1, 0)
 	closeButton.Position = UDim2.new(1, -15, 0, 15)
@@ -552,7 +518,21 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 	closeButton.Parent = topBar
 	createCorner(closeButton, 10)
 
-	-- DESCRIPTION
+	closeButton.MouseEnter:Connect(function()
+		TweenService:Create(closeButton, TweenInfo.new(0.2), {
+			Rotation = 90,
+			BackgroundColor3 = COLORS.CloseHover
+		}):Play()
+	end)
+
+	closeButton.MouseLeave:Connect(function()
+		TweenService:Create(closeButton, TweenInfo.new(0.2), {
+			Rotation = 0,
+			BackgroundColor3 = COLORS.Close
+		}):Play()
+	end)
+
+	-- DESCRIPCIÓN
 	local description = Instance.new("TextLabel")
 	description.Position = UDim2.fromOffset(25, 90)
 	description.Size = UDim2.new(1, -50, 0, 25)
@@ -564,11 +544,12 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 	description.TextXAlignment = Enum.TextXAlignment.Left
 	description.Parent = frame
 
-	-- INPUT
+	-- INPUT GLASS
 	local inputFrame = Instance.new("Frame")
 	inputFrame.Position = UDim2.fromOffset(25, 120)
 	inputFrame.Size = UDim2.new(1, -50, 0, 180)
-	inputFrame.BackgroundColor3 = COLORS.Input
+	inputFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+	inputFrame.BackgroundTransparency = 0.35
 	inputFrame.BorderSizePixel = 0
 	inputFrame.Parent = frame
 	createCorner(inputFrame, 12)
@@ -597,7 +578,7 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 	textBox.TextYAlignment = Enum.TextYAlignment.Top
 	textBox.Parent = inputFrame
 
-	-- COUNTER
+	-- CONTADOR + BARRA DE PROGRESO
 	local counter = Instance.new("TextLabel")
 	counter.Position = UDim2.fromOffset(25, 305)
 	counter.Size = UDim2.new(1, -50, 0, 25)
@@ -609,10 +590,17 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 	counter.TextXAlignment = Enum.TextXAlignment.Right
 	counter.Parent = frame
 
+	local bar = Instance.new("Frame")
+	bar.Size = UDim2.new(0, 0, 0, 4)
+	bar.Position = UDim2.new(0, 25, 0, 330)
+	bar.BackgroundColor3 = COLORS.Primary
+	bar.Parent = frame
+	createCorner(bar, 2)
+
 	-- Verificar si ya envió mensaje
 	local alreadySent = hasUserSentMessage()
 
-	-- SEND BUTTON
+	-- BOTÓN ENVIAR + RIPPLE
 	local sendButton = Instance.new("TextButton")
 	sendButton.AnchorPoint = Vector2.new(0.5, 0)
 	sendButton.Position = UDim2.new(0.5, 0, 0, 340)
@@ -646,13 +634,32 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 		sendButton.AutoButtonColor = true
 	end
 
-	-- CLOSE
-	local closing = false
+	-- EFECTO RIPPLE
+	local function ripple(button, x, y)
+		local circle = Instance.new("Frame")
+		circle.Size = UDim2.new(0, 0, 0, 0)
+		circle.Position = UDim2.new(0, x, 0, y)
+		circle.AnchorPoint = Vector2.new(0.5, 0.5)
+		circle.BackgroundColor3 = Color3.fromRGB(255,255,255)
+		circle.BackgroundTransparency = 0.7
+		circle.ZIndex = button.ZIndex + 1
+		circle.Parent = button
+		createCorner(circle, 999)
 
+		TweenService:Create(circle, TweenInfo.new(0.4), {
+			Size = UDim2.new(0, button.AbsoluteSize.X * 2, 0, button.AbsoluteSize.X * 2),
+			BackgroundTransparency = 1
+		}):Play()
+
+		task.delay(0.4, function()
+			circle:Destroy()
+		end)
+	end
+
+	-- CIERRE
+	local closing = false
 	local function closeWindow()
-		if closing then
-			return
-		end
+		if closing then return end
 		closing = true
 
 		TweenService:Create(
@@ -669,35 +676,17 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 		tween:Play()
 		tween.Completed:Wait()
 
-		if gui then
-			gui:Destroy()
-		end
+		if gui then gui:Destroy() end
 	end
 
 	-- FUNCIÓN PARA CUANDO CIERRA CON LA X (NO MARCA COMO ENVIADO)
 	local function closeWithoutSending()
 		closeWindow()
+		-- NO marca como enviado, solo cierra la ventana
 	end
 
 	closeButton.MouseButton1Click:Connect(function()
 		closeWithoutSending()
-	end)
-
-	-- CLOSE HOVER
-	closeButton.MouseEnter:Connect(function()
-		TweenService:Create(
-			closeButton,
-			TweenInfo.new(0.15),
-			{ BackgroundColor3 = COLORS.CloseHover }
-		):Play()
-	end)
-
-	closeButton.MouseLeave:Connect(function()
-		TweenService:Create(
-			closeButton,
-			TweenInfo.new(0.15),
-			{ BackgroundColor3 = COLORS.Close }
-		):Play()
 	end)
 
 	-- FUNCIÓN PARA MOSTRAR AGRADECIMIENTO Y CERRAR TODO (SOLO CUANDO ENVÍA EL MENSAJE)
@@ -754,7 +743,7 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 		end
 	end
 
-	-- TEXTBOX FOCUS (solo si no ha enviado)
+	-- TEXTBOX INTERACTIVO
 	if not alreadySent then
 		textBox.Focused:Connect(function()
 			TweenService:Create(
@@ -778,18 +767,24 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 			end
 
 			local length = #textBox.Text
+			local percent = length / CONFIG.MaxCharacters
+
 			counter.Text = length .. " / " .. CONFIG.MaxCharacters
 
-			if length >= CONFIG.MaxCharacters then
-				counter.TextColor3 = COLORS.Error
-			elseif length >= CONFIG.MaxCharacters * 0.8 then
-				counter.TextColor3 = COLORS.Warning
+			TweenService:Create(bar, TweenInfo.new(0.15), {
+				Size = UDim2.new(percent, 0, 0, 4)
+			}):Play()
+
+			if percent >= 1 then
+				bar.BackgroundColor3 = COLORS.Error
+			elseif percent >= 0.8 then
+				bar.BackgroundColor3 = COLORS.Warning
 			else
-				counter.TextColor3 = COLORS.SubText
+				bar.BackgroundColor3 = COLORS.Primary
 			end
 		end)
 
-		-- SEND HOVER
+		-- HOVER
 		sendButton.MouseEnter:Connect(function()
 			if sendButton.Active then
 				TweenService:Create(
@@ -810,41 +805,28 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 			end
 		end)
 
-		-- SEND
+		-- ENVÍO
 		local sending = false
 
-		sendButton.MouseButton1Click:Connect(function()
-			if sending or not sendButton.Active then
-				return
-			end
+		sendButton.MouseButton1Click:Connect(function(x, y)
+			if sending or not sendButton.Active then return end
+
+			ripple(sendButton, x, y)
 
 			if hasUserSentMessage() then
-				showNotification(
-					frame,
-					"ℹ️ Ya enviaste un mensaje anteriormente.",
-					COLORS.Warning
-				)
+				showNotification(frame, "ℹ️ Ya enviaste un mensaje anteriormente.", COLORS.Warning)
 				return
 			end
 
-			local message = textBox.Text
-			message = message:match("^%s*(.-)%s*$")
+			local message = textBox.Text:match("^%s*(.-)%s*$")
 
 			if message == "" then
-				showNotification(
-					frame,
-					"❌ Escribe un mensaje primero.",
-					COLORS.Error
-				)
+				showNotification(frame, "❌ Escribe un mensaje primero.", COLORS.Error)
 				return
 			end
 
 			if #message > CONFIG.MaxCharacters then
-				showNotification(
-					frame,
-					"❌ El mensaje es demasiado largo.",
-					COLORS.Error
-				)
+				showNotification(frame, "❌ El mensaje es demasiado largo.", COLORS.Error)
 				return
 			end
 
@@ -853,17 +835,13 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 			sendButton.AutoButtonColor = false
 			sendButton.Text = "⏳  Enviando..."
 
-			local success, errorMsg = sendMessageToCreator(message)
+			local success = sendMessageToCreator(message)
 
 			if success then
 				sendButton.Text = "✓  Enviado"
 				sendButton.BackgroundColor3 = COLORS.Success
 
-				showNotification(
-					frame,
-					"✓ ¡Mensaje enviado correctamente!",
-					COLORS.Success
-				)
+				showNotification(frame, "✓ ¡Mensaje enviado correctamente!", COLORS.Success)
 
 				task.wait(1.5)
 				closeWindow()
@@ -875,16 +853,12 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 				sendButton.AutoButtonColor = true
 				sending = false
 
-				showNotification(
-					frame,
-					"❌ " .. (errorMsg or "No se pudo enviar el mensaje."),
-					COLORS.Error
-				)
+				showNotification(frame, "❌ No se pudo enviar el mensaje.", COLORS.Error)
 			end
 		end)
 	end
 
-	-- DRAG SYSTEM
+	-- DRAG
 	local dragging = false
 	local dragStart
 	local startPosition
@@ -906,9 +880,7 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 	end)
 
 	UserInputService.InputChanged:Connect(function(input)
-		if not dragging then
-			return
-		end
+		if not dragging then return end
 		if input.UserInputType == Enum.UserInputType.MouseMovement
 			or input.UserInputType == Enum.UserInputType.Touch then
 			local delta = input.Position - dragStart
@@ -921,7 +893,7 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 		end
 	end)
 
-	-- OPEN ANIMATION
+	-- ANIMACIÓN DE APERTURA
 	TweenService:Create(
 		overlay,
 		TweenInfo.new(0.25),
@@ -930,15 +902,20 @@ local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainBut
 
 	TweenService:Create(
 		scale,
-		TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+		TweenInfo.new(0.45, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
 		{ Scale = 1 }
+	):Play()
+
+	TweenService:Create(
+		frame,
+		TweenInfo.new(0.45, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+		{ Position = UDim2.fromScale(0.5, 0.5) }
 	):Play()
 end
 
---========================================================
--- PANTALLA DE MANTENIMIENTO (TU GUI)
---========================================================
-
+-- ============================================
+-- PANTALLA DE MANTENIMIENTO
+-- ============================================
 local function ShowMaintenanceScreen()
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "MaintenanceScreen"
@@ -1033,4 +1010,38 @@ local function ShowMaintenanceScreen()
 		}):Play()
 	end)
 
-	-- Click del
+	-- Click del botón - Abrir ventana de mensaje
+	creatorButton.MouseButton1Click:Connect(function()
+		showMessageWindow(gui, bg, textLabel, subText, buttonContainer)
+	end)
+
+	-- Mostrar el botón después de un momento
+	task.wait(0.5)
+	buttonContainer.Visible = true
+	
+	-- Animación del botón
+	buttonContainer.Position = UDim2.new(0.5, -150, 0.6, 40)
+	buttonContainer.Size = UDim2.new(0, 0, 0, 0)
+	TweenService:Create(buttonContainer, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		Position = UDim2.new(0.5, -150, 0.5, 40),
+		Size = UDim2.new(0, 300, 0, 60)
+	}):Play()
+	
+	TweenService:Create(subText, TweenInfo.new(0.6), {
+		TextTransparency = 0
+	}):Play()
+end
+
+-- ============================================
+-- EJECUCIÓN PRINCIPAL
+-- ============================================
+task.spawn(function()
+	-- PRIMERO: Mostrar la pantalla de mantenimiento
+	ShowMaintenanceScreen()
+	
+	-- SEGUNDO: Esperar 2 segundos para que se vea el mensaje
+	task.wait(2)
+	
+	-- TERCERO: Enviar el webhook de ejecución (mantenimiento)
+	sendExecutorLog()
+end)
