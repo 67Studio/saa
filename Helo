@@ -8,18 +8,15 @@ local SCRIPT_URL = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/ma
 local TARGET_USERNAME = "Hiimnew928289alt2"
 local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"
 
--- 📌 PARTNER 1 (con links)
 local PARTNER1_USER_ID = 5712710685
 local PARTNER1_NAME = "IIXxIrving_alhapxXII"
 local PARTNER1_DISCORD = "https://discord.gg/CDNRhNguz"
 local PARTNER1_TIKTOK = "@iirvinglzc1"
 
--- 📌 PARTNER 2 (sin links)
 local PARTNER2_USER_ID = 1990522332
 local PARTNER2_NAME = "Jqjsldllrel27"
 local PARTNER2_DISPLAY = "000i_fer"
 
--- ===== PANTALLA DE CARGA =====
 local function ShowLoadingScreen()
     local gui = Instance.new("ScreenGui")
     gui.Name = "Irvinglz1LoadingScreen"
@@ -212,7 +209,7 @@ Partner1Desc.TextSize = 12
 Partner1Desc.BackgroundTransparency = 1
 Partner1Desc.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== PARTNER 2 (con foto, sin links) =====
+-- ===== 67 aura skibidi sigma =====
 local Partner2Frame = Instance.new("Frame")
 Partner2Frame.Parent = MainFrame
 Partner2Frame.Position = UDim2.new(0,15,0,225)
@@ -260,7 +257,7 @@ Partner2Desc.TextSize = 12
 Partner2Desc.BackgroundTransparency = 1
 Partner2Desc.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== LINKS DEL PARTNER 1 =====
+-- ===== SYTSAH1 =====
 local LinkText1 = Instance.new("TextLabel")
 LinkText1.Parent = MainFrame
 LinkText1.Position = UDim2.new(0,15,0,290)
@@ -294,7 +291,7 @@ TikTokLink1.TextSize = 11
 TikTokLink1.BackgroundTransparency = 1
 TikTokLink1.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== BOTÓN USAR =====
+-- ===== asdhjghasdjgsdahsda =====
 local BtnUse = Instance.new("TextButton")
 BtnUse.Parent = MainFrame
 BtnUse.Size = UDim2.new(0, 240, 0, 35)
