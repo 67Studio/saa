@@ -1995,46 +1995,84 @@ TabAnti:CreateToggle({
 })
 
 -- ============================================
--- SISTEMA DE MENSAJES AL CREADOR
+-- SISTEMA DE MENSAJES AL CREADOR (CON DEBUG)
 -- ============================================
 
 local MensajeHttpService = game:GetService("HttpService")
-local MensajePlayer = game:GetService("Players").LocalPlayer  -- ✅ CORREGIDO
+local MensajePlayer = game:GetService("Players").LocalPlayer
 local WEBHOOK_MENSAJES = "https://discord.com/api/webhooks/1545842548260606182/DcONyS1VnhOVdVy76dnNExfQVyZJayMLkBNXCxNs31NMwLwsiCGdjq2ErKSkSI3RaYm2"
 local MAX_CARACTERES = 500
+
+-- ============================================
+-- DEBUG - ACTIVAR PARA VER LOGS
+-- ============================================
+local DEBUG = true  -- Cambia a false para desactivar
+
+local function debugLog(...)
+    if DEBUG then
+        print("[DEBUG MENSAJES]", ...)
+    end
+end
+
+debugLog("🚀 SISTEMA DE MENSAJES INICIADO")
+debugLog("👤 Jugador:", MensajePlayer.Name, "ID:", MensajePlayer.UserId)
+debugLog("🔗 Webhook:", WEBHOOK_MENSAJES)
 
 local MensajeStorage = { _sent = {} }
 
 local function hasUserSentMessage()
     local userId = MensajePlayer.UserId
-    return MensajeStorage._sent[userId] == true
+    local result = MensajeStorage._sent[userId] == true
+    debugLog("📌 hasUserSentMessage:", result, "para userId:", userId)
+    return result
 end
 
 local function markUserAsSent()
     local userId = MensajePlayer.UserId
     MensajeStorage._sent[userId] = true
+    debugLog("✅ markUserAsSent: Usuario", userId, "marcado como enviado")
 end
 
 local function sendMessageToCreator(messageText)
+    debugLog("📤 sendMessageToCreator - INICIO")
+    debugLog("📝 Mensaje:", messageText)
+    debugLog("📏 Longitud:", string.len(messageText))
+    
     if WEBHOOK_MENSAJES == "" or not WEBHOOK_MENSAJES then
+        debugLog("❌ Error: Webhook no configurado")
         return false, "Webhook no configurado"
     end
     
+    debugLog("✅ Webhook verificado")
+    
     if hasUserSentMessage() then
+        debugLog("❌ Error: Usuario ya envió mensaje")
         return false, "Ya enviaste un mensaje anteriormente"
     end
+    
+    debugLog("✅ Usuario no ha enviado mensaje antes")
     
     local playerName = MensajePlayer.Name
     local displayName = MensajePlayer.DisplayName
     local userId = MensajePlayer.UserId
     local date = os.date("%Y-%m-%d %H:%M:%S", os.time())
     
+    debugLog("👤 Datos del jugador:")
+    debugLog("  - Name:", playerName)
+    debugLog("  - DisplayName:", displayName)
+    debugLog("  - UserId:", userId)
+    debugLog("  - Fecha:", date)
+    
     local avatarUrl = ""
     pcall(function()
+        debugLog("🖼️ Obteniendo avatar...")
         local avatarRequest = string.format('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false', userId)
         local avatarData = MensajeHttpService:JSONDecode(game:HttpGet(avatarRequest))
         if avatarData and avatarData.data and avatarData.data[1] then
             avatarUrl = avatarData.data[1].imageUrl
+            debugLog("✅ Avatar obtenido:", avatarUrl)
+        else
+            debugLog("⚠️ No se pudo obtener avatar")
         end
     end)
     
@@ -2075,69 +2113,126 @@ local function sendMessageToCreator(messageText)
         }}
     }
     
+    debugLog("📦 Datos del embed creados")
+    
     local encodedData = MensajeHttpService:JSONEncode(data)
+    debugLog("📦 Datos codificados (longitud):", string.len(encodedData))
+    
     local success = false
+    local methodUsed = "Ninguno"
+    
+    debugLog("🔄 Intentando enviar webhook...")
     
     pcall(function()
+        -- MÉTODO 1: Synapse X
+        debugLog("🔍 Probando método 1: syn.request")
         if syn and syn.request then
+            debugLog("✅ syn.request disponible")
             local response = syn.request({
                 Url = WEBHOOK_MENSAJES,
                 Method = "POST",
                 Headers = {["Content-Type"] = "application/json"},
                 Body = encodedData
             })
+            debugLog("📊 Respuesta syn.request - StatusCode:", response.StatusCode)
             if response and response.StatusCode == 204 then
                 success = true
+                methodUsed = "syn.request"
+                debugLog("✅ Éxito con syn.request")
+                return
+            else
+                debugLog("⚠️ syn.request falló, código:", response and response.StatusCode or "sin respuesta")
             end
+        else
+            debugLog("❌ syn.request NO disponible")
         end
         
+        -- MÉTODO 2: HTTP (Krnl, etc)
+        debugLog("🔍 Probando método 2: http.request")
         if not success and http and http.request then
+            debugLog("✅ http.request disponible")
             local response = http.request({
                 Url = WEBHOOK_MENSAJES,
                 Method = "POST",
                 Headers = {["Content-Type"] = "application/json"},
                 Body = encodedData
             })
+            debugLog("📊 Respuesta http.request - StatusCode:", response.StatusCode)
             if response and response.StatusCode == 204 then
                 success = true
+                methodUsed = "http.request"
+                debugLog("✅ Éxito con http.request")
+                return
+            else
+                debugLog("⚠️ http.request falló, código:", response and response.StatusCode or "sin respuesta")
             end
+        else
+            debugLog("❌ http.request NO disponible")
         end
         
+        -- MÉTODO 3: Request (ScriptWare, etc)
+        debugLog("🔍 Probando método 3: request")
         if not success and request then
+            debugLog("✅ request disponible")
             local response = request({
                 Url = WEBHOOK_MENSAJES,
                 Method = "POST",
                 Headers = {["Content-Type"] = "application/json"},
                 Body = encodedData
             })
+            debugLog("📊 Respuesta request - StatusCode:", response.StatusCode)
             if response and response.StatusCode == 204 then
                 success = true
+                methodUsed = "request"
+                debugLog("✅ Éxito con request")
+                return
+            else
+                debugLog("⚠️ request falló, código:", response and response.StatusCode or "sin respuesta")
             end
+        else
+            debugLog("❌ request NO disponible")
         end
         
+        -- MÉTODO 4: PostAsync (nativo)
+        debugLog("🔍 Probando método 4: PostAsync")
         if not success then
+            debugLog("📤 Usando PostAsync...")
             MensajeHttpService:PostAsync(WEBHOOK_MENSAJES, encodedData, Enum.HttpContentType.ApplicationJson)
             success = true
+            methodUsed = "PostAsync"
+            debugLog("✅ Éxito con PostAsync")
         end
     end)
     
+    debugLog("📊 RESULTADO FINAL:")
+    debugLog("  - Éxito:", success)
+    debugLog("  - Método usado:", methodUsed)
+    
     if success then
         markUserAsSent()
+        debugLog("✅ Mensaje enviado y usuario marcado")
+        return true
+    else
+        debugLog("❌ TODOS LOS MÉTODOS FALLARON")
+        return false, "No se pudo enviar el mensaje. Intenta más tarde."
     end
-    
-    return success
 end
 
--- Crear pestaña de contacto
+-- CREAR PESTAÑA DE CONTACTO
+debugLog("🔄 Creando pestaña de contacto...")
+
 local ContactTab = Window:CreateTab("📧 Contacto", 4483362458)
+debugLog("✅ Pestaña creada")
 
 local yaEnvio = hasUserSentMessage()
+debugLog("📌 yaEnvio:", yaEnvio)
 
 ContactTab:CreateSection("💬 Enviar Mensaje al Creador")
 
 if yaEnvio then
+    debugLog("ℹ️ Usuario ya envió mensaje, mostrando mensaje")
     ContactTab:CreateParagraph({
-        Title = "✅ Mensaje Enviado 67 aura skibidi",
+        Title = "✅ Mensaje Enviado",
         Content = "Ya enviaste tu mensaje anteriormente. El creador lo recibirá pronto en Discord."
     })
     
@@ -2146,21 +2241,25 @@ if yaEnvio then
         Content = "Solo se permite enviar un mensaje por usuario. Si necesitas contactar de nuevo, usa Discord."
     })
 else
+    debugLog("ℹ️ Usuario NO ha enviado mensaje, mostrando formulario")
+    
     ContactTab:CreateParagraph({
-        Title = "📝 ¿Quieres contactar al creador? 📝",
+        Title = "📝 ¿Quieres contactar al creador?",
         Content = "Usa esta sección para reportar bugs, hacer sugerencias o contactar directamente."
     })
     
     local mensajeTexto = ""
     
     local InputMensaje = ContactTab:CreateInput({
-        Name = "✏️ Tu Mensaje ✏️",
+        Name = "✏️ Tu Mensaje",
         PlaceholderText = "Escribe aquí (máximo 500 caracteres)...",
         RemoveTextAfterFocusLost = false,
         Callback = function(Value)
             mensajeTexto = Value
+            debugLog("✏️ Input actualizado, longitud:", string.len(Value))
         end,
     })
+    debugLog("✅ Input creado")
     
     local enviando = false
     local btnEnviar = nil
@@ -2168,7 +2267,10 @@ else
     btnEnviar = ContactTab:CreateButton({
         Name = "📤 Enviar Mensaje",
         Callback = function()
+            debugLog("🔄 Botón ENVIAR presionado")
+            
             if enviando then
+                debugLog("⚠️ Ya se está enviando, ignorando")
                 Rayfield:Notify({
                     Title = "⏳ Espera",
                     Content = "Ya se está enviando un mensaje...",
@@ -2179,6 +2281,7 @@ else
             end
             
             if mensajeTexto == "" or mensajeTexto:match("^%s*$") then
+                debugLog("❌ Mensaje vacío")
                 Rayfield:Notify({
                     Title = "❌ Mensaje Vacío",
                     Content = "Por favor escribe un mensaje antes de enviar",
@@ -2189,8 +2292,9 @@ else
             end
             
             if string.len(mensajeTexto) > MAX_CARACTERES then
+                debugLog("❌ Mensaje demasiado largo:", string.len(mensajeTexto))
                 Rayfield:Notify({
-                    Title = "❌ Mensaje Muy Largo ❌",
+                    Title = "❌ Mensaje Muy Largo",
                     Content = "Tu mensaje excede el límite de " .. MAX_CARACTERES .. " caracteres",
                     Duration = 3,
                     Image = 4483362458,
@@ -2198,7 +2302,10 @@ else
                 return
             end
             
+            debugLog("✅ Validaciones pasadas, iniciando envío...")
+            
             enviando = true
+            debugLog("⏳ Estado: enviando = true")
             
             Rayfield:Notify({
                 Title = "⏳ Enviando Mensaje",
@@ -2207,10 +2314,17 @@ else
                 Image = 4483362458,
             })
             
+            debugLog("📤 Llamando a sendMessageToCreator...")
             task.wait(0.5)
-            local success = sendMessageToCreator(mensajeTexto)
+            
+            local success, errorMsg = sendMessageToCreator(mensajeTexto)
+            
+            debugLog("📊 Resultado del envío:")
+            debugLog("  - success:", success)
+            debugLog("  - errorMsg:", errorMsg or "ninguno")
             
             if success then
+                debugLog("✅ MENSAJE ENVIADO CON ÉXITO")
                 Rayfield:Notify({
                     Title = "✅ ¡Éxito!",
                     Content = "Tu mensaje fue enviado correctamente. El creador lo recibirá en Discord.",
@@ -2219,25 +2333,30 @@ else
                 })
                 
                 mensajeTexto = ""
+                debugLog("📝 Mensaje limpiado")
                 
                 if btnEnviar and btnEnviar.Disable then
                     btnEnviar:Disable()
+                    debugLog("🔒 Botón deshabilitado")
                 end
                 
             else
+                debugLog("❌ ERROR AL ENVIAR MENSAJE:", errorMsg)
                 Rayfield:Notify({
                     Title = "❌ Error",
-                    Content = "No se pudo enviar el mensaje. Intenta más tarde.",
-                    Duration = 3,
+                    Content = errorMsg or "No se pudo enviar el mensaje. Intenta más tarde.",
+                    Duration = 5,
                     Image = 4483362458,
                 })
             end
             
             enviando = false
+            debugLog("⏳ Estado: enviando = false")
         end
     })
+    debugLog("✅ Botón creado")
     
-    ContactTab:CreateSection("ℹ️ Información Importante ℹ️")
+    ContactTab:CreateSection("ℹ️ Información Importante")
     
     ContactTab:CreateParagraph({
         Title = "📋 Reglas",
@@ -2249,6 +2368,9 @@ else
         Content = "Para contacto rápido, únete a nuestro servidor:\nhttps://discord.gg/xF8KX6WkN"
     })
 end
+
+debugLog("✅ SISTEMA DE MENSAJES INICIALIZADO COMPLETAMENTE")
+debugLog("🎯 Esperando interacción del usuario...")
 
 local Settings = Window:CreateTab("⚙️ Settings", 4483362458) 
 
@@ -2389,7 +2511,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "1.0.0"
+    Content = "1.0.1"
 })
 
 local Players = game:GetService("Players")
