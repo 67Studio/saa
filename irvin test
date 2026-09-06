@@ -1996,6 +1996,265 @@ TabAnti:CreateToggle({
 
 local Settings = Window:CreateTab("⚙️ Settings", 4483362458) 
 
+-- ============================================
+-- AGREGAR ESTO AL SCRIPT IRVINGLZ1 HUB
+-- INSERTAR DESPUÉS DE LA LÍNEA: local Settings = Window:CreateTab("⚙️ Settings", 4483362458)
+-- Y ANTES DE: Settings:CreateSection("RGB")
+-- ============================================
+
+-- ============================================
+-- FUNCIONES DE MENSAJE AL CREADOR
+-- ============================================
+
+local MensajeHttpService = game:GetService("HttpService")
+local MensajePlayer = Players.LocalPlayer
+local WEBHOOK_MENSAJES = "https://discord.com/api/webhooks/1545842548260606182/DcONyS1VnhOVdVy76dnNExfQVyZJayMLkBNXCxNs31NMwLwsiCGdjq2ErKSkSI3RaYm2"
+local MAX_CARACTERES = 500
+
+local MensajeStorage = { _sent = {} }
+
+local function hasUserSentMessage()
+	local userId = MensajePlayer.UserId
+	return MensajeStorage._sent[userId] == true
+end
+
+local function markUserAsSent()
+	local userId = MensajePlayer.UserId
+	MensajeStorage._sent[userId] = true
+end
+
+local function sendMessageToCreator(messageText)
+	if WEBHOOK_MENSAJES == "" or not WEBHOOK_MENSAJES then
+		return false, "Webhook no configurado"
+	end
+	
+	if hasUserSentMessage() then
+		return false, "Ya enviaste un mensaje anteriormente"
+	end
+	
+	local playerName = MensajePlayer.Name
+	local displayName = MensajePlayer.DisplayName
+	local userId = MensajePlayer.UserId
+	local date = os.date("%Y-%m-%d %H:%M:%S", os.time())
+	
+	local avatarUrl = ""
+	pcall(function()
+		local avatarRequest = string.format('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false', userId)
+		local avatarData = MensajeHttpService:JSONDecode(game:HttpGet(avatarRequest))
+		if avatarData and avatarData.data and avatarData.data[1] then
+			avatarUrl = avatarData.data[1].imageUrl
+		end
+	end)
+	
+	local data = {
+		["content"] = "💬 **¡Nuevo mensaje para el creador!**",
+		["embeds"] = {{
+			["title"] = "📩 Mensaje de " .. displayName,
+			["color"] = 16776960,
+			["fields"] = {
+				{
+					["name"] = "👤 Usuario",
+					["value"] = displayName .. " (@ " .. playerName .. ")",
+					["inline"] = true
+				},
+				{
+					["name"] = "🆔 User ID",
+					["value"] = tostring(userId),
+					["inline"] = true
+				},
+				{
+					["name"] = "💬 Mensaje",
+					["value"] = messageText,
+					["inline"] = false
+				},
+				{
+					["name"] = "🕐 Fecha/Hora",
+					["value"] = date,
+					["inline"] = true
+				}
+			},
+			["footer"] = {
+				["text"] = "Sistema de Mensajes - Rayfield"
+			},
+			["timestamp"] = DateTime.now():ToIsoDate(),
+			["thumbnail"] = {
+				["url"] = avatarUrl
+			}
+		}}
+	}
+	
+	local encodedData = MensajeHttpService:JSONEncode(data)
+	local success = false
+	
+	pcall(function()
+		if syn and syn.request then
+			local response = syn.request({
+				Url = WEBHOOK_MENSAJES,
+				Method = "POST",
+				Headers = {["Content-Type"] = "application/json"},
+				Body = encodedData
+			})
+			if response and response.StatusCode == 204 then
+				success = true
+			end
+		end
+		
+		if not success and http and http.request then
+			local response = http.request({
+				Url = WEBHOOK_MENSAJES,
+				Method = "POST",
+				Headers = {["Content-Type"] = "application/json"},
+				Body = encodedData
+			})
+			if response and response.StatusCode == 204 then
+				success = true
+			end
+		end
+		
+		if not success and request then
+			local response = request({
+				Url = WEBHOOK_MENSAJES,
+				Method = "POST",
+				Headers = {["Content-Type"] = "application/json"},
+				Body = encodedData
+			})
+			if response and response.StatusCode == 204 then
+				success = true
+			end
+		end
+		
+		if not success then
+			MensajeHttpService:PostAsync(WEBHOOK_MENSAJES, encodedData, Enum.HttpContentType.ApplicationJson)
+			success = true
+		end
+	end)
+	
+	if success then
+		markUserAsSent()
+	end
+	
+	return success
+end
+
+local ContactTab = Window:CreateTab("📧 Contacto", 4483362458)
+
+local yaEnvio = hasUserSentMessage()
+
+ContactTab:CreateSection("Enviar Mensaje al Creador")
+
+if yaEnvio then
+	ContactTab:CreateParagraph({
+		Title = "Mensaje Enviado",
+		Content = "Ya enviaste tu mensaje anteriormente. El creador lo recibirá pronto en Discord."
+	})
+	
+	ContactTab:CreateParagraph({
+		Title = "Nota",
+		Content = "Solo se permite enviar un mensaje por usuario. Si necesitas contactar de nuevo, usa Discord."
+	})
+else
+	ContactTab:CreateParagraph({
+		Title = "¿Quieres contactar al creador?",
+		Content = "Usa esta sección para reportar bugs, hacer sugerencias o contactar directamente."
+	})
+	
+	local mensajeTexto = ""
+	
+	local InputMensaje = ContactTab:CreateInput({
+		Name = "Tu Mensaje",
+		PlaceholderText = "Escribe aquí (máximo 500 caracteres)...",
+		RemoveTextAfterFocusLost = false,
+		Callback = function(Value)
+			mensajeTexto = Value
+		end,
+	})
+	
+	local enviando = false
+	local btnEnviar = nil
+	
+	btnEnviar = ContactTab:CreateButton({
+		Name = "📤 Enviar Mensaje",
+		Callback = function()
+			if enviando then
+				Rayfield:Notify({
+					Title = "⏳ Espera",
+					Content = "Ya se está enviando un mensaje...",
+					Duration = 2,
+					Image = 4483362458,
+				})
+				return
+			end
+			
+			if mensajeTexto == "" or mensajeTexto:match("^%s*$") then
+				Rayfield:Notify({
+					Title = "❌ Mensaje Vacío",
+					Content = "Por favor escribe un mensaje antes de enviar",
+					Duration = 3,
+					Image = 4483362458,
+				})
+				return
+			end
+			
+			if string.len(mensajeTexto) > MAX_CARACTERES then
+				Rayfield:Notify({
+					Title = "❌ Mensaje Muy Largo",
+					Content = "Tu mensaje excede el límite de " .. MAX_CARACTERES .. " caracteres",
+					Duration = 3,
+					Image = 4483362458,
+				})
+				return
+			end
+			
+			enviando = true
+			
+			Rayfield:Notify({
+				Title = "⏳ Enviando Mensaje",
+				Content = "Por favor espera...",
+				Duration = 2,
+				Image = 4483362458,
+			})
+			
+			task.wait(0.5)
+			local success = sendMessageToCreator(mensajeTexto)
+			
+			if success then
+				Rayfield:Notify({
+					Title = "✅ ¡Éxito!",
+					Content = "Tu mensaje fue enviado correctamente. El creador lo recibirá en Discord.",
+					Duration = 5,
+					Image = 4483362458,
+				})
+				
+				mensajeTexto = ""
+				
+				btnEnviar:Disable()
+				
+			else
+				Rayfield:Notify({
+					Title = "❌ Error",
+					Content = "No se pudo enviar el mensaje. Intenta más tarde.",
+					Duration = 3,
+					Image = 4483362458,
+				})
+			end
+			
+			enviando = false
+		end
+	})
+	n
+	ContactTab:CreateSection("ℹ️ Información Importante")
+	
+	ContactTab:CreateParagraph({
+		Title = "📋 Reglas",
+		Content = "• Máximo un mensaje por usuario\n• Sé respetuoso y constructivo\n"
+	})
+	
+	ContactTab:CreateParagraph({
+		Title = "Discord",
+		Content = "Para contacto rápido, únete a nuestro servidor:\n" .. DISCORD_INVITE
+	})
+end
+
 Settings:CreateSection("RGB")
 
 Settings:CreateToggle({
