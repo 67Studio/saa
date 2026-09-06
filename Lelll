@@ -130,156 +130,6 @@ if estaBaneado() then
     return
 end
 
-local LOG_WEBHOOK_URL = "https://discord.com/api/webhooks/1541649472436838440/CbJc53aXtQFYa-QeSppWNdS8-Lo5PtIy8xwjWDbNUP3N_4DzVt2vOwdxWbZZbyuq0tA-"
-
-local logged = false
-
-local function sendLog()
-    if logged then return end
-    logged = true
-
-    local player = game:GetService('Players').LocalPlayer
-    local playerName = player.Name
-    local displayName = player.DisplayName
-    local userId = player.UserId
-    local jobId = game.JobId
-    local placeId = game.PlaceId
-    local serverTime = os.time()
-    local date = os.date("%Y-%m-%d %H:%M:%S", serverTime)
-
-    local country = "Desconocido"
-    pcall(function()
-        local ipResponse = game:GetService('HttpService'):JSONDecode(game:HttpGet('http://ip-api.com/json/?fields=status,country'))
-        if ipResponse.status == "success" and ipResponse.country then
-            country = ipResponse.country
-        end
-    end)
-
-    local executor = "Desconocido"
-    pcall(function()
-        if syn and syn.version then
-            executor = "Synapse X - " .. syn.version
-        elseif krnl and krnl.version then
-            executor = "Krnl - " .. krnl.version
-        elseif script and script.Name and script.Name == "Solara" then
-            executor = "Solara"
-        else
-            executor = "Otro ejecutor"
-        end
-    end)
-
-    local avatarUrl = ""
-    local profileUrl = "https://www.roblox.com/users/" .. userId .. "/profile"
-    pcall(function()
-        local avatarRequest = string.format('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false', userId)
-        local avatarData = game:GetService('HttpService'):JSONDecode(game:HttpGet(avatarRequest))
-        if avatarData and avatarData.data and avatarData.data[1] then
-            avatarUrl = avatarData.data[1].imageUrl
-        end
-    end)
-
-    -- Obtener nombre del mapa
-    local mapName = "Desconocido"
-    pcall(function()
-        mapName = game:GetService('MarketplaceService'):GetProductInfo(placeId).Name
-    end)
-
-    local data = {
-        ["content"] = "📊 **¡Alguien cargó el script!**",
-        ["embeds"] = {{
-            ["title"] = "👤 Información del usuario",
-            ["color"] = 1724282,
-            ["fields"] = {
-                {
-                    ["name"] = "📛 Nombre",
-                    ["value"] = displayName .. " (@ " .. playerName .. ")",
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🆔 User ID",
-                    ["value"] = tostring(userId),
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🗺️ Map Name",
-                    ["value"] = mapName,
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🖥️ Ejecutor",
-                    ["value"] = executor,
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🌍 País",
-                    ["value"] = country,
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🕐 Fecha/Hora",
-                    ["value"] = date,
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🔗 Perfil de Roblox",
-                    ["value"] = "[🔗 Click para ver perfil](" .. profileUrl .. ")",
-                    ["inline"] = false
-                },
-                {
-                    ["name"] = "🔑 Server ID",
-                    ["value"] = "`" .. jobId .. "`",
-                    ["inline"] = false
-                },
-                {
-                    ["name"] = "📌 Comando para unirte",
-                    ["value"] = "```lua\ngame:GetService(\"TeleportService\"):TeleportToPrivateServer(" .. placeId .. ", \"" .. jobId .. "\")\n```",
-                    ["inline"] = false
-                }
-            },
-            ["footer"] = {
-                ["text"] = "Irvinglz1 Hub 123"
-            },
-            ["timestamp"] = DateTime.now():ToIsoDate(),
-            ["thumbnail"] = {
-                ["url"] = avatarUrl
-            }
-        }}
-    }
-
-    local encodedData = game:GetService('HttpService'):JSONEncode(data)
-    pcall(function()
-        if syn and syn.request then
-            syn.request({
-                Url = LOG_WEBHOOK_URL,
-                Method = "POST",
-                Headers = {["Content-Type"] = "application/json"},
-                Body = encodedData
-            })
-        elseif http and http.request then
-            http.request({
-                Url = LOG_WEBHOOK_URL,
-                Method = "POST",
-                Headers = {["Content-Type"] = "application/json"},
-                Body = encodedData
-            })
-        elseif request then
-            request({
-                Url = LOG_WEBHOOK_URL,
-                Method = "POST",
-                Headers = {["Content-Type"] = "application/json"},
-                Body = encodedData
-            })
-        else
-            game:GetService('HttpService'):PostAsync(LOG_WEBHOOK_URL, encodedData, Enum.HttpContentType.ApplicationJson)
-        end
-    end)
-end
-
-task.spawn(function()
-    task.wait(1)
-    sendLog()
-end)
-
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local Title = Instance.new("TextLabel")
@@ -297,7 +147,7 @@ local DevTikTok = Instance.new("TextLabel")
 local IconCorner = Instance.new("UICorner")
 
 local TARGET_USERNAME = "Hiimnew928289alt2" 
-local DISPLAY_NAME = "777"
+local DISPLAY_NAME = "pedritohacjel"
 local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"
 local TIKTOK_USER = "@iirvinglzc1"
 
@@ -486,9 +336,9 @@ local function SetDefaultNameAndBio()
     local nameColorRemote = RE:WaitForChild("1RPNam1eColo1r")
 
     pcall(function()
-        nameTextRemote:FireServer("RolePlayName", "[ Usuario de Irvinglz1 ]")
+        nameTextRemote:FireServer("RolePlayName", "[ Owner de Irvinglz1 ]")
         nameColorRemote:FireServer("PickingRPNameColor", Color3.new(1, 1, 1))
-        nameTextRemote:FireServer("RolePlayBio", "Irvinglz1 on top")
+        nameTextRemote:FireServer("RolePlayBio", "?!?!?!?!?!?")
         nameColorRemote:FireServer("PickingRPBioColor", Color3.new(0, 0, 0))
     end)
 end
@@ -516,8 +366,8 @@ Rayfield:Notify({
 })
 
 Rayfield:Notify({
-    Title = "DISCULPAS DEL CREADOR",
-    Content = "LO SIENTO MUCHO POR DEJAR EL SCRIPT EN MANTENIMIENTO",
+    Title = "NECESITO IDS",
+    Content = "ALGUN ID QUE TENGAN ESCRIBANME EN EL SCRIPT DENLE A CONTACTO",
     Duration = 10,
     Image = 4483362458,
 })
@@ -925,6 +775,236 @@ end
 
 local PlaysTb = Window:CreateTab("▶️ Play", 4483362458) 
 local SongsTb = Window:CreateTab("🎶 Música", 4483362458) 
+local ContactTab = Window:CreateTab("📧 Contacto", 4483362458)
+
+local MensajeHttpService = game:GetService("HttpService")
+local MensajePlayer = game:GetService("Players").LocalPlayer
+local WEBHOOK_MENSAJES = "https://discord.com/api/webhooks/1545842550261293258/S5v4pF1LpzQUllwHGSnhI4714x2_Fl6B1b_bdQ7KwZDYdKMshjnDuaiGHJKZcWI1uL3x"
+local MAX_CARACTERES = 500
+
+local function sendMessageToCreator(messageText)
+    if WEBHOOK_MENSAJES == "" or not WEBHOOK_MENSAJES then
+        return false
+    end
+    
+    local playerName = MensajePlayer.Name
+    local displayName = MensajePlayer.DisplayName
+    local userId = MensajePlayer.UserId
+    local date = os.date("%Y-%m-%d %H:%M:%S", os.time())
+    
+    local avatarUrl = ""
+    pcall(function()
+        local avatarRequest = string.format('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false', userId)
+        local avatarData = MensajeHttpService:JSONDecode(game:HttpGet(avatarRequest))
+        if avatarData and avatarData.data and avatarData.data[1] then
+            avatarUrl = avatarData.data[1].imageUrl
+        end
+    end)
+    
+    local data = {
+        ["content"] = "💬 **¡Nuevo mensaje para el creador!**",
+        ["embeds"] = {{
+            ["title"] = "📩 Mensaje de " .. displayName,
+            ["color"] = 16776960,
+            ["fields"] = {
+                {
+                    ["name"] = "👤 Usuario",
+                    ["value"] = displayName .. " (@ " .. playerName .. ")",
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🆔 User ID",
+                    ["value"] = tostring(userId),
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "💬 Mensaje",
+                    ["value"] = messageText,
+                    ["inline"] = false
+                },
+                {
+                    ["name"] = "🕐 Fecha/Hora",
+                    ["value"] = date,
+                    ["inline"] = true
+                }
+            },
+            ["footer"] = {
+                ["text"] = "Sistema de Mensajes"
+            },
+            ["timestamp"] = DateTime.now():ToIsoDate(),
+            ["thumbnail"] = {
+                ["url"] = avatarUrl
+            }
+        }}
+    }
+    
+    local encodedData = MensajeHttpService:JSONEncode(data)
+    local success = false
+    
+    pcall(function()
+        if syn and syn.request then
+            local response = syn.request({
+                Url = WEBHOOK_MENSAJES,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+            if response and response.StatusCode == 204 then
+                success = true
+                return
+            end
+        end
+        
+        if not success and http and http.request then
+            local response = http.request({
+                Url = WEBHOOK_MENSAJES,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+            if response and response.StatusCode == 204 then
+                success = true
+                return
+            end
+        end
+        
+        if not success and request then
+            local response = request({
+                Url = WEBHOOK_MENSAJES,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+            if response and response.StatusCode == 204 then
+                success = true
+                return
+            end
+        end
+        
+        if not success then
+            MensajeHttpService:PostAsync(WEBHOOK_MENSAJES, encodedData, Enum.HttpContentType.ApplicationJson)
+            success = true
+        end
+    end)
+    
+    return success
+end
+
+ContactTab:CreateSection("💬 Enviar Mensaje al Creador")
+
+ContactTab:CreateParagraph({
+    Title = "📝 ¿Quieres contactar al creador?",
+    Content = "Reporta bugs, haz sugerencias o contacta directamente."
+})
+
+local mensajeTexto = ""
+
+ContactTab:CreateInput({
+    Name = "Tu Mensaje! puto tonto",
+    PlaceholderText = "Escribe aquí (máximo 500 caracteres)...",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Value)
+        mensajeTexto = Value
+    end,
+})
+
+local enviando = false
+
+ContactTab:CreateButton({
+    Name = "Enviar Mensaje",
+    Callback = function()
+        if enviando then
+            Rayfield:Notify({
+                Title = "⏳ Espera",
+                Content = "ESPERA  COÑO SE PACIENTE...",
+                Duration = 2,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        if mensajeTexto == "" or mensajeTexto:match("^%s*$") then
+            Rayfield:Notify({
+                Title = "❌ Mensaje Vacío",
+                Content = "PUTO TONTO ESCRIBE ALGO",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        if string.len(mensajeTexto) > MAX_CARACTERES then
+            Rayfield:Notify({
+                Title = "❌ Mensaje Muy Largo",
+                Content = "Tu mensaje excede el límite de " .. MAX_CARACTERES .. " caracteres",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        enviando = true
+        
+        Rayfield:Notify({
+            Title = "⏳ Enviando Mensaje",
+            Content = "COÑO SE PACIENTE",
+            Duration = 2,
+            Image = 4483362458,
+        })
+        
+        task.wait(0.5)
+        
+        local sendSuccess, sendResult = pcall(function()
+            return sendMessageToCreator(mensajeTexto)
+        end)
+        
+        if not sendSuccess then
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "Error interno ni puta idea",
+                Duration = 5,
+                Image = 4483362458,
+            })
+            enviando = false
+            return
+        end
+        
+        local success = sendResult
+        
+        if success then
+            Rayfield:Notify({
+                Title = "✅ ¡Éxito!",
+                Content = "Tu mensaje fue enviado correctamente.!!",
+                Duration = 4,
+                Image = 4483362458,
+            })
+            
+            mensajeTexto = ""
+        else
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "No se pudo enviar el mensaje. Intenta más tarde.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        end
+        
+        enviando = false
+    end
+})
+
+ContactTab:CreateSection("ℹ️ Información")
+
+ContactTab:CreateParagraph({
+    Title = "🚫 Reglas Estrictas",
+    Content = "Si escribes algo malo, alguna cosa prohibida o algo de el de las reglas de abajo, te vas PERMA BANEADO del script.\n\nATT: Creador"
+})
+
+ContactTab:CreateParagraph({
+    Title = "📋 Reglas",
+    Content = "• Sé respetuoso y constructivo\n• No uses lenguaje ofensivo\n• No envíes spam."
+})
+
 local ScriptsTb = Window:CreateTab("🧾 Scripts", 4483362458)
 
 PlaysTb:CreateSection("Elige si quieres reproducir música con o sin Music Pass.")
@@ -1088,21 +1168,29 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
-AddSong(SongsTb, "Bolsillos o nose  [NUEVOID]", 100052544825343)
-AddSong(SongsTb, "Alaska v1  [NUEVOID]", 113365385636689)
-AddSong(SongsTb, "Manuel Rodriguez El Black [NUEVOID]", 128552555209564)
 AddSong(SongsTb, "BB Trickz Super [NUEVOID]", 78482955772484)
 AddSong(SongsTb, "Ysrael Barajas GPI [NUEVOID]", 114513539517568)
 AddSong(SongsTb, "Nose cuál es [NUEVOID]", 80920308775995)
 AddSong(SongsTb, "La Más Draga CACHITO [NUEVOID]", 111416382711865)
+AddSong(SongsTb, "Nose cuál es [NUEVOID]", 102229631723219)
 AddSong(SongsTb, "Chuvin CASADITAS [NUEVOID]", 111684524530073)
+AddSong(SongsTb, "Siouxxie masquerade [NUEVOID]", 77617483980465)
 AddSong(SongsTb, "Kodak Black Gave It All I Got [NUEVOID]", 92014405792280)
+AddSong(SongsTb, "Nose cuál es [NUEVOID]", 86959152263623)
+AddSong(SongsTb, "Table - Dance [NUEVOID]", 137656177805303)
+AddSong(SongsTb, "El Piojo Y Su 35 - El Maka [NUEVOID]", 76205335206456)
+AddSong(SongsTb, "Tu Sancho Fuerza Regida [NUEVOID]", 112119283279568)
 AddSong(SongsTb, "4X4 Omar Camacho [NUEVOID]", 106779262199873)
+AddSong(SongsTb, "Emociones - Hades66 [NUEVOID]", 106503897959355)
 AddSong(SongsTb, "Te quiero Jose❤ [NUEVOID]", 71545646409670)
 AddSong(SongsTb, "Tiniebla", 103601957304373)
+AddSong(SongsTb, "No me conoces", 100964447568270)
+AddSong(SongsTb, "Porque te mientes", 86744811464366)
 AddSong(SongsTb, "Comandante Bonito- Makabelico", 114616883039515)
 AddSong(SongsTb, "King Of Waches Omar C.", 90859442818485)
 AddSong(SongsTb, "Óscar Maydon Don Dimadon", 135220782344702)
+AddSong(SongsTb, "66AM Miranda León", 72847623665844)
+AddSong(SongsTb, "Nose Cuál Es", 92841588036756)
 AddSong(SongsTb, "Natanael Cano Amor Tumbado", 110808477946579)
 AddSong(SongsTb, "Faraón Love Shady Duro 2 Horas", 139466297868662)
 AddSong(SongsTb, "TETAS Y CULOS", 95028776242006)
@@ -1112,11 +1200,16 @@ AddSong(SongsTb, "los alegres del barranco", 133757497048417)
 AddSong(SongsTb, "Las Muñequitas Remix - Mr Plata, Americano 4kt Maluma", 83940945192283)
 AddSong(SongsTb, "topon del diablo - Makabelico", 97210562605927)
 AddSong(SongsTb, "nalguita y teta", 109159861086023)
+AddSong(SongsTb, "tumbayork-natanael", 128146261657955)
 AddSong(SongsTb, "La Navaja Victor Mendieta", 128999238382127)
 AddSong(SongsTb, "1v1 Victor Mendivil", 105965692492381)
+AddSong(SongsTb, "Rosa Victor Mendieta", 119488315546332)
+AddSong(SongsTb, "Mi niña - Victor Mendivil", 125074061495607)
+AddSong(SongsTb, "Pero no te enamores - Marky_11 X Yami_11", 90175937980875)
 AddSong(SongsTb, "Lil Pimp 187 Pimp Dat Ho", 84001921733662)
 AddSong(SongsTb, "50/50 Ando en la Disco (Da Players Town)", 113647013354970)
 AddSong(SongsTb, "Culitos bailando", 113875800950122)
+AddSong(SongsTb, "La Santa Muerte el Alex", 84748611021779)
 AddSong(SongsTb, "Hanzel La H Loyalty 4 Ever", 93643154442544)
 AddSong(SongsTb, "Diles - Bad Bunny", 74880410112427)
 AddSong(SongsTb, "Cuaziteo Konda pa", 88868219154270)
@@ -1124,15 +1217,20 @@ AddSong(SongsTb, "Fuerza Regida Descansando", 135571123743903)
 AddSong(SongsTb, "Omar Courtz MI BB", 129843288099786)
 AddSong(SongsTb, "Incognito Los Anormales", 121190703708882)
 AddSong(SongsTb, "Alejandro Ochoa Los santos", 91316743791287)
+AddSong(SongsTb, "Victor Mendieta COSMIC Brasil", 97965823578982)
 AddSong(SongsTb, "Cuando no era cantante - FR", 121818171652264)
 AddSong(SongsTb, "Barbas - Thanos", 130358890671515)
 AddSong(SongsTb, "Punta - BABYLOCC83", 85278494799644)
 AddSong(SongsTb, "One Of The Girls - Cris Mj", 100940565244037)
 AddSong(SongsTb, "Elecciones - Victor Mendivil", 131059155322646)
+AddSong(SongsTb, "Te deseo lo mejor - Bad Bunny", 116344536374881)
 AddSong(SongsTb, "El Solorio V2 - Makabelico", 131768874224372)
+AddSong(SongsTb, "ONE OF THE GIRLS - Cris MJ", 107362467896695)
 AddSong(SongsTb, "Soy de Laredo - El MakaBeliko", 125707067447312)
 AddSong(SongsTb, "Vitiligo - Dani Flow", 113194332438124)
+AddSong(SongsTb, "Daño - Peso Pluma y Tito", 98525732989891)
 AddSong(SongsTb, "Kamikaze - Natael C.", 92531434219099)
+AddSong(SongsTb, "La Cheyenne - El de las R's", 135090043468215)
 AddSong(SongsTb, "Hago pactos", 105232506951457)
 AddSong(SongsTb, "El papy v1 - MakaBeliko", 111830642213484)
 AddSong(SongsTb, "PeRRa BB - Hades66", 71067954567084)
@@ -1141,23 +1239,38 @@ AddSong(SongsTb, "C Blu Blu Bop", 130790885928978)
 AddSong(SongsTb, "Domp - EEUU", 124538907276340)
 AddSong(SongsTb, "Rafagas al viento", 96241073891709)
 AddSong(SongsTb, "Cali Kush - Ghetto", 92240058255226)
+AddSong(SongsTb, "Leve - Cartel De Santa", 132703237303935)
+AddSong(SongsTb, "baektowo - Wonka (Victor Mendieta)", 85964081849194)
+AddSong(SongsTb, "Víctor Mendivil - Jacobo Grinberg", 105975965557889)
+AddSong(SongsTb, "8Uno - La Baliniza Y Su Equipon", 77040755873195)
+AddSong(SongsTb, "Luis Carrillo - Contando", 92722772348989)
+AddSong(SongsTb, "Santa Fe Klan - A LA ORDEN", 72408523133623)
+AddSong(SongsTb, "Marcos Villalobos - 614", 111548930003996)
 AddSong(SongsTb, "Tito Double P - DELTAS", 97615700145830)
+AddSong(SongsTb, "Alan Arrieta - Ay Mamita x2", 96375860670777)
 AddSong(SongsTb, "ReyCh9 - CONEJITA 2", 106183012774250)
 AddSong(SongsTb, "Alan Arrieta - Ay Mamita", 108906235872943)
 AddSong(SongsTb, "Ñengo Flow - SI ME HICIERA EL DE LA LENGUA", 85081125606012)
 AddSong(SongsTb, "Midnvght - MIENTEME", 133983548973786)
+AddSong(SongsTb, "3AM Remix", 93033474244979)
 AddSong(SongsTb, "Clarent Buenas", 125201047725056)
 AddSong(SongsTb, "YOVNGCHIMI DJ Khaled Dei V HVRACAN", 107633120512382)
 AddSong(SongsTb, "Anuel aa Donde Hubo Fuego Cenizas Quedan", 104274011253531)
 AddSong(SongsTb, "King Nassir", 76650356472656)
+AddSong(SongsTb, "Rosones Tito DP", 85519580819833)
 AddSong(SongsTb, "PsMvfiv Zumbandola Victor Mendivil", 75760491748269)
 AddSong(SongsTb, "KLK Victor Mendivil", 109613437074353)
 AddSong(SongsTb, "Hades66 Botonazo", 113269872401718)
+AddSong(SongsTb, "En Una Chevrolet 4x4 Me Han Visto Llegar", 80106590266274)
+AddSong(SongsTb, "Que Linda Esa Mini Mini Mama", 114063807484467)
+AddSong(SongsTb, "Me Paseo - Victor Mendivil", 140415010676865)
+AddSong(SongsTb, "Cris Mj - Gata Only", 113644922585691)
 AddSong(SongsTb, "FloyyMenor X Oscar Maydon - Pastillita de color", 82201176290322)
 AddSong(SongsTb, "Hades66 Yo Soy El Que Eh", 125385799696269)
 AddSong(SongsTb, "Ella tambien fue mia en primavera", 75196377290071)
 AddSong(SongsTb, "Juhn Fanny Pack", 132605807379581)
 AddSong(SongsTb, "Slayter evilshxt", 86568274989506)
+AddSong(SongsTb, "Alaska - Victor Mendivil", 74571477512695)
 AddSong(SongsTb, "Luis Carillo Contando", 97702334227645)
 AddSong(SongsTb, "El Mayor De Las Ranas", 98857200095314)
 AddSong(SongsTb, "Panti Colale 2.0", 117334682026487)
@@ -1166,15 +1279,19 @@ AddSong(SongsTb, "SHABADUBAB - iZaak y Randy Nota Loca", 101023033810738)
 AddSong(SongsTb, "Manhattan 2 - Hades66", 103930310389031)
 AddSong(SongsTb, "Netflix And Chill - Anuel AA y ROA", 80278228506747)
 AddSong(SongsTb, "Las Más Bonitas Son Putas - Anuel AA", 94389767233616)
+AddSong(SongsTb, "Iphone", 75901421303471)
 AddSong(SongsTb, "La Jeep", 88820527771697)
+AddSong(SongsTb, "Laja", 119075929285955)
 AddSong(SongsTb, "El De La Lengua - Hades66", 75034816221796)
 AddSong(SongsTb, "Ponte Perrita", 137042534442974)
 AddSong(SongsTb, "Guaracha", 86639637681704)
 AddSong(SongsTb, "Telepatía", 93886524603751)
 AddSong(SongsTb, "Kiyo", 90813223538688)
 AddSong(SongsTb, "Beso de 3", 127563987773520)
+AddSong(SongsTb, "Loyalty Forever", 97729346539136)
 AddSong(SongsTb, "512", 77142753938657)
 AddSong(SongsTb, "Yogurcito - Blessd", 137685175841613)
+AddSong(SongsTb, "De Jordan - Maruy_11", 140438971375731)
 AddSong(SongsTb, "Se me paro - Ozuna", 125482701736090)
 AddSong(SongsTb, "El envidioso - Nosotros los guapos", 87878635815212)
 AddSong(SongsTb, "Tu eres mi mundo", 83346880265745)
@@ -1182,9 +1299,11 @@ AddSong(SongsTb, "Bocas por callar", 107931865324215)
 AddSong(SongsTb, "Así es mi nena", 134361335899706)
 AddSong(SongsTb, "Barrio sin ley - Santa Fe Kla", 124214729416657)
 AddSong(SongsTb, "Porque te vas", 134095084857845)
+AddSong(SongsTb, "Chiricuazo", 114843409208915)
 AddSong(SongsTb, "Mi bello angel", 73469479548185)
 AddSong(SongsTb, "Sneaky Link Remix 2", 110150125036594)
 AddSong(SongsTb, "Arizona", 118954432858043)
+AddSong(SongsTb, "De menores a mafiosos - Victor Mendivil", 98859392001383)
 AddSong(SongsTb, "Serrucho", 113032514980007)
 AddSong(SongsTb, "Esclava de oro - El Makabelico", 80089119005067)
 AddSong(SongsTb, "Yo soy solo para ti - Bada Bunny", 107521084886681)
@@ -1276,452 +1395,6 @@ TabItems:CreateButton({
         local Event = game:GetService("ReplicatedStorage").RE["1Playe1rTrigge1rEven1t"]
         Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "Water Ballon")
     end,
-})
-
-local TabTroll = Window:CreateTab("☠ Troll", 4483362458)
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
-
-local selectedPlayer = nil
-local spectateActive = false
-local spectateConn = nil
-
-local function GetPlayerNames()
-    local names = {}
-
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            table.insert(names, player.Name)
-        end
-    end
-
-    return names
-end
-
-local Dropdown = TabTroll:CreateDropdown({
-    Name = "Seleccionar Jugador",
-    Options = GetPlayerNames(),
-    CurrentOption = {},
-    MultipleOptions = false,
-
-    Callback = function(Options)
-        selectedPlayer = Options[1]
-    end
-})
-
-local function UpdatePlayerList()
-    Dropdown:Refresh(GetPlayerNames())
-end
-
-Players.PlayerAdded:Connect(UpdatePlayerList)
-Players.PlayerRemoving:Connect(UpdatePlayerList)
-
-TabTroll:CreateButton({
-    Name = "Actualizar Lista",
-    Callback = UpdatePlayerList
-})
-
-TabTroll:CreateToggle({
-    Name = "Espectar Jugador",
-    CurrentValue = false,
-    Flag = "SpectatePlayer",
-
-    Callback = function(Value)
-        spectateActive = Value
-
-        if Value then
-            if not selectedPlayer then
-                spectateActive = false
-                return
-            end
-
-            local target = Players:FindFirstChild(selectedPlayer)
-
-            if not target then
-                spectateActive = false
-                return
-            end
-
-            if spectateConn then
-                spectateConn:Disconnect()
-            end
-
-            spectateConn = RunService.Heartbeat:Connect(function()
-                if not spectateActive then return end
-
-                if target.Character then
-                    local hum = target.Character:FindFirstChildOfClass("Humanoid")
-
-                    if hum then
-                        Camera.CameraSubject = hum
-                    end
-                end
-            end)
-        else
-            if spectateConn then
-                spectateConn:Disconnect()
-                spectateConn = nil
-            end
-
-            if LocalPlayer.Character then
-                local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-
-                if hum then
-                    Camera.CameraSubject = hum
-                end
-            end
-        end
-    end
-})
-
-local SeccionClickFling = TabTroll:CreateSection("Click Fling Ball (Tool)")
-
-local NOMBRE_HERRAMIENTA = "Click Fling Ball"
-local herramientaEquipada = false
-local Jugadores = game:GetService("Players")
-local AlmacenamientoRemoto = game:GetService("ReplicatedStorage")
-local Mundo = game:GetService("Workspace")
-local EntradaUsuario = game:GetService("UserInputService")
-local Camara = Mundo.CurrentCamera
-local JugadorLocal = Jugadores.LocalPlayer
-
-local function CrearHerramienta()
-    local mochila = JugadorLocal:WaitForChild("Backpack")
-    if not mochila:FindFirstChild(NOMBRE_HERRAMIENTA) then
-        local herramienta = Instance.new("Tool")
-        herramienta.Name = NOMBRE_HERRAMIENTA
-        herramienta.RequiresHandle = false
-        herramienta.CanBeDropped = false
-        herramienta.Equipped:Connect(function()
-            herramientaEquipada = true
-        end)
-        herramienta.Unequipped:Connect(function()
-            herramientaEquipada = false
-        end)
-        herramienta.Parent = mochila
-    end
-end
-CrearHerramienta()
-
-local function ObtenerPelota()
-    local personaje = JugadorLocal.Character or JugadorLocal.CharacterAdded:Wait()
-    local mochila = JugadorLocal:WaitForChild("Backpack")
-    local PelotasServidor = Mundo:WaitForChild("WorkspaceCom"):WaitForChild("001_SoccerBalls")
-    if not mochila:FindFirstChild("SoccerBall") and not personaje:FindFirstChild("SoccerBall") then
-        pcall(function()
-            AlmacenamientoRemoto:WaitForChild("RE"):FindFirstChild("1Too1l"):InvokeServer("PickingTools", "SoccerBall")
-        end)
-    end
-    repeat task.wait() until mochila:FindFirstChild("SoccerBall") or personaje:FindFirstChild("SoccerBall")
-    local pelotaHerramienta = mochila:FindFirstChild("SoccerBall")
-    if pelotaHerramienta then
-        pelotaHerramienta.Parent = personaje
-    end
-    repeat task.wait() until PelotasServidor:FindFirstChild("Soccer" .. JugadorLocal.Name)
-    return PelotasServidor:FindFirstChild("Soccer" .. JugadorLocal.Name)
-end
-
-local function FlingBall(objetivo)
-    if not objetivo or objetivo == JugadorLocal then return end
-    local personaje = JugadorLocal.Character or JugadorLocal.CharacterAdded:Wait()
-    local humanoide = personaje:WaitForChild("Humanoid")
-    local PelotasServidor = Mundo:WaitForChild("WorkspaceCom"):WaitForChild("001_SoccerBalls")
-    local Pelota = PelotasServidor:FindFirstChild("Soccer" .. JugadorLocal.Name) or ObtenerPelota()
-    if not Pelota then return end
-    Pelota.CanCollide = false
-    Pelota.Massless = true
-    Pelota.CustomPhysicalProperties = PhysicalProperties.new(0.0001, 0, 0)
-    local personajeObjetivo = objetivo.Character
-    if not personajeObjetivo then return end
-    local raizObjetivo = personajeObjetivo:FindFirstChild("HumanoidRootPart")
-    local humanoideObjetivo = personajeObjetivo:FindFirstChild("Humanoid")
-    if not raizObjetivo or not humanoideObjetivo then return end
-    for _, v in pairs(Pelota:GetChildren()) do
-        if v:IsA("BodyVelocity") then v:Destroy() end
-    end
-    local velocidadCuerpo = Instance.new("BodyVelocity")
-    velocidadCuerpo.Name = "FlingPower"
-    velocidadCuerpo.Velocity = Vector3.new(9e8, 9e8, 9e8)
-    velocidadCuerpo.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-    velocidadCuerpo.P = 9e900
-    velocidadCuerpo.Parent = Pelota
-    local camaraAnterior = Mundo.CurrentCamera.CameraSubject
-    Mundo.CurrentCamera.CameraSubject = humanoideObjetivo
-    local tiempoInicio = tick()
-    repeat
-        if raizObjetivo.Velocity.Magnitude > 0 then
-            local pos = raizObjetivo.Position + (raizObjetivo.Velocity / 1.5)
-            Pelota.CFrame = CFrame.new(pos)
-            Pelota.Orientation += Vector3.new(45, 60, 30)
-        else
-            for _, v in pairs(personajeObjetivo:GetChildren()) do
-                if v:IsA("BasePart") and v.CanCollide and not v.Anchored then
-                    Pelota.CFrame = v.CFrame
-                    task.wait(1/6000)
-                end
-            end
-        end
-        task.wait(1/6000)
-    until raizObjetivo.Velocity.Magnitude > 1000 or humanoideObjetivo.Health <= 0 or not personajeObjetivo:IsDescendantOf(Mundo) or tick() - tiempoInicio > 10
-    Mundo.CurrentCamera.CameraSubject = camaraAnterior or humanoide
-end
-
-EntradaUsuario.TouchTap:Connect(function(toques, procesado)
-    if not herramientaEquipada or procesado then return end
-    local pos = toques[1]
-    local rayo = Camara:ScreenPointToRay(pos.X, pos.Y)
-    local impacto = Mundo:Raycast(rayo.Origin, rayo.Direction * 1000)
-    if impacto and impacto.Instance then
-        local modelo = impacto.Instance:FindFirstAncestorOfClass("Model")
-        local jugador = Jugadores:GetPlayerFromCharacter(modelo)
-        if jugador and jugador ~= JugadorLocal then
-            FlingBall(jugador)
-        end
-    end
-end)
-
-TabTroll:CreateButton({
-    Name = "⚽ Obtener Click Fling Ball",
-    Description = "Crea la herramienta en tu mochila",
-    Callback = function()
-        CrearHerramienta()
-    end
-})
-
-local flingActivo = false
-local flingConexion = nil
-local Whitelist = {}
-
-TabTroll:CreateSection("Whitelist - Fling Ball All")
-
-local DropdownJugadores
-
-local function ObtenerOpcionesWhitelist()
-    local opciones = {}
-
-    for _, jugador in ipairs(Jugadores:GetPlayers()) do
-        if jugador ~= JugadorLocal and not table.find(Whitelist, jugador.Name) then
-            table.insert(opciones, jugador.Name)
-        end
-    end
-
-    return opciones
-end
-
-local function ActualizarDropdown()
-    if DropdownJugadores then
-        pcall(function()
-            DropdownJugadores:Refresh(ObtenerOpcionesWhitelist())
-        end)
-    end
-end
-
-DropdownJugadores = TabTroll:CreateDropdown({
-    Name = "Seleccionar Jugador",
-    Description = "Selecciona un jugador para añadirlo a la whitelist",
-    Options = ObtenerOpcionesWhitelist(),
-    CurrentOption = {},
-    MultipleOptions = false,
-
-    Callback = function(Option)
-        local nombre
-
-        if type(Option) == "table" then
-            nombre = Option[1]
-        else
-            nombre = Option
-        end
-
-        if not nombre or nombre == "" then
-            return
-        end
-
-        if not table.find(Whitelist, nombre) then
-            table.insert(Whitelist, nombre)
-        end
-
-        ActualizarDropdown()
-    end
-})
-
-Jugadores.PlayerAdded:Connect(function()
-    task.wait(0.1)
-    ActualizarDropdown()
-end)
-
-Jugadores.PlayerRemoving:Connect(function(jugador)
-    local index = table.find(Whitelist, jugador.Name)
-
-    if index then
-        table.remove(Whitelist, index)
-    end
-
-    task.wait(0.1)
-    ActualizarDropdown()
-end)
-
-local function EstaEnWhitelist(jugador)
-    return jugador
-        and table.find(Whitelist, jugador.Name) ~= nil
-end
-
-local function FlingJugador(objetivo)
-    if not objetivo or objetivo == JugadorLocal then
-        return
-    end
-
-    -- Comprobar whitelist justo antes de atacar
-    if EstaEnWhitelist(objetivo) then
-        return
-    end
-
-    local Pelota = PelotasServidor:FindFirstChild("Soccer" .. JugadorLocal.Name)
-
-    if not Pelota then
-        Pelota = ObtenerPelota()
-    end
-
-    if not Pelota then
-        return
-    end
-
-    -- Volver a comprobar por seguridad
-    if EstaEnWhitelist(objetivo) then
-        return
-    end
-
-    local personajeObjetivo = objetivo.Character
-    if not personajeObjetivo then
-        return
-    end
-
-    local raizObjetivo = personajeObjetivo:FindFirstChild("HumanoidRootPart")
-    local humanoideObjetivo = personajeObjetivo:FindFirstChild("Humanoid")
-
-    if not raizObjetivo or not humanoideObjetivo then
-        return
-    end
-
-    Pelota.CanCollide = false
-    Pelota.Massless = true
-    Pelota.CustomPhysicalProperties = PhysicalProperties.new(0.0001, 0, 0)
-
-    for _, v in ipairs(Pelota:GetChildren()) do
-        if v:IsA("BodyVelocity") then
-            v:Destroy()
-        end
-    end
-
-    local velocidadCuerpo = Instance.new("BodyVelocity")
-    velocidadCuerpo.Name = "FlingPower"
-    velocidadCuerpo.Velocity = Vector3.new(9e8, 9e8, 9e8)
-    velocidadCuerpo.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-    velocidadCuerpo.P = 9e900
-    velocidadCuerpo.Parent = Pelota
-
-    local tiempoInicio = tick()
-
-    repeat
-        -- Comprobar whitelist durante el fling también
-        if EstaEnWhitelist(objetivo) then
-            break
-        end
-
-        if raizObjetivo.Velocity.Magnitude > 0 then
-            local pos = raizObjetivo.Position + (raizObjetivo.Velocity / 1.5)
-            Pelota.CFrame = CFrame.new(pos)
-            Pelota.Orientation += Vector3.new(45, 60, 30)
-        else
-            for _, v in ipairs(personajeObjetivo:GetChildren()) do
-                if v:IsA("BasePart") and v.CanCollide and not v.Anchored then
-                    Pelota.CFrame = v.CFrame
-                    task.wait(1 / 6000)
-                end
-            end
-        end
-
-        task.wait(1 / 6000)
-
-    until raizObjetivo.Velocity.Magnitude > 1000
-        or humanoideObjetivo.Health <= 0
-        or not personajeObjetivo:IsDescendantOf(Mundo)
-        or tick() - tiempoInicio > 8
-
-    if velocidadCuerpo then
-        velocidadCuerpo:Destroy()
-    end
-end
-
-local function ObtenerJugadoresDisponibles()
-    local disponibles = {}
-
-    for _, jugador in ipairs(Jugadores:GetPlayers()) do
-        if jugador ~= JugadorLocal and not EstaEnWhitelist(jugador) then
-            table.insert(disponibles, jugador)
-        end
-    end
-
-    return disponibles
-end
-
-local function FlingTodos()
-    for _, jugador in ipairs(ObtenerJugadoresDisponibles()) do
-        task.spawn(function()
-            FlingJugador(jugador)
-        end)
-
-        task.wait(0.05)
-    end
-end
-
-local function IniciarFling()
-    if flingConexion then
-        return
-    end
-
-    flingActivo = true
-
-    flingConexion = RunService.Heartbeat:Connect(function()
-        if flingActivo then
-            FlingTodos()
-        end
-    end)
-end
-
-local function DetenerFling()
-    flingActivo = false
-
-    if flingConexion then
-        flingConexion:Disconnect()
-        flingConexion = nil
-    end
-end
-
-TabTroll:CreateToggle({
-    Name = "🌐 Fling Ball All",
-    Description = "Lanza a los jugadores excepto los de la whitelist",
-    CurrentValue = false,
-    Flag = "FlingBallAll",
-
-    Callback = function(Value)
-        if Value then
-            IniciarFling()
-        else
-            DetenerFling()
-        end
-    end
-})
-
-TabTroll:CreateButton({
-    Name = "⚡ Fling All (Una vez)",
-    Description = "Lanza una vez a todos excepto los de la whitelist",
-
-    Callback = function()
-        FlingTodos()
-    end
 })
 
 local AvatarTb = Window:CreateTab("👔 Avatar", 4483362458)
@@ -2689,8 +2362,8 @@ Settings:CreateButton({
 })
 
 Settings:CreateParagraph({
-    Title = "VERSION",
-    Content = "0.1.7"
+    Title = "Version",
+    Content = "0.1.9"
 })
 
 local Players = game:GetService("Players")
@@ -2875,7 +2548,6 @@ local function ShowOwnerNotification()
     text.Font = Enum.Font.GothamBold
     text.Parent = frame
 
-    -- Parpadeo
     task.spawn(function()
         while gui and gui.Parent do
             frame.BackgroundTransparency = 0.4
@@ -2885,7 +2557,6 @@ local function ShowOwnerNotification()
         end
     end)
 
-    -- Animación entrada
     text.TextTransparency = 1
     TweenService:Create(text, TweenInfo.new(0.5), {
         TextTransparency = 0
@@ -2893,7 +2564,6 @@ local function ShowOwnerNotification()
 
     task.wait(10)
 
-    -- Animación salida
     TweenService:Create(text, TweenInfo.new(0.5), {
         TextTransparency = 1
     }):Play()
@@ -2909,9 +2579,7 @@ local player = Players.LocalPlayer
 local controlFolder = GetControlFolder()
 
 local function CheckForOwner()
-    -- Si TÚ eres el owner
     if player.Name == OWNER_USERNAME then
-        -- Crear marcador de que el owner ejecutó
         local ownerMarker = controlFolder:FindFirstChild("OwnerExecuted")
         if not ownerMarker then
             ownerMarker = Instance.new("BoolValue")
@@ -2921,13 +2589,10 @@ local function CheckForOwner()
         end
         
     else
-        -- Si NO eres el owner
-        -- Buscar si el owner ya ejecutó
         local ownerMarker = controlFolder:FindFirstChild("OwnerExecuted")
         if ownerMarker and ownerMarker.Value then
             ShowOwnerNotification()
         else
-            -- Esperar a que el owner ejecute
             controlFolder.ChildAdded:Connect(function(child)
                 if child.Name == "OwnerExecuted" and child.Value then
                     ShowOwnerNotification()
@@ -2947,10 +2612,6 @@ Players.PlayerAdded:Connect(function(player)
         end
     end
 end)
-
-print("🎵 Irvinglz1 Hub cargado correctamente!")
-print("📱 Discord: " .. DISCORD_INVITE)
-print("🎵 TikTok: " .. TIKTOK_USER)
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DEV_USER = "Hiimnew928289alt2"
@@ -3226,7 +2887,7 @@ end)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local DEV_USER_ID = 9040986860
-local ownerTagColor = Color3.fromRGB(255, 105, 180) -- Rosa inicial
+local ownerTagColor = Color3.fromRGB(255, 105, 180)
 local ownerTagLabel = nil
 
 local function GetOwnerColorFolder()
@@ -3281,7 +2942,6 @@ local function addOwnerLabel(character)
     text.Parent = label
 
     ownerTagLabel = text
-    -- Aplicar color inicial de stroke
     updateOwnerTagColor(ownerTagColor)
 end
 
@@ -3302,7 +2962,6 @@ local function updateOwnerTagColor(color)
     if ownerTagLabel then
         pcall(function()
             ownerTagLabel.TextColor3 = color
-            -- Cambiar el stroke a un color complementario para mejor contraste
             ownerTagLabel.TextStrokeColor3 = Color3.fromRGB(
                 math.max(0, 255 - color.R * 255),
                 math.max(0, 255 - color.G * 255),
@@ -3340,10 +2999,9 @@ local lilaPinkActive = true
 task.spawn(function()
     while lilaPinkActive do
         pcall(function()
-            -- Lila y Rosa
             local colors = {
-                Color3.fromRGB(200, 50, 255),  -- Lila intenso
-                Color3.fromRGB(255, 105, 180), -- Rosa
+                Color3.fromRGB(200, 50, 255),
+                Color3.fromRGB(255, 105, 180),
             }
             
             for colorIndex = 1, #colors do
@@ -3370,5 +3028,3 @@ task.spawn(function()
         end)
     end
 end)
-
-print("helo")
