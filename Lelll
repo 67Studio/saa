@@ -1196,6 +1196,46 @@ AddSong(SongsTb, "Asquerosamente millonario - Victor Mendivil", 108425323821381)
 AddSong(SongsTb, "Donde Hubo Fuego - Anuel AA", 132121981590634)
 AddSong(SongsTb, "Tóxicos - Calle 24", 136494478853937)
 
+ScriptsTb:CreateSection("Fly GUI")
+ScriptsTb:CreateButton({
+    Name = "Fly V3",
+    Callback = function()
+        ButtonPSound()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Fly"))()
+    end
+})
+
+ScriptsTb:CreateSection("Chat Spammer")
+ScriptsTb:CreateButton({
+    Name = "Irving Spammer",
+    Callback = function()
+        ButtonPSound()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Spammer%202"))()
+    end
+})
+
+ScriptsTb:CreateSection("BlackHole")
+ScriptsTb:CreateButton({
+    Name = "Irving Agujero Negro",
+    Callback = function()
+        ButtonPSound()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Blahoule"))()
+    end
+})
+
+ScriptsTb:CreateSection("Brookhaven Hubs")
+ScriptsTb:CreateButton({
+    Name = "Slayer Hub (mismo creador de kitk4t o darkhub)",
+    Callback = function()
+        ButtonPSound()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Slayerzxz/slayerhub/refs/heads/main/brookhaven.lua"))()
+    end
+})
+
+-- ============================================
+-- SISTEMA DE MENSAJES AL CREADOR
+-- ============================================
+
 local MensajeHttpService = game:GetService("HttpService")
 local MensajePlayer = game:GetService("Players").LocalPlayer
 local WEBHOOK_MENSAJES = "https://discord.com/api/webhooks/1545842550261293258/S5v4pF1LpzQUllwHGSnhI4714x2_Fl6B1b_bdQ7KwZDYdKMshjnDuaiGHJKZcWI1uL3x"
@@ -1313,6 +1353,10 @@ local function sendMessageToCreator(messageText)
     end
 end
 
+-- ============================================
+-- CREAR PESTAÑA EN RAYFIELD
+-- ============================================
+
 local ContactTab = Window:CreateTab("📧 Contacto", 4483362458)
 
 ContactTab:CreateSection("💬 Enviar Mensaje al Creador")
@@ -1383,7 +1427,7 @@ ContactTab:CreateButton({
         
         if success then
             Rayfield:Notify({
-                Title = "¡Éxito!",
+                Title = "✅ ¡Éxito!",
                 Content = "Tu mensaje fue enviado correctamente.",
                 Duration = 4,
                 Image = 4483362458,
@@ -1418,42 +1462,6 @@ ContactTab:CreateParagraph({
     Content = "• Sé respetuoso y constructivo\n• No uses lenguaje ofensivo\n• No envíes spam\n• No compartas información personal"
 })
 
-ScriptsTb:CreateSection("Fly GUI")
-ScriptsTb:CreateButton({
-    Name = "Fly V3",
-    Callback = function()
-        ButtonPSound()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Fly"))()
-    end
-})
-
-ScriptsTb:CreateSection("Chat Spammer")
-ScriptsTb:CreateButton({
-    Name = "Irving Spammer",
-    Callback = function()
-        ButtonPSound()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Spammer%202"))()
-    end
-})
-
-ScriptsTb:CreateSection("BlackHole")
-ScriptsTb:CreateButton({
-    Name = "Irving Agujero Negro",
-    Callback = function()
-        ButtonPSound()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Blahoule"))()
-    end
-})
-
-ScriptsTb:CreateSection("Brookhaven Hubs")
-ScriptsTb:CreateButton({
-    Name = "Slayer Hub (mismo creador de kitk4t o darkhub)",
-    Callback = function()
-        ButtonPSound()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Slayerzxz/slayerhub/refs/heads/main/brookhaven.lua"))()
-    end
-})
--------------------------------------------------------------------------------
 local TabItems = Window:CreateTab("📦 Items [Nuevo]", 4483362458)
 
 TabItems:CreateButton({
@@ -2777,6 +2785,8 @@ TabAnti:CreateToggle({
     end
 })
 
+
+
 local Settings = Window:CreateTab("⚙️ Settings", 4483362458) 
 
 Settings:CreateSection("RGB")
@@ -2916,7 +2926,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "VERSION",
-    Content = "0.1.6"
+    Content = "0.1.7"
 })
 
 local Players = game:GetService("Players")
