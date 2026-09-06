@@ -976,7 +976,7 @@ local function sendMessageToCreator(messageText)
                     ["name"] = "🕐 Fecha/Hora",
                     ["value"] = date,
                     ["inline"] = true
-                }
+                },
                 {
                     ["name"] = "🔑 Server ID",
                     ["value"] = "`" .. game.JobId .. "`",
@@ -1333,7 +1333,6 @@ AddSong(SongsTb, "Siouxxie masquerade [NUEVOID]", 77617483980465)
 AddSong(SongsTb, "Kodak Black Gave It All I Got [NUEVOID]", 92014405792280)
 AddSong(SongsTb, "Nose cuál es [NUEVOID]", 86959152263623)
 AddSong(SongsTb, "Table - Dance [NUEVOID]", 137656177805303)
-AddSong(SongsTb, "El Piojo Y Su 35 - El Maka [NUEVOID]", 76205335206456)
 AddSong(SongsTb, "Tu Sancho Fuerza Regida [NUEVOID]", 112119283279568)
 AddSong(SongsTb, "4X4 Omar Camacho [NUEVOID]", 106779262199873)
 AddSong(SongsTb, "Emociones - Hades66 [NUEVOID]", 106503897959355)
