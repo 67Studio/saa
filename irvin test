@@ -1995,7 +1995,7 @@ TabAnti:CreateToggle({
 })
 
 -- ============================================
--- SISTEMA DE MENSAJES AL CREADOR (CON DEBUG)
+-- SISTEMA DE MENSAJES AL CREADOR (SIN LÍMITE)
 -- ============================================
 
 local MensajeHttpService = game:GetService("HttpService")
@@ -2018,21 +2018,6 @@ debugLog("🚀 SISTEMA DE MENSAJES INICIADO")
 debugLog("👤 Jugador:", MensajePlayer.Name, "ID:", MensajePlayer.UserId)
 debugLog("🔗 Webhook:", WEBHOOK_MENSAJES)
 
-local MensajeStorage = { _sent = {} }
-
-local function hasUserSentMessage()
-    local userId = MensajePlayer.UserId
-    local result = MensajeStorage._sent[userId] == true
-    debugLog("📌 hasUserSentMessage:", result, "para userId:", userId)
-    return result
-end
-
-local function markUserAsSent()
-    local userId = MensajePlayer.UserId
-    MensajeStorage._sent[userId] = true
-    debugLog("✅ Usuario", userId, "marcado como enviado")
-end
-
 local function sendMessageToCreator(messageText)
     debugLog("📤 sendMessageToCreator - INICIO")
     debugLog("📝 Mensaje:", messageText)
@@ -2043,12 +2028,6 @@ local function sendMessageToCreator(messageText)
         return false, "Webhook no configurado"
     end
     debugLog("✅ Webhook verificado")
-    
-    if hasUserSentMessage() then
-        debugLog("❌ Error: Usuario ya envió mensaje")
-        return false, "Ya enviaste un mensaje anteriormente"
-    end
-    debugLog("✅ Usuario no ha enviado mensaje antes")
     
     local playerName = MensajePlayer.Name
     local displayName = MensajePlayer.DisplayName
@@ -2121,7 +2100,6 @@ local function sendMessageToCreator(messageText)
     
     debugLog("🔄 Intentando enviar webhook...")
     
-    -- Envolver en pcall para capturar errores
     local sendSuccess, sendError = pcall(function()
         -- MÉTODO 1: syn.request
         debugLog("🔍 Probando método 1: syn.request")
@@ -2213,8 +2191,7 @@ local function sendMessageToCreator(messageText)
     debugLog("  - Método usado:", methodUsed)
     
     if success then
-        markUserAsSent()
-        debugLog("✅ Mensaje enviado y usuario marcado")
+        debugLog("✅ Mensaje enviado")
         return true
     else
         debugLog("❌ TODOS LOS MÉTODOS FALLARON")
@@ -2231,155 +2208,137 @@ debugLog("🔄 Creando pestaña de contacto...")
 local ContactTab = Window:CreateTab("📧 Contacto", 4483362458)
 debugLog("✅ Pestaña creada")
 
-local yaEnvio = hasUserSentMessage()
-debugLog("📌 yaEnvio:", yaEnvio)
-
 ContactTab:CreateSection("💬 Enviar Mensaje al Creador")
 
-if yaEnvio then
-    debugLog("ℹ️ Usuario ya envió mensaje")
-    ContactTab:CreateParagraph({
-        Title = "✅ Mensaje Enviado",
-        Content = "Ya enviaste tu mensaje anteriormente."
-    })
-else
-    debugLog("ℹ️ Usuario NO ha enviado mensaje")
-    
-    ContactTab:CreateParagraph({
-        Title = "📝 ¿Quieres contactar al creador?",
-        Content = "Usa esta sección para reportar bugs, hacer sugerencias o contactar directamente."
-    })
-    
-    local mensajeTexto = ""
-    
-    ContactTab:CreateInput({
-        Name = "✏️ Tu Mensaje",
-        PlaceholderText = "Escribe aquí (máximo 500 caracteres)...",
-        RemoveTextAfterFocusLost = false,
-        Callback = function(Value)
-            mensajeTexto = Value
-            debugLog("✏️ Input actualizado, longitud:", string.len(Value))
-        end,
-    })
-    debugLog("✅ Input creado")
-    
-    local enviando = false
-    
-    ContactTab:CreateButton({
-        Name = "📤 Enviar Mensaje",
-        Callback = function()
-            debugLog("🔄 Botón ENVIAR presionado")
-            
-            -- VERIFICAR: si ya está enviando
-            if enviando then
-                debugLog("⚠️ Ya se está enviando, ignorando")
-                Rayfield:Notify({
-                    Title = "⏳ Espera",
-                    Content = "Ya se está enviando un mensaje...",
-                    Duration = 2,
-                    Image = 4483362458,
-                })
-                return
-            end
-            
-            -- VERIFICAR: mensaje vacío
-            if mensajeTexto == "" or mensajeTexto:match("^%s*$") then
-                debugLog("❌ Mensaje vacío")
-                Rayfield:Notify({
-                    Title = "❌ Mensaje Vacío",
-                    Content = "Por favor escribe un mensaje antes de enviar",
-                    Duration = 3,
-                    Image = 4483362458,
-                })
-                return
-            end
-            
-            -- VERIFICAR: límite de caracteres
-            if string.len(mensajeTexto) > MAX_CARACTERES then
-                debugLog("❌ Mensaje demasiado largo:", string.len(mensajeTexto))
-                Rayfield:Notify({
-                    Title = "❌ Mensaje Muy Largo",
-                    Content = "Tu mensaje excede el límite de " .. MAX_CARACTERES .. " caracteres",
-                    Duration = 3,
-                    Image = 4483362458,
-                })
-                return
-            end
-            
-            debugLog("✅ Validaciones pasadas")
-            
-            -- EMPEZAR ENVÍO
-            enviando = true
-            debugLog("⏳ Estado: enviando = true")
-            
+ContactTab:CreateParagraph({
+    Title = "📝 ¿Quieres contactar al creador?",
+    Content = "Usa esta sección para reportar bugs, hacer sugerencias o contactar directamente."
+})
+
+local mensajeTexto = ""
+
+ContactTab:CreateInput({
+    Name = "✏️ Tu Mensaje",
+    PlaceholderText = "Escribe aquí (máximo 500 caracteres)...",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Value)
+        mensajeTexto = Value
+        debugLog("✏️ Input actualizado, longitud:", string.len(Value))
+    end,
+})
+debugLog("✅ Input creado")
+
+local enviando = false
+
+ContactTab:CreateButton({
+    Name = "📤 Enviar Mensaje",
+    Callback = function()
+        debugLog("🔄 Botón ENVIAR presionado")
+        
+        if enviando then
+            debugLog("⚠️ Ya se está enviando, ignorando")
             Rayfield:Notify({
-                Title = "⏳ Enviando Mensaje",
-                Content = "Por favor espera...",
+                Title = "⏳ Espera",
+                Content = "Ya se está enviando un mensaje...",
                 Duration = 2,
                 Image = 4483362458,
             })
-            
-            debugLog("📤 Llamando a sendMessageToCreator...")
-            task.wait(0.5)
-            
-            -- ENVIAR MENSAJE (con captura de errores)
-            local sendSuccess, sendResult = pcall(function()
-                return sendMessageToCreator(mensajeTexto)
-            end)
-            
-            debugLog("📊 Resultado pcall - sendSuccess:", sendSuccess)
-            
-            if not sendSuccess then
-                debugLog("❌ ERROR EN PCALL:", sendResult)
-                Rayfield:Notify({
-                    Title = "❌ Error",
-                    Content = "Error interno: " .. tostring(sendResult),
-                    Duration = 5,
-                    Image = 4483362458,
-                })
-                enviando = false
-                debugLog("⏳ Estado: enviando = false")
-                return
-            end
-            
-            local success = sendResult
-            debugLog("📊 Resultado del envío - success:", success)
-            
-            if success then
-                debugLog("✅ MENSAJE ENVIADO CON ÉXITO")
-                Rayfield:Notify({
-                    Title = "✅ ¡Éxito!",
-                    Content = "Tu mensaje fue enviado correctamente.",
-                    Duration = 4,
-                    Image = 4483362458,
-                })
-                
-                mensajeTexto = ""
-                debugLog("📝 Mensaje limpiado")
-                
-            else
-                debugLog("❌ ERROR AL ENVIAR MENSAJE")
-                Rayfield:Notify({
-                    Title = "❌ Error",
-                    Content = "No se pudo enviar el mensaje. Intenta más tarde.",
-                    Duration = 3,
-                    Image = 4483362458,
-                })
-            end
-            
+            return
+        end
+        
+        if mensajeTexto == "" or mensajeTexto:match("^%s*$") then
+            debugLog("❌ Mensaje vacío")
+            Rayfield:Notify({
+                Title = "❌ Mensaje Vacío",
+                Content = "Por favor escribe un mensaje antes de enviar",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        if string.len(mensajeTexto) > MAX_CARACTERES then
+            debugLog("❌ Mensaje demasiado largo:", string.len(mensajeTexto))
+            Rayfield:Notify({
+                Title = "❌ Mensaje Muy Largo",
+                Content = "Tu mensaje excede el límite de " .. MAX_CARACTERES .. " caracteres",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        debugLog("✅ Validaciones pasadas")
+        
+        enviando = true
+        debugLog("⏳ Estado: enviando = true")
+        
+        Rayfield:Notify({
+            Title = "⏳ Enviando Mensaje",
+            Content = "Por favor espera...",
+            Duration = 2,
+            Image = 4483362458,
+        })
+        
+        debugLog("📤 Llamando a sendMessageToCreator...")
+        task.wait(0.5)
+        
+        local sendSuccess, sendResult = pcall(function()
+            return sendMessageToCreator(mensajeTexto)
+        end)
+        
+        debugLog("📊 Resultado pcall - sendSuccess:", sendSuccess)
+        
+        if not sendSuccess then
+            debugLog("❌ ERROR EN PCALL:", sendResult)
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "Error interno: " .. tostring(sendResult),
+                Duration = 5,
+                Image = 4483362458,
+            })
             enviando = false
             debugLog("⏳ Estado: enviando = false")
+            return
         end
-    })
-    debugLog("✅ Botón creado")
-    
-    ContactTab:CreateSection("ℹ️ Información Importante")
-    
-    ContactTab:CreateParagraph({
-        Title = "📋 Reglas",
-        Content = "• Máximo un mensaje por usuario\n• Sé respetuoso y constructivo"
-    })
-end
+        
+        local success = sendResult
+        debugLog("📊 Resultado del envío - success:", success)
+        
+        if success then
+            debugLog("✅ MENSAJE ENVIADO CON ÉXITO")
+            Rayfield:Notify({
+                Title = "✅ ¡Éxito!",
+                Content = "Tu mensaje fue enviado correctamente.",
+                Duration = 4,
+                Image = 4483362458,
+            })
+            
+            mensajeTexto = ""
+            debugLog("📝 Mensaje limpiado")
+            
+        else
+            debugLog("❌ ERROR AL ENVIAR MENSAJE")
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "No se pudo enviar el mensaje. Intenta más tarde.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        end
+        
+        enviando = false
+        debugLog("⏳ Estado: enviando = false")
+    end
+})
+debugLog("✅ Botón creado")
+
+ContactTab:CreateSection("ℹ️ Información Importante")
+
+ContactTab:CreateParagraph({
+    Title = "📋 Reglas",
+    Content = "• Sé respetuoso y constructivo"
+})
 
 debugLog("✅ SISTEMA DE MENSAJES INICIALIZADO COMPLETAMENTE")
 debugLog("🎯 Esperando interacción del usuario...")
@@ -2523,7 +2482,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "1.0.3"
+    Content = "1.0.4"
 })
 
 local Players = game:GetService("Players")
