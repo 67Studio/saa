@@ -297,7 +297,7 @@ local DevTikTok = Instance.new("TextLabel")
 local IconCorner = Instance.new("UICorner")
 
 local TARGET_USERNAME = "Hiimnew928289alt2" 
-local DISPLAY_NAME = "pedritohacjel"
+local DISPLAY_NAME = "777"
 local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"
 local TIKTOK_USER = "@iirvinglzc1"
 
