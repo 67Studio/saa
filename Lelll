@@ -977,6 +977,11 @@ local function sendMessageToCreator(messageText)
                     ["value"] = date,
                     ["inline"] = true
                 }
+                {
+                    ["name"] = "🔑 Server ID",
+                    ["value"] = "`" .. game.JobId .. "`",
+                    ["inline"] = false
+                }
             },
             ["footer"] = {
                 ["text"] = "Sistema de Mensajes"
