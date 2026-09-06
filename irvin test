@@ -2128,22 +2128,21 @@ local function sendMessageToCreator(messageText)
     return success
 end
 
--- Crear pestaña de contacto
 local ContactTab = Window:CreateTab("📧 Contacto", 4483362458)
 
 local yaEnvio = hasUserSentMessage()
 
-ContactTab:CreateSection("💬 Enviar Mensaje al Creador")
+ContactTab:CreateSection("Enviar Mensaje al Creador")
 
 if yaEnvio then
     ContactTab:CreateParagraph({
-        Title = "✅ Mensaje Enviado",
-        Content = "Ya enviaste tu mensaje anteriormente. El creador lo recibirá pronto en Discord."
+        Title = "Mensaje Enviado!",
+        Content = "Ya enviaste tu mensaje anteriormente. El creador lo recibirá pronto."
     })
     
     ContactTab:CreateParagraph({
-        Title = "📌 Nota",
-        Content = "Solo se permite enviar un mensaje por usuario. Si necesitas contactar de nuevo, usa Discord."
+        Title = "Nota",
+        Content = "Solo se permite enviar un mensaje por usuario. Si necesitas contactar de nuevo"
     })
 else
     ContactTab:CreateParagraph({
@@ -2154,7 +2153,7 @@ else
     local mensajeTexto = ""
     
     local InputMensaje = ContactTab:CreateInput({
-        Name = "✏️ Tu Mensaje",
+        Name = "Tu Mensaje",
         PlaceholderText = "Escribe aquí (máximo 500 caracteres)...",
         RemoveTextAfterFocusLost = false,
         Callback = function(Value)
@@ -2166,7 +2165,7 @@ else
     local btnEnviar = nil
     
     btnEnviar = ContactTab:CreateButton({
-        Name = "📤 Enviar Mensaje",
+        Name = "Enviar Mensaje",
         Callback = function()
             if enviando then
                 Rayfield:Notify({
