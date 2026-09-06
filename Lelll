@@ -805,7 +805,7 @@ local function sendMessageToCreator(messageText)
         ["content"] = "💬 **¡Nuevo mensaje para el creador!**",
         ["embeds"] = {{
             ["title"] = "📩 Mensaje de " .. displayName,
-            ["color"] = 16776960,
+            ["color"] = 16744576,
             ["fields"] = {
                 {
                     ["name"] = "👤 Usuario",
