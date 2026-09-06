@@ -1088,10 +1088,6 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
-
-AddSong(SongsTb, "Yo q se lo usó irvinglz1  [NUEVOID]", 105975965557889)
-AddSong(SongsTb, "Ella se va conmigo  [NUEVOID]", 83157117655758)
-AddSong(SongsTb, "Cansada  [NUEVOID]", 75500567967936)
 AddSong(SongsTb, "Bolsillos o nose  [NUEVOID]", 100052544825343)
 AddSong(SongsTb, "Alaska v1  [NUEVOID]", 113365385636689)
 AddSong(SongsTb, "Manuel Rodriguez El Black [NUEVOID]", 128552555209564)
@@ -2693,8 +2689,8 @@ Settings:CreateButton({
 })
 
 Settings:CreateParagraph({
-    Title = "VERSION",
-    Content = "0.1.7"
+    Title = "Creditos",
+    Content = "Irvinglz1 Hub\nDesarrollado por Hiimnew928289alt2"
 })
 
 local Players = game:GetService("Players")
