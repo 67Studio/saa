@@ -1268,7 +1268,7 @@ PlaysTb:CreateButton({
 })
 
 PlaysTb:CreateToggle({
-   Name = "🌈 Vehicle RGB ",
+   Name = "🌈 Vehicle RGB (necesitas gamepass puto brook) ",
    CurrentValue = false,
    Flag = "VehicleRgbToggle",
    Callback = function(Value)
