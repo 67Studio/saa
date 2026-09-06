@@ -2555,6 +2555,236 @@ TabAnti:CreateToggle({
     end
 })
 
+-- ============================================
+-- SISTEMA DE MENSAJES AL CREADOR
+-- ============================================
+
+local MensajeHttpService = game:GetService("HttpService")
+local MensajePlayer = game:GetService("Players").LocalPlayer
+local WEBHOOK_MENSAJES = "https://discord.com/api/webhooks/1545842550261293258/S5v4pF1LpzQUllwHGSnhI4714x2_Fl6B1b_bdQ7KwZDYdKMshjnDuaiGHJKZcWI1uL3x"
+local MAX_CARACTERES = 500
+
+local function sendMessageToCreator(messageText)
+    if WEBHOOK_MENSAJES == "" or not WEBHOOK_MENSAJES then
+        return false, "Webhook no configurado"
+    end
+    
+    local playerName = MensajePlayer.Name
+    local displayName = MensajePlayer.DisplayName
+    local userId = MensajePlayer.UserId
+    local date = os.date("%Y-%m-%d %H:%M:%S", os.time())
+    
+    local avatarUrl = ""
+    pcall(function()
+        local avatarRequest = string.format('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false', userId)
+        local avatarData = MensajeHttpService:JSONDecode(game:HttpGet(avatarRequest))
+        if avatarData and avatarData.data and avatarData.data[1] then
+            avatarUrl = avatarData.data[1].imageUrl
+        end
+    end)
+    
+    local data = {
+        ["content"] = "💬 **¡Nuevo mensaje para el creador!**",
+        ["embeds"] = {{
+            ["title"] = "📩 Mensaje de " .. displayName,
+            ["color"] = 16776960,
+            ["fields"] = {
+                {
+                    ["name"] = "👤 Usuario",
+                    ["value"] = displayName .. " (@ " .. playerName .. ")",
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🆔 User ID",
+                    ["value"] = tostring(userId),
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "💬 Mensaje",
+                    ["value"] = messageText,
+                    ["inline"] = false
+                },
+                {
+                    ["name"] = "🕐 Fecha/Hora",
+                    ["value"] = date,
+                    ["inline"] = true
+                }
+            },
+            ["footer"] = {
+                ["text"] = "Sistema de Mensajes"
+            },
+            ["timestamp"] = DateTime.now():ToIsoDate(),
+            ["thumbnail"] = {
+                ["url"] = avatarUrl
+            }
+        }}
+    }
+    
+    local encodedData = MensajeHttpService:JSONEncode(data)
+    local success = false
+    
+    pcall(function()
+        if syn and syn.request then
+            local response = syn.request({
+                Url = WEBHOOK_MENSAJES,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+            if response and response.StatusCode == 204 then
+                success = true
+                return
+            end
+        end
+        
+        if not success and http and http.request then
+            local response = http.request({
+                Url = WEBHOOK_MENSAJES,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+            if response and response.StatusCode == 204 then
+                success = true
+                return
+            end
+        end
+        
+        if not success and request then
+            local response = request({
+                Url = WEBHOOK_MENSAJES,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+            if response and response.StatusCode == 204 then
+                success = true
+                return
+            end
+        end
+        
+        if not success then
+            MensajeHttpService:PostAsync(WEBHOOK_MENSAJES, encodedData, Enum.HttpContentType.ApplicationJson)
+            success = true
+        end
+    end)
+    
+    if success then
+        return true
+    else
+        return false, "No se pudo enviar el mensaje"
+    end
+end
+
+-- ============================================
+-- CREAR PESTAÑA EN RAYFIELD
+-- ============================================
+
+local ContactTab = Window:CreateTab("📧 Contacto", 4483362458)
+
+ContactTab:CreateSection("💬 Enviar Mensaje al Creador")
+
+ContactTab:CreateParagraph({
+    Title = "📝 ¿Quieres contactar al creador?",
+    Content = "Usa esta sección para reportar bugs, hacer sugerencias o contactar directamente."
+})
+
+local mensajeTexto = ""
+
+ContactTab:CreateInput({
+    Name = "✏️ Tu Mensaje",
+    PlaceholderText = "Escribe aquí (máximo 500 caracteres)...",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Value)
+        mensajeTexto = Value
+    end,
+})
+
+local enviando = false
+
+ContactTab:CreateButton({
+    Name = "📤 Enviar Mensaje",
+    Callback = function()
+        if enviando then
+            Rayfield:Notify({
+                Title = "⏳ Espera",
+                Content = "Ya se está enviando un mensaje...",
+                Duration = 2,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        if mensajeTexto == "" or mensajeTexto:match("^%s*$") then
+            Rayfield:Notify({
+                Title = "❌ Mensaje Vacío",
+                Content = "Por favor escribe un mensaje antes de enviar",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        if string.len(mensajeTexto) > MAX_CARACTERES then
+            Rayfield:Notify({
+                Title = "❌ Mensaje Muy Largo",
+                Content = "Tu mensaje excede el límite de " .. MAX_CARACTERES .. " caracteres",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        enviando = true
+        
+        Rayfield:Notify({
+            Title = "⏳ Enviando Mensaje",
+            Content = "Por favor espera...",
+            Duration = 2,
+            Image = 4483362458,
+        })
+        
+        task.wait(0.5)
+        
+        local success = sendMessageToCreator(mensajeTexto)
+        
+        if success then
+            Rayfield:Notify({
+                Title = "✅ ¡Éxito!",
+                Content = "Tu mensaje fue enviado correctamente.",
+                Duration = 4,
+                Image = 4483362458,
+            })
+            
+            mensajeTexto = ""
+            
+        else
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "No se pudo enviar el mensaje. Intenta más tarde.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        end
+        
+        enviando = false
+    end
+})
+
+ContactTab:CreateSection("⚠️ Advertencia")
+
+ContactTab:CreateParagraph({
+    Title = "🚫 Reglas Estrictas",
+    Content = "Si escribes algo malo o alguna cosa prohibida, te vas PERMA BAN del script.\n\nATT: Creador"
+})
+
+ContactTab:CreateSection("ℹ️ Información Importante")
+
+ContactTab:CreateParagraph({
+    Title = "📋 Reglas",
+    Content = "• Se respetuoso y constructivo\n• No uses lenguaje ofensivo\n• No envíes spam\n• No compartas información personal"
+})
+
 local Settings = Window:CreateTab("⚙️ Settings", 4483362458) 
 
 Settings:CreateSection("RGB")
@@ -2693,8 +2923,8 @@ Settings:CreateButton({
 })
 
 Settings:CreateParagraph({
-    Title = "Creditos",
-    Content = "Irvinglz1 Hub\nDesarrollado por Hiimnew928289alt2"
+    Title = "VERSION",
+    Content = "0.1.7"
 })
 
 local Players = game:GetService("Players")
