@@ -517,7 +517,7 @@ Rayfield:Notify({
 
 Rayfield:Notify({
     Title = "NECESITO IDS",
-    Content = "ALGUN ID QUE TENGAN ESCRIBANME EN EL SCRIPT DENLE A CONTACTO",
+    Content = "ALGUN ID QUE TENGAN O QUE NO FUNCIONE ESCRIBANME EN EL SCRIPT DENLE A CONTACTO",
     Duration = 10,
     Image = 4483362458,
 })
