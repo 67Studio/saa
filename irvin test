@@ -2388,8 +2388,8 @@ Settings:CreateButton({
 })
 
 Settings:CreateParagraph({
-    Title = "Creditos",
-    Content = "Irvinglz1 Hub\nDesarrollado por Hiimnew928289alt2"
+    Title = "Version",
+    Content = "1.0.0"
 })
 
 local Players = game:GetService("Players")
