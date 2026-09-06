@@ -916,7 +916,7 @@ ContactTab:CreateButton({
         if enviando then
             Rayfield:Notify({
                 Title = "⏳ Espera",
-                Content = "ESPERA  COÑO SE PACIENTE...",
+                Content = "Mensaje enviandose...",
                 Duration = 2,
                 Image = 4483362458,
             })
