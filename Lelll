@@ -1446,6 +1446,15 @@ ScriptsTb:CreateButton({
     end
 })
 
+ScriptsTb:CreateSection("Emotes")
+ScriptsTb:CreateButton({
+    Name = "Emotes",
+    Callback = function()
+        ButtonPSound()
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Emote-Gui-75782"))()
+    end
+})
+
 ScriptsTb:CreateSection("Chat Spammer")
 ScriptsTb:CreateButton({
     Name = "Irving Spammer",
@@ -1464,12 +1473,13 @@ ScriptsTb:CreateButton({
     end
 })
 
+
 ScriptsTb:CreateSection("Brookhaven Hubs")
 ScriptsTb:CreateButton({
-    Name = "Slayer Hub (mismo creador de kitk4t o darkhub)",
+    Name = "Dark Hub",
     Callback = function()
         ButtonPSound()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Slayerzxz/slayerhub/refs/heads/main/brookhaven.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Slayerzxz/DarkBrook/refs/heads/main/brookhaven.lua"))()
     end
 })
 -------------------------------------------------------------------------------
