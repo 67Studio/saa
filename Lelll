@@ -1323,6 +1323,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "Desvelado [NUEVOID]", 82223376167137)
 AddSong(SongsTb, "Yo q se lo usó irvinglz1 [NUEVOID]", 105975965557889)
 AddSong(SongsTb, "Ella se va conmigo [NUEVOID]", 83157117655758)
 AddSong(SongsTb, "Cansada [NUEVOID]", 75500567967936)
