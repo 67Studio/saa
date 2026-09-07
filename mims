@@ -3149,3 +3149,123 @@ task.spawn(function()
         end)
     end
 end)
+
+-- ============================================
+-- SISTEMA DE ANUNCIOS GLOBALES (Background)
+-- ============================================
+
+task.spawn(function()
+    local HttpService = game:GetService("HttpService")
+    local URL_SERVIDOR = "https://subgroup-unified-relenting.ngrok-free.dev"
+    
+    -- Crear GUI
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "AnunciosGlobales"
+    screenGui.ResetOnSpawn = false
+    screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    
+    local anuncioLabel = Instance.new("TextLabel")
+    anuncioLabel.Name = "AnuncioLabel"
+    anuncioLabel.Size = UDim2.new(0, 700, 0, 200)
+    anuncioLabel.Position = UDim2.new(0.5, -350, 0, 0)
+    anuncioLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    anuncioLabel.BackgroundTransparency = 0.2
+    anuncioLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    anuncioLabel.TextSize = 20
+    anuncioLabel.TextWrapped = true
+    anuncioLabel.Font = Enum.Font.GothamBold
+    anuncioLabel.RichText = true
+    anuncioLabel.Parent = screenGui
+    anuncioLabel.Visible = false
+    
+    local esquinas = Instance.new("UICorner")
+    esquinas.CornerRadius = UDim.new(0, 15)
+    esquinas.Parent = anuncioLabel
+    
+    local function RGBtoHex(r, g, b)
+        return string.format("#%02x%02x%02x", r, g, b)
+    end
+    
+    local function ActualizarTexto(contenido, colorHex)
+        anuncioLabel.Text = '<font size="36" color="' .. colorHex .. '">Mensaje de Creador</font>\n\n<font size="24" color="#FFFFFF">' .. tostring(contenido) .. '</font>'
+    end
+    
+    local ultimoTimestamp = 0
+    local colorIndex = 0
+    
+    local function ObtenerMensaje()
+        local respuesta = nil
+        
+        if not respuesta and syn and syn.request then
+            local ok, resultado = pcall(function()
+                return syn.request({
+                    Url = URL_SERVIDOR .. "/obtener",
+                    Method = "GET"
+                })
+            end)
+            if ok and resultado and resultado.Body then
+                respuesta = resultado.Body
+            end
+        end
+        
+        if not respuesta and http and http.request then
+            local ok, resultado = pcall(function()
+                return http.request({
+                    Url = URL_SERVIDOR .. "/obtener",
+                    Method = "GET"
+                })
+            end)
+            if ok and resultado and resultado.Body then
+                respuesta = resultado.Body
+            end
+        end
+        
+        if not respuesta and request then
+            local ok, resultado = pcall(function()
+                return request({
+                    Url = URL_SERVIDOR .. "/obtener",
+                    Method = "GET"
+                })
+            end)
+            if ok and resultado and resultado.Body then
+                respuesta = resultado.Body
+            end
+        end
+        
+        return respuesta
+    end
+    
+    while true do
+        wait(1)
+        
+        local respuesta = ObtenerMensaje()
+        
+        if respuesta then
+            local ok, datos = pcall(function()
+                return HttpService:JSONDecode(respuesta)
+            end)
+            
+            if ok and datos and datos.hay_mensaje and datos.timestamp ~= ultimoTimestamp then
+                ultimoTimestamp = datos.timestamp
+                local ultimoMensaje = tostring(datos.contenido)
+                
+                anuncioLabel.Visible = true
+                
+                local tiempoInicio = tick()
+                while tick() - tiempoInicio < 5 do
+                    colorIndex = colorIndex + 1
+                    local r = math.floor((math.sin(colorIndex * 0.05) + 1) * 127.5)
+                    local g = math.floor((math.sin(colorIndex * 0.05 + 2) + 1) * 127.5)
+                    local b = math.floor((math.sin(colorIndex * 0.05 + 4) + 1) * 127.5)
+                    
+                    local colorHex = RGBtoHex(r, g, b)
+                    ActualizarTexto(ultimoMensaje, colorHex)
+                    
+                    wait(0.05)
+                end
+                
+                anuncioLabel.Visible = false
+            end
+        end
+    end
+end)
