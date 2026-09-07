@@ -237,7 +237,7 @@ local function sendLog()
                 }
             },
             ["footer"] = {
-                ["text"] = "Irvinglz1 Hub 122323"
+                ["text"] = "Irvinglz1 Hub 1293"
             },
             ["timestamp"] = DateTime.now():ToIsoDate(),
             ["thumbnail"] = {
@@ -1323,16 +1323,22 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "Victor nose que [NUEVOID]", 129449587699547)
+AddSong(SongsTb, "NOSE CUAL ES [NUEVOID]", 131108887514627)
+AddSong(SongsTb, "Torpe Rompe Bolsillos Hinchados (Acapella) [NUEVOID]", 100052544825343)
+AddSong(SongsTb, "ALASKA V1 [NUEVOID]", 113365385636689)
+AddSong(SongsTb, "Yeyo amor, cómo ESTÁS??? [NUEVOID]", 89058278989739)
+AddSong(SongsTb, "DESVELADO [NUEVOID]", 82223376167137)
 AddSong(SongsTb, "Cansada Victor [NUEVOID]", 133815018859341)
 AddSong(SongsTb, "Manuel Rodriguez El Black [NUEVOID]", 128552555209564)
 AddSong(SongsTb, "BB Trickz Super [NUEVOID]", 78482955772484)
-AddSong(SongsTb, "Ysrael Barajas GPI [NUEVOID]", 114513539517568)
-AddSong(SongsTb, "Nose cuál es [NUEVOID]", 80920308775995)
-AddSong(SongsTb, "La Más Draga CACHITO [NUEVOID]", 111416382711865)
-AddSong(SongsTb, "Chuvin CASADITAS [NUEVOID]", 111684524530073)
-AddSong(SongsTb, "Kodak Black Gave It All I Got [NUEVOID]", 92014405792280)
-AddSong(SongsTb, "4X4 Omar Camacho [NUEVOID]", 106779262199873)
-AddSong(SongsTb, "Te quiero Jose❤ [NUEVOID]", 71545646409670)
+AddSong(SongsTb, "Ysrael Barajas GPI", 114513539517568)
+AddSong(SongsTb, "Nose cuál es", 80920308775995)
+AddSong(SongsTb, "La Más Draga CACHITO", 111416382711865)
+AddSong(SongsTb, "Chuvin CASADITAS", 111684524530073)
+AddSong(SongsTb, "Kodak Black Gave It All I Got", 92014405792280)
+AddSong(SongsTb, "4X4 Omar Camacho", 106779262199873)
+AddSong(SongsTb, "Te quiero Jose❤", 71545646409670)
 AddSong(SongsTb, "Tiniebla", 103601957304373)
 AddSong(SongsTb, "Comandante Bonito- Makabelico", 114616883039515)
 AddSong(SongsTb, "King Of Waches Omar C.", 90859442818485)
@@ -2478,7 +2484,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "0.1.9"
+    Content = "0.2.9"
 })
 
 local Players = game:GetService("Players")
