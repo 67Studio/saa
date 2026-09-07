@@ -1055,8 +1055,8 @@ ContactTab:CreateParagraph({
 local mensajeTexto = ""
 
 ContactTab:CreateInput({
-    Name = "Tu Mensaje!",
-    PlaceholderText = "Ejemplo: Hola creador este cancion no va "nomrbe de la cancion"",
+    Name = "Tu Mensaje! puto tonto",
+    PlaceholderText = "Escribe aquí (máximo 500 caracteres)...",
     RemoveTextAfterFocusLost = false,
     Callback = function(Value)
         mensajeTexto = Value
@@ -1071,7 +1071,7 @@ ContactTab:CreateButton({
         if enviando then
             Rayfield:Notify({
                 Title = "⏳ Espera",
-                Content = "SE PACIENTE",
+                Content = "Mensaje enviandose...",
                 Duration = 2,
                 Image = 4483362458,
             })
@@ -1101,8 +1101,8 @@ ContactTab:CreateButton({
         enviando = true
         
         Rayfield:Notify({
-            Title = "⏳ Espera",
-            Content = "Mensaje enviandose...",
+            Title = "⏳ Enviando Mensaje",
+            Content = "COÑO SE PACIENTE",
             Duration = 2,
             Image = 4483362458,
         })
@@ -1446,15 +1446,6 @@ ScriptsTb:CreateButton({
     end
 })
 
-ScriptsTb:CreateSection("Emotes")
-ScriptsTb:CreateButton({
-    Name = "Emotes",
-    Callback = function()
-        ButtonPSound()
-        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Emote-Gui-75782"))()
-    end
-})
-
 ScriptsTb:CreateSection("Chat Spammer")
 ScriptsTb:CreateButton({
     Name = "Irving Spammer",
@@ -1473,13 +1464,12 @@ ScriptsTb:CreateButton({
     end
 })
 
-
 ScriptsTb:CreateSection("Brookhaven Hubs")
 ScriptsTb:CreateButton({
-    Name = "Dark Hub",
+    Name = "Slayer Hub (mismo creador de kitk4t o darkhub)",
     Callback = function()
         ButtonPSound()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Slayerzxz/DarkBrook/refs/heads/main/brookhaven.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Slayerzxz/slayerhub/refs/heads/main/brookhaven.lua"))()
     end
 })
 -------------------------------------------------------------------------------
@@ -2499,7 +2489,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "0.2.1"
+    Content = "0.1.9"
 })
 
 local Players = game:GetService("Players")
