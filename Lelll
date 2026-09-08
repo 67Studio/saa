@@ -2517,7 +2517,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "0.2.9"
+    Content = "0.6.7"
 })
 
 local Players = game:GetService("Players")
