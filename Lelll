@@ -517,7 +517,7 @@ Rayfield:Notify({
 
 Rayfield:Notify({
     Title = "NECESITO IDS",
-    Content = "ALGUN ID QUE TENGAN O QUE NO FUNCIONE ESCRIBANME EN EL SCRIPT DENLE A CONTACTO",
+    Content = "ALGUN ID QUE TENGAN O QUE NO FUNCIONE ESCRIBANME EN EL SCRIPT DENLE A CONTACTO ALGUN INSULTO O ALGO BANEADO",
     Duration = 10,
     Image = 4483362458,
 })
@@ -1055,8 +1055,8 @@ ContactTab:CreateParagraph({
 local mensajeTexto = ""
 
 ContactTab:CreateInput({
-    Name = "Tu Mensaje! puto tonto",
-    PlaceholderText = "Escribe aquí (máximo 500 caracteres)...",
+    Name = "Tu Mensaje!",
+    PlaceholderText = "AQUI LO QUE QUIERAS DECIR UN INSULTO BANEADO",
     RemoveTextAfterFocusLost = false,
     Callback = function(Value)
         mensajeTexto = Value
@@ -1070,8 +1070,8 @@ ContactTab:CreateButton({
     Callback = function()
         if enviando then
             Rayfield:Notify({
-                Title = "⏳ Espera",
-                Content = "Mensaje enviandose...",
+                Title = "⏳ Enviando Mensaje",
+                Content = "PACIENCIA",
                 Duration = 2,
                 Image = 4483362458,
             })
@@ -1081,7 +1081,7 @@ ContactTab:CreateButton({
         if mensajeTexto == "" or mensajeTexto:match("^%s*$") then
             Rayfield:Notify({
                 Title = "❌ Mensaje Vacío",
-                Content = "PUTO TONTO ESCRIBE ALGO",
+                Content = "ESCRIBE ALGO BROO",
                 Duration = 3,
                 Image = 4483362458,
             })
@@ -1102,7 +1102,7 @@ ContactTab:CreateButton({
         
         Rayfield:Notify({
             Title = "⏳ Enviando Mensaje",
-            Content = "COÑO SE PACIENTE",
+            Content = "Mensaje enviandose...",
             Duration = 2,
             Image = 4483362458,
         })
