@@ -1323,6 +1323,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "CANSADA [NUEVOID]", 75500567967936)
 AddSong(SongsTb, "Victor nose que [NUEVOID]", 129449587699547)
 AddSong(SongsTb, "NOSE CUAL ES [NUEVOID]", 131108887514627)
 AddSong(SongsTb, "Torpe Rompe Bolsillos Hinchados (Acapella) [NUEVOID]", 100052544825343)
