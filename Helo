@@ -19,71 +19,6 @@ local PARTNER2_USER_ID = 1990522332
 local PARTNER2_NAME = "Jqjsldllrel27"
 local PARTNER2_DISPLAY = "000i_fer"
 
--- ===== VERIFICAR PLACE ID =====
-local currentPlaceId = game.PlaceId
-
-if currentPlaceId ~= EXPECTED_PLACE_ID then
-    -- Mostrar pantalla de error
-    local errorGui = Instance.new("ScreenGui")
-    errorGui.Name = "ErrorScreen"
-    errorGui.Parent = game:GetService("CoreGui")
-    errorGui.ResetOnSpawn = false
-    
-    local bg = Instance.new("Frame", errorGui)
-    bg.Size = UDim2.new(1,0,1,0)
-    bg.BackgroundColor3 = Color3.fromRGB(10,10,10)
-    
-    local errorLabel = Instance.new("TextLabel", bg)
-    errorLabel.Size = UDim2.new(1,0,0,150)
-    errorLabel.Position = UDim2.new(0,0,0.5,-75)
-    errorLabel.BackgroundTransparency = 1
-    errorLabel.TextColor3 = Color3.fromRGB(255,0,0)
-    errorLabel.Font = Enum.Font.GothamBold
-    errorLabel.TextSize = 35
-    errorLabel.Text = "ESTE SCRIPT NO SE USA EN ESTE JUEGO"
-    errorLabel.TextScaled = true
-    
-    local subLabel = Instance.new("TextLabel", bg)
-    subLabel.Size = UDim2.new(1,0,0,40)
-    subLabel.Position = UDim2.new(0,0,0.6,0)
-    subLabel.BackgroundTransparency = 1
-    subLabel.TextColor3 = Color3.fromRGB(200,200,200)
-    subLabel.Font = Enum.Font.GothamMedium
-    subLabel.TextSize = 20
-    subLabel.Text = "Place ID: " .. currentPlaceId .. " | Esperado: " .. EXPECTED_PLACE_ID
-    subLabel.TextScaled = true
-    
-    local subLabel2 = Instance.new("TextLabel", bg)
-    subLabel2.Size = UDim2.new(1,0,0,30)
-    subLabel2.Position = UDim2.new(0,0,0.7,0)
-    subLabel2.BackgroundTransparency = 1
-    subLabel2.TextColor3 = Color3.fromRGB(255,100,100)
-    subLabel2.Font = Enum.Font.GothamBold
-    subLabel2.TextSize = 18
-    subLabel2.Text = "SUBNORMAL"
-    subLabel2.TextScaled = true
-    
-    -- Efecto de parpadeo
-    spawn(function()
-        while true do
-            task.wait(0.3)
-            errorLabel.TextColor3 = Color3.fromRGB(255,200,200)
-            subLabel2.TextColor3 = Color3.fromRGB(255,200,200)
-            task.wait(0.3)
-            errorLabel.TextColor3 = Color3.fromRGB(255,0,0)
-            subLabel2.TextColor3 = Color3.fromRGB(255,100,100)
-        end
-    end)
-    
-    -- Hacer kick después de 3 segundos
-    task.wait(3)
-    
-    -- Kickear al jugador directamente
-    game:GetService("Players").LocalPlayer:Kick("ESTE SCRIPT NO SE USA EN ESTE JUEGO SUBNORMAL")
-    
-    return
-end
-
 local function ShowLoadingScreen()
     local gui = Instance.new("ScreenGui")
     gui.Name = "Irvinglz1LoadingScreen"
@@ -113,9 +48,43 @@ local function ShowLoadingScreen()
         TextTransparency = 0
     }):Play()
 
+    -- Verificar Place ID
+    local currentPlaceId = game.PlaceId
+    
+    if currentPlaceId ~= EXPECTED_PLACE_ID then
+        local message = "ESTE SCRIPT NO SE USA EN ESTE JUEGO SUBNORMAL"
+        for i = 1, #message do
+            textLabel.Text = string.sub(message, 1, i)
+            textLabel.TextColor3 = Color3.fromRGB(255,0,0)
+            task.wait(0.08)
+        end
+        
+        task.wait(2)
+        
+        local fadeOut = TweenService:Create(bg, TweenInfo.new(1.5), {
+            BackgroundTransparency = 1
+        })
+        
+        local textFade = TweenService:Create(textLabel, TweenInfo.new(1.5), {
+            TextTransparency = 1
+        })
+        
+        fadeOut:Play()
+        textFade:Play()
+        
+        fadeOut.Completed:Wait()
+        gui:Destroy()
+        
+        -- Kickear al jugador
+        game:GetService("Players").LocalPlayer:Kick("ESTE SCRIPT NO SE USA EN ESTE JUEGO SUBNORMAL")
+        return
+    end
+
+    -- Si está en el juego correcto, mostrar mensaje normal
     local message = "ULTIMA VEZ QUE LO DIGO EN ESTE SCRIPT NECESITAS PASE DE MUSICA PARA QUE SE ESCUCHE LOS AUDIOS A TODOS"
     for i = 1, #message do
         textLabel.Text = string.sub(message, 1, i)
+        textLabel.TextColor3 = Color3.fromRGB(255,255,255)
         task.wait(0.1)
     end
 
@@ -137,6 +106,11 @@ local function ShowLoadingScreen()
 end
 
 ShowLoadingScreen()
+
+-- Si el script fue bloqueado, no continuar
+if game.PlaceId ~= EXPECTED_PLACE_ID then
+    return
+end
 
 -- ===== CREAR GUI PRINCIPAL =====
 local ScreenGui = Instance.new("ScreenGui")
