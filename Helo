@@ -4,6 +4,8 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
 
+-- ===== CONFIGURACIÓN =====
+local EXPECTED_PLACE_ID = 4924922222
 local SCRIPT_URL = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Lelll"
 local TARGET_USERNAME = "Hiimnew928289alt2"
 local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"
@@ -16,6 +18,53 @@ local PARTNER1_TIKTOK = "@iirvinglzc1"
 local PARTNER2_USER_ID = 1990522332
 local PARTNER2_NAME = "Jqjsldllrel27"
 local PARTNER2_DISPLAY = "000i_fer"
+
+-- ===== VERIFICAR PLACE ID =====
+local currentPlaceId = game.PlaceId
+
+if currentPlaceId ~= EXPECTED_PLACE_ID then
+    -- Mostrar pantalla de error
+    local errorGui = Instance.new("ScreenGui")
+    errorGui.Name = "ErrorScreen"
+    errorGui.Parent = game:GetService("CoreGui")
+    errorGui.ResetOnSpawn = false
+    
+    local bg = Instance.new("Frame", errorGui)
+    bg.Size = UDim2.new(1,0,1,0)
+    bg.BackgroundColor3 = Color3.fromRGB(10,10,10)
+    
+    local errorLabel = Instance.new("TextLabel", bg)
+    errorLabel.Size = UDim2.new(1,0,0,150)
+    errorLabel.Position = UDim2.new(0,0,0.5,-75)
+    errorLabel.BackgroundTransparency = 1
+    errorLabel.TextColor3 = Color3.fromRGB(255,0,0)
+    errorLabel.Font = Enum.Font.GothamBold
+    errorLabel.TextSize = 35
+    errorLabel.Text = "ESTE SCRIPT NO SE USA EN ESTE JUEGO"
+    errorLabel.TextScaled = true
+    
+    local subLabel = Instance.new("TextLabel", bg)
+    subLabel.Size = UDim2.new(1,0,0,40)
+    subLabel.Position = UDim2.new(0,0,0.6,0)
+    subLabel.BackgroundTransparency = 1
+    subLabel.TextColor3 = Color3.fromRGB(200,200,200)
+    subLabel.Font = Enum.Font.GothamMedium
+    subLabel.TextSize = 20
+    subLabel.Text = "Place ID: " .. currentPlaceId .. " | Esperado: " .. EXPECTED_PLACE_ID
+    subLabel.TextScaled = true
+    
+    -- Efecto de parpadeo
+    spawn(function()
+        while true do
+            task.wait(0.5)
+            errorLabel.TextColor3 = Color3.fromRGB(255,200,200)
+            task.wait(0.5)
+            errorLabel.TextColor3 = Color3.fromRGB(255,0,0)
+        end
+    end)
+    
+    return
+end
 
 local function ShowLoadingScreen()
     local gui = Instance.new("ScreenGui")
@@ -154,14 +203,14 @@ local DevDesc = Instance.new("TextLabel")
 DevDesc.Parent = DevFrame
 DevDesc.Position = UDim2.new(0,60,0,30)
 DevDesc.Size = UDim2.new(0,190,0,20)
-DevDesc.Text = "👑Creador👑"
+DevDesc.Text = "🔰Creador🔰"
 DevDesc.TextColor3 = Color3.fromRGB(180,180,180)
 DevDesc.Font = Enum.Font.Gotham
 DevDesc.TextSize = 12
 DevDesc.BackgroundTransparency = 1
 DevDesc.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== PARTNER 1 (con foto) =====
+-- ===== PARTNER 1 =====
 local Partner1Frame = Instance.new("Frame")
 Partner1Frame.Parent = MainFrame
 Partner1Frame.Position = UDim2.new(0,15,0,155)
@@ -209,7 +258,7 @@ Partner1Desc.TextSize = 12
 Partner1Desc.BackgroundTransparency = 1
 Partner1Desc.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== 67 aura skibidi sigma =====
+-- ===== PARTNER 2 =====
 local Partner2Frame = Instance.new("Frame")
 Partner2Frame.Parent = MainFrame
 Partner2Frame.Position = UDim2.new(0,15,0,225)
@@ -257,7 +306,7 @@ Partner2Desc.TextSize = 12
 Partner2Desc.BackgroundTransparency = 1
 Partner2Desc.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== SYTSAH1 =====
+-- ===== LINKS =====
 local LinkText1 = Instance.new("TextLabel")
 LinkText1.Parent = MainFrame
 LinkText1.Position = UDim2.new(0,15,0,290)
@@ -291,7 +340,7 @@ TikTokLink1.TextSize = 11
 TikTokLink1.BackgroundTransparency = 1
 TikTokLink1.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== asdhjghasdjgsdahsda =====
+-- ===== BOTÓN USAR =====
 local BtnUse = Instance.new("TextButton")
 BtnUse.Parent = MainFrame
 BtnUse.Size = UDim2.new(0, 240, 0, 35)
@@ -359,8 +408,5 @@ BtnUse.MouseButton1Click:Connect(function()
 
     BlackScreen:Destroy()
 
-    print("CAGADA")
     loadstring(game:HttpGet(SCRIPT_URL))()
 end)
-
-print("🤷‍♂️Irvinglz1 Hub🤷‍♂️ - Presiona USAR para cargar el script")
