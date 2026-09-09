@@ -325,11 +325,7 @@ if info.baneado then
     task.wait(0.5)
     
     player:Kick(
-        "🚫 Has sido baneado de IRVING HUB\n\n" ..
-        "Motivo: " .. info.motivo .. "\n" ..
-        "⏰ Tiempo restante: " .. calcularTiempoRestante(info.expires_at) .. "\n" ..
-        "📅 Fecha: " .. info.fecha .. "\n\n" ..
-        "🔗 Contacto: discord.gg/xF8KX6WkN"
+        "🚫 Has sido baneado de IRVING HUB 🚫" ..
     )
     return
 end
