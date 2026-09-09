@@ -47,9 +47,6 @@ end
 
 cargarBans()
 
--- ==========================================
--- FUNCIÓN PARA CALCULAR TIEMPO RESTANTE
--- ==========================================
 local function calcularTiempoRestante(expires_at)
     if not expires_at then
         return "Permanente"
@@ -85,9 +82,6 @@ local function calcularTiempoRestante(expires_at)
     return table.concat(resultado, " ")
 end
 
--- ==========================================
--- OBTENER INFO DEL BANEO
--- ==========================================
 local function obtenerInfoBaneo()
     local currentName = string.lower(player.Name)
     
@@ -112,9 +106,6 @@ local function obtenerInfoBaneo()
     return { baneado = false }
 end
 
--- ==========================================
--- FUNCIÓN PARA DAR FORMATO AL MOTIVO
--- ==========================================
 local function formatearMotivo(texto)
     if not texto or texto == "" then
         return "Motivo: No especificado"
@@ -151,9 +142,6 @@ local function formatearMotivo(texto)
     return table.concat(lineas, "\n")
 end
 
--- ==========================================
--- FUNCIÓN PARA DETERMINAR TAMAÑO DE LETRA
--- ==========================================
 local function determinarTamañoLetra(texto)
     local longitud = #texto
     
@@ -171,9 +159,7 @@ end
 local info = obtenerInfoBaneo()
 
 if info.baneado then
-    -- ==========================================
-    -- CREAR GUI (ESTILO MANTENIMIENTO)
-    -- ==========================================
+
     local gui = Instance.new("ScreenGui")
     gui.Name = "Irvinglz1_BanScreen"
     gui.IgnoreGuiInset = true
@@ -188,9 +174,6 @@ if info.baneado then
     bg.BackgroundTransparency = 1
     bg.BorderSizePixel = 0
 
-    -- ==========================================
-    -- TEXTO PRINCIPAL (como el de mantenimiento)
-    -- ==========================================
     local textLabel = Instance.new("TextLabel")
     textLabel.Parent = bg
     textLabel.Size = UDim2.new(1, 0, 0, 150)
@@ -205,9 +188,6 @@ if info.baneado then
     textLabel.TextXAlignment = Enum.TextXAlignment.Center
     textLabel.TextYAlignment = Enum.TextYAlignment.Top
 
-    -- ==========================================
-    -- SUBTEXTO (tiempo restante)
-    -- ==========================================
     local subText = Instance.new("TextLabel")
     subText.Parent = bg
     subText.Size = UDim2.new(1, 0, 0, 40)
@@ -221,9 +201,6 @@ if info.baneado then
     subText.TextWrapped = true
     subText.TextXAlignment = Enum.TextXAlignment.Center
 
-    -- ==========================================
-    -- CONTACTO (aparece al final)
-    -- ==========================================
     local contactText = Instance.new("TextLabel")
     contactText.Parent = bg
     contactText.Size = UDim2.new(1, 0, 0, 40)
@@ -237,9 +214,6 @@ if info.baneado then
     contactText.TextWrapped = true
     contactText.TextXAlignment = Enum.TextXAlignment.Center
 
-    -- ==========================================
-    -- ANIMACIÓN 1: FADE IN (como mantenimiento)
-    -- ==========================================
     TweenService:Create(bg, TweenInfo.new(1), {
         BackgroundTransparency = 0
     }):Play()
@@ -250,9 +224,6 @@ if info.baneado then
 
     task.wait(0.5)
 
-    -- ==========================================
-    -- ANIMACIÓN 2: ESCRIBIR LETRA POR LETRA (BANEADO)
-    -- ==========================================
     local mensajeBaneado = "‼️ BANEADO ‼️"
     for i = 1, #mensajeBaneado do
         textLabel.Text = string.sub(mensajeBaneado, 1, i)
@@ -283,9 +254,6 @@ if info.baneado then
 
     task.wait(2.5)
 
-    -- ==========================================
-    -- ANIMACIÓN 3: BORRAR Y ESCRIBIR MOTIVO
-    -- ==========================================
     TweenService:Create(textLabel, TweenInfo.new(0.5), {
         TextTransparency = 1
     }):Play()
@@ -304,9 +272,6 @@ if info.baneado then
 
     task.wait(2.5)
 
-    -- ==========================================
-    -- ANIMACIÓN 4: BORRAR Y ESCRIBIR TIEMPO
-    -- ==========================================
     TweenService:Create(textLabel, TweenInfo.new(0.5), {
         TextTransparency = 1
     }):Play()
@@ -334,9 +299,6 @@ if info.baneado then
 
     task.wait(3)
 
-    -- ==========================================
-    -- ANIMACIÓN 5: BORRAR Y ESCRIBIR CONTACTO
-    -- ==========================================
     task.cancel(tiempoTask)
     TweenService:Create(textLabel, TweenInfo.new(0.5), {
         TextTransparency = 1
@@ -355,9 +317,6 @@ if info.baneado then
 
     task.wait(2.5)
 
-    -- ==========================================
-    -- ANIMACIÓN 6: BORRAR TODO Y KICK
-    -- ==========================================
     TweenService:Create(textLabel, TweenInfo.new(0.5), {
         TextTransparency = 1
     }):Play()
