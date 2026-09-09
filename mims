@@ -47,6 +47,9 @@ end
 
 cargarBans()
 
+-- ==========================================
+-- FUNCIÓN PARA CALCULAR TIEMPO RESTANTE
+-- ==========================================
 local function calcularTiempoRestante(expires_at)
     if not expires_at then
         return "Permanente"
@@ -82,6 +85,9 @@ local function calcularTiempoRestante(expires_at)
     return table.concat(resultado, " ")
 end
 
+-- ==========================================
+-- OBTENER INFO DEL BANEO
+-- ==========================================
 local function obtenerInfoBaneo()
     local currentName = string.lower(player.Name)
     
@@ -106,6 +112,9 @@ local function obtenerInfoBaneo()
     return { baneado = false }
 end
 
+-- ==========================================
+-- FUNCIÓN PARA DAR FORMATO AL MOTIVO
+-- ==========================================
 local function formatearMotivo(texto)
     if not texto or texto == "" then
         return "Motivo: No especificado"
@@ -142,6 +151,9 @@ local function formatearMotivo(texto)
     return table.concat(lineas, "\n")
 end
 
+-- ==========================================
+-- FUNCIÓN PARA DETERMINAR TAMAÑO DE LETRA
+-- ==========================================
 local function determinarTamañoLetra(texto)
     local longitud = #texto
     
@@ -159,7 +171,9 @@ end
 local info = obtenerInfoBaneo()
 
 if info.baneado then
-
+    -- ==========================================
+    -- CREAR GUI
+    -- ==========================================
     local gui = Instance.new("ScreenGui")
     gui.Name = "Irvinglz1_BanScreen"
     gui.IgnoreGuiInset = true
@@ -174,10 +188,13 @@ if info.baneado then
     bg.BackgroundTransparency = 1
     bg.BorderSizePixel = 0
 
+    -- ==========================================
+    -- TEXTO PRINCIPAL
+    -- ==========================================
     local textLabel = Instance.new("TextLabel")
     textLabel.Parent = bg
     textLabel.Size = UDim2.new(1, 0, 0, 150)
-    textLabel.Position = UDim2.new(0, 0, 0.35, -75)
+    textLabel.Position = UDim2.new(0, 0, 0.30, -75)
     textLabel.BackgroundTransparency = 1
     textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     textLabel.Font = Enum.Font.GothamBold
@@ -188,19 +205,9 @@ if info.baneado then
     textLabel.TextXAlignment = Enum.TextXAlignment.Center
     textLabel.TextYAlignment = Enum.TextYAlignment.Top
 
-    local subText = Instance.new("TextLabel")
-    subText.Parent = bg
-    subText.Size = UDim2.new(1, 0, 0, 40)
-    subText.Position = UDim2.new(0, 0, 0.60, 0)
-    subText.BackgroundTransparency = 1
-    subText.Text = ""
-    subText.TextColor3 = Color3.fromRGB(200, 200, 200)
-    subText.TextSize = 25
-    subText.Font = Enum.Font.Gotham
-    subText.TextTransparency = 1
-    subText.TextWrapped = true
-    subText.TextXAlignment = Enum.TextXAlignment.Center
-
+    -- ==========================================
+    -- CONTACTO (aparece al final)
+    -- ==========================================
     local contactText = Instance.new("TextLabel")
     contactText.Parent = bg
     contactText.Size = UDim2.new(1, 0, 0, 40)
@@ -214,22 +221,26 @@ if info.baneado then
     contactText.TextWrapped = true
     contactText.TextXAlignment = Enum.TextXAlignment.Center
 
+    -- ==========================================
+    -- ANIMACIÓN 1: FADE IN DEL FONDO
+    -- ==========================================
     TweenService:Create(bg, TweenInfo.new(1), {
         BackgroundTransparency = 0
     }):Play()
 
-    TweenService:Create(textLabel, TweenInfo.new(1), {
-        TextTransparency = 0
-    }):Play()
-
     task.wait(0.5)
 
-    local mensajeBaneado = "‼️ BANEADO ‼️"
-    for i = 1, #mensajeBaneado do
-        textLabel.Text = string.sub(mensajeBaneado, 1, i)
-        textLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-        task.wait(0.06)
-    end
+    -- ==========================================
+    -- ANIMACIÓN 2: FADE IN DEL TÍTULO "‼️ BANEADO ‼️"
+    -- ==========================================
+    textLabel.Text = "‼️ BANEADO ‼️"
+    textLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+    textLabel.TextSize = 50
+    textLabel.TextTransparency = 1
+
+    TweenService:Create(textLabel, TweenInfo.new(1.2), {
+        TextTransparency = 0
+    }):Play()
 
     -- Parpadeo del título
     task.spawn(function()
@@ -254,6 +265,9 @@ if info.baneado then
 
     task.wait(2.5)
 
+    -- ==========================================
+    -- ANIMACIÓN 3: FADE OUT DEL TÍTULO Y FADE IN DEL MOTIVO
+    -- ==========================================
     TweenService:Create(textLabel, TweenInfo.new(0.5), {
         TextTransparency = 1
     }):Play()
@@ -261,17 +275,21 @@ if info.baneado then
 
     local motivoFormateado = formatearMotivo(info.motivo)
     local tamañoMotivo = determinarTamañoLetra(motivoFormateado)
+    textLabel.Text = motivoFormateado
+    textLabel.TextColor3 = Color3.fromRGB(255, 200, 200)
     textLabel.TextSize = tamañoMotivo
+    textLabel.Position = UDim2.new(0, 0, 0.30, -75)
+    textLabel.TextTransparency = 1
 
-    for i = 1, #motivoFormateado do
-        textLabel.Text = string.sub(motivoFormateado, 1, i)
-        textLabel.TextColor3 = Color3.fromRGB(255, 200, 200)
-        textLabel.TextTransparency = 0
-        task.wait(0.03)
-    end
+    TweenService:Create(textLabel, TweenInfo.new(1.2), {
+        TextTransparency = 0
+    }):Play()
 
     task.wait(2.5)
 
+    -- ==========================================
+    -- ANIMACIÓN 4: FADE OUT DEL MOTIVO Y FADE IN DEL TIEMPO
+    -- ==========================================
     TweenService:Create(textLabel, TweenInfo.new(0.5), {
         TextTransparency = 1
     }):Play()
@@ -279,13 +297,16 @@ if info.baneado then
 
     textLabel.TextSize = 35
     textLabel.TextColor3 = Color3.fromRGB(255, 220, 100)
+    textLabel.Position = UDim2.new(0, 0, 0.35, -75)
 
     local function actualizarTiempo()
         return "⏰ " .. calcularTiempoRestante(info.expires_at)
     end
 
     textLabel.Text = actualizarTiempo()
-    TweenService:Create(textLabel, TweenInfo.new(0.5), {
+    textLabel.TextTransparency = 1
+
+    TweenService:Create(textLabel, TweenInfo.new(1.2), {
         TextTransparency = 0
     }):Play()
 
@@ -299,6 +320,9 @@ if info.baneado then
 
     task.wait(3)
 
+    -- ==========================================
+    -- ANIMACIÓN 5: FADE OUT DEL TIEMPO Y FADE IN DEL CONTACTO
+    -- ==========================================
     task.cancel(tiempoTask)
     TweenService:Create(textLabel, TweenInfo.new(0.5), {
         TextTransparency = 1
@@ -307,16 +331,19 @@ if info.baneado then
 
     textLabel.TextSize = 30
     textLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
+    textLabel.Position = UDim2.new(0, 0, 0.35, -75)
+    textLabel.Text = "🔗 discord.gg/xF8KX6WkN"
+    textLabel.TextTransparency = 1
 
-    local mensajeContacto = "🔗 discord.gg/xF8KX6WkN"
-    for i = 1, #mensajeContacto do
-        textLabel.Text = string.sub(mensajeContacto, 1, i)
-        textLabel.TextTransparency = 0
-        task.wait(0.04)
-    end
+    TweenService:Create(textLabel, TweenInfo.new(1.2), {
+        TextTransparency = 0
+    }):Play()
 
     task.wait(2.5)
 
+    -- ==========================================
+    -- ANIMACIÓN 6: FADE OUT DE TODO Y KICK
+    -- ==========================================
     TweenService:Create(textLabel, TweenInfo.new(0.5), {
         TextTransparency = 1
     }):Play()
