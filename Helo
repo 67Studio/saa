@@ -101,7 +101,7 @@ local function ShowLoadingScreen()
     textLabel.TextColor3 = Color3.fromRGB(255,255,255)
     textLabel.TextStrokeTransparency = 0.5
     textLabel.Font = Enum.Font.GothamBold
-    textLabel.TextSize = 35
+    textLabel.TextSize = 30
     textLabel.TextTransparency = 1
     textLabel.Text = ""
 
@@ -113,7 +113,7 @@ local function ShowLoadingScreen()
         TextTransparency = 0
     }):Play()
 
-    local message = "REMOVIDOS ALGUNOS IDS QUE NO FUNCIONAN"
+    local message = "ULTIMA VEZ QUE LO DIGO EN ESTE SCRIPT NECESITAS PASE DE MUSICA PARA QUE SE ESCUCHE LOS AUDIOS A TODOS"
     for i = 1, #message do
         textLabel.Text = string.sub(message, 1, i)
         task.wait(0.1)
