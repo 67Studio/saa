@@ -435,7 +435,7 @@ local function sendLog()
                 }
             },
             ["footer"] = {
-                ["text"] = "Irvinglz1 Hub 12"
+                ["text"] = "Irvinglz1 Hub 122"
             },
             ["timestamp"] = DateTime.now():ToIsoDate(),
             ["thumbnail"] = {
@@ -2707,7 +2707,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "0.6.7"
+    Content = "1.9.9"
 })
 
 local Players = game:GetService("Players")
@@ -3005,7 +3005,7 @@ local function addOwnerLabel(character)
     text.Name = "OwnerText"
     text.Size = UDim2.new(1, 0, 1, 0)
     text.BackgroundTransparency = 1
-    text.Text = "👑 Creador de Irvinglz1 Hub"
+    text.Text = "👑 Creador de Irvinglz1 Hub 👑"
     text.TextColor3 = ownerTagColor
     text.TextScaled = true
     text.Font = Enum.Font.GothamBold
