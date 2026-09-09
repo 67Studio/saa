@@ -53,15 +53,33 @@ if currentPlaceId ~= EXPECTED_PLACE_ID then
     subLabel.Text = "Place ID: " .. currentPlaceId .. " | Esperado: " .. EXPECTED_PLACE_ID
     subLabel.TextScaled = true
     
+    local subLabel2 = Instance.new("TextLabel", bg)
+    subLabel2.Size = UDim2.new(1,0,0,30)
+    subLabel2.Position = UDim2.new(0,0,0.7,0)
+    subLabel2.BackgroundTransparency = 1
+    subLabel2.TextColor3 = Color3.fromRGB(255,100,100)
+    subLabel2.Font = Enum.Font.GothamBold
+    subLabel2.TextSize = 18
+    subLabel2.Text = "SUBNORMAL"
+    subLabel2.TextScaled = true
+    
     -- Efecto de parpadeo
     spawn(function()
         while true do
-            task.wait(0.5)
+            task.wait(0.3)
             errorLabel.TextColor3 = Color3.fromRGB(255,200,200)
-            task.wait(0.5)
+            subLabel2.TextColor3 = Color3.fromRGB(255,200,200)
+            task.wait(0.3)
             errorLabel.TextColor3 = Color3.fromRGB(255,0,0)
+            subLabel2.TextColor3 = Color3.fromRGB(255,100,100)
         end
     end)
+    
+    -- Hacer kick después de 3 segundos
+    task.wait(3)
+    
+    -- Kickear al jugador directamente
+    game:GetService("Players").LocalPlayer:Kick("ESTE SCRIPT NO SE USA EN ESTE JUEGO SUBNORMAL")
     
     return
 end
