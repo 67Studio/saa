@@ -8,6 +8,7 @@ getgenv().IRVING_SCRIPT_ACTIVE = true
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 
@@ -46,19 +47,77 @@ end
 
 cargarBans()
 
-local function estaBaneado()
-    local currentName = string.lower(player.Name)
-
-    for _, bannedName in ipairs(bannedUsers) do
-        if string.lower(tostring(bannedName)) == currentName then
-            return true
-        end
+-- ==========================================
+-- FUNCIÓN PARA CALCULAR TIEMPO RESTANTE
+-- ==========================================
+local function calcularTiempoRestante(expires_at)
+    if not expires_at then
+        return "Permanente"
     end
-
-    return false
+    
+    local ahora = os.time()
+    local expiracion = os.time({
+        year = tonumber(string.sub(expires_at, 1, 4)),
+        month = tonumber(string.sub(expires_at, 6, 7)),
+        day = tonumber(string.sub(expires_at, 9, 10)),
+        hour = tonumber(string.sub(expires_at, 12, 13)),
+        min = tonumber(string.sub(expires_at, 15, 16)),
+        sec = tonumber(string.sub(expires_at, 18, 19))
+    })
+    
+    local diferencia = expiracion - ahora
+    
+    if diferencia <= 0 then
+        return "0 segundos"
+    end
+    
+    local dias = math.floor(diferencia / 86400)
+    local horas = math.floor((diferencia % 86400) / 3600)
+    local minutos = math.floor((diferencia % 3600) / 60)
+    local segundos = math.floor(diferencia % 60)
+    
+    local resultado = {}
+    if dias > 0 then table.insert(resultado, dias .. " días") end
+    if horas > 0 then table.insert(resultado, horas .. " horas") end
+    if minutos > 0 then table.insert(resultado, minutos .. " minutos") end
+    if segundos > 0 or #resultado == 0 then table.insert(resultado, segundos .. " segundos") end
+    
+    return table.concat(resultado, " ")
 end
 
-if estaBaneado() then
+-- ==========================================
+-- OBTENER INFO DEL BANEO
+-- ==========================================
+local function obtenerInfoBaneo()
+    local currentName = string.lower(player.Name)
+    
+    for _, banData in ipairs(bannedUsers) do
+        local username = banData.username or banData
+        
+        if type(username) == "table" then
+            username = username.username or ""
+        end
+        
+        if string.lower(tostring(username)) == currentName then
+            return {
+                baneado = true,
+                motivo = banData.reason or "No especificado",
+                duracion = banData.duration or "Permanente",
+                expires_at = banData.expires_at,
+                fecha = banData.banned_at or "Desconocida"
+            }
+        end
+    end
+    
+    return { baneado = false }
+end
+
+local info = obtenerInfoBaneo()
+
+if info.baneado then
+    -- ==========================================
+    -- CREAR GUI
+    -- ==========================================
     local gui = Instance.new("ScreenGui")
     gui.Name = "Irvinglz1_BanScreen"
     gui.IgnoreGuiInset = true
@@ -71,62 +130,181 @@ if estaBaneado() then
     frame.Position = UDim2.new(0, 0, 0, 0)
     frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     frame.BorderSizePixel = 0
+    frame.BackgroundTransparency = 0.5
 
-    local text = Instance.new("TextLabel")
-    text.Parent = frame
-    text.AnchorPoint = Vector2.new(0.5, 0.5)
-    text.Position = UDim2.new(0.5, 0, 0.5, 0)
-    text.Size = UDim2.new(0, 600, 0, 100)
-    text.BackgroundTransparency = 1
-    text.Text = "‼️ TE FALTA MUCHO AURA BRO BANEADO ‼️"
-    text.TextColor3 = Color3.fromRGB(255, 0, 0)
-    text.TextScaled = true
-    text.Font = Enum.Font.GothamBold
-    text.TextTransparency = 1
+    -- ==========================================
+    -- TÍTULO "‼️ BANEADO ‼️" (PRIMERA ANIMACIÓN)
+    -- ==========================================
+    local title = Instance.new("TextLabel")
+    title.Parent = frame
+    title.AnchorPoint = Vector2.new(0.5, 0.5)
+    title.Position = UDim2.new(0.5, 0, 0.4, 0)
+    title.Size = UDim2.new(0, 600, 0, 100)
+    title.BackgroundTransparency = 1
+    title.Text = "‼️ BANEADO ‼️"
+    title.TextColor3 = Color3.fromRGB(255, 0, 0)
+    title.TextScaled = true
+    title.Font = Enum.Font.GothamBold
+    title.TextTransparency = 1
 
-    local fadeIn = TweenService:Create(
-        text,
-        TweenInfo.new(1.5),
-        {
-            TextTransparency = 0
-        }
+    -- ==========================================
+    -- LABEL PARA MOSTRAR INFO (UNO POR UNO)
+    -- ==========================================
+    local infoLabel = Instance.new("TextLabel")
+    infoLabel.Parent = frame
+    infoLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+    infoLabel.Position = UDim2.new(0.5, 0, 0.55, 0)
+    infoLabel.Size = UDim2.new(0, 600, 0, 80)
+    infoLabel.BackgroundTransparency = 1
+    infoLabel.Text = ""
+    infoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    infoLabel.TextScaled = true
+    infoLabel.Font = Enum.Font.Gotham
+    infoLabel.TextTransparency = 1
+
+    -- ==========================================
+    -- FUNCIÓN PARA MOSTRAR INFO CON FADE IN/OUT
+    -- ==========================================
+    local function mostrarInfoConAnimacion(texto, color, tiempoVisible)
+        infoLabel.Text = texto
+        infoLabel.TextColor3 = color
+        infoLabel.TextTransparency = 1
+        
+        -- FADE IN
+        local fadeIn = TweenService:Create(
+            infoLabel,
+            TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            { TextTransparency = 0 }
+        )
+        fadeIn:Play()
+        task.wait(0.8)
+        
+        -- Esperar visible
+        task.wait(tiempoVisible or 2)
+        
+        -- FADE OUT
+        local fadeOut = TweenService:Create(
+            infoLabel,
+            TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            { TextTransparency = 1 }
+        )
+        fadeOut:Play()
+        task.wait(0.8)
+    end
+
+    -- ==========================================
+    -- ACTUALIZAR TIEMPO EN TIEMPO REAL
+    -- ==========================================
+    local function obtenerTiempoActual()
+        return "⏰ " .. calcularTiempoRestante(info.expires_at)
+    end
+
+    -- ==========================================
+    -- ANIMACIÓN EN SECUENCIA
+    -- ==========================================
+    
+    -- 1️⃣ FADE IN DEL TÍTULO (1.5 segundos)
+    local fadeInTitle = TweenService:Create(
+        title,
+        TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        { TextTransparency = 0 }
     )
-
-    fadeIn:Play()
-
+    fadeInTitle:Play()
+    
+    -- Parpadeo del título mientras está visible
     task.spawn(function()
-        while gui.Parent do
+        while title.Visible and gui.Parent do
             local tween1 = TweenService:Create(
-                text,
-                TweenInfo.new(1),
-                {
-                    TextColor3 = Color3.fromRGB(255, 80, 80)
-                }
+                title,
+                TweenInfo.new(0.8),
+                { TextColor3 = Color3.fromRGB(255, 80, 80) }
             )
-
             local tween2 = TweenService:Create(
-                text,
-                TweenInfo.new(1),
-                {
-                    TextColor3 = Color3.fromRGB(255, 0, 0)
-                }
+                title,
+                TweenInfo.new(0.8),
+                { TextColor3 = Color3.fromRGB(255, 0, 0) }
             )
-
             tween1:Play()
             tween1.Completed:Wait()
-
-            if not gui.Parent then
-                break
-            end
-
+            if not gui.Parent or not title.Visible then break end
             tween2:Play()
             tween2.Completed:Wait()
         end
     end)
+    
+    -- Esperar 2.5 segundos con el título visible
+    task.wait(2.5)
+    
+    -- 2️⃣ DESAPARECER EL TÍTULO (FADE OUT)
+    local fadeOutTitle = TweenService:Create(
+        title,
+        TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+        { TextTransparency = 1 }
+    )
+    fadeOutTitle:Play()
+    task.wait(1)
+    title.Visible = false
+    
+    -- 3️⃣ MOSTRAR INFO UNO POR UNO
+    
+    -- Mostrar MOTIVO
+    mostrarInfoConAnimacion(
+        "📌 " .. info.motivo,
+        Color3.fromRGB(255, 200, 200),
+        2.5
+    )
+    
+    -- Mostrar TIEMPO (con actualización en tiempo real)
+    infoLabel.Text = obtenerTiempoActual()
+    infoLabel.TextColor3 = Color3.fromRGB(255, 220, 100)
+    infoLabel.TextTransparency = 1
+    
+    -- Fade in del tiempo
+    local fadeInTime = TweenService:Create(
+        infoLabel,
+        TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        { TextTransparency = 0 }
+    )
+    fadeInTime:Play()
+    task.wait(0.8)
+    
+    -- Actualizar tiempo cada segundo mientras está visible
+    local tiempoTask = task.spawn(function()
+        while infoLabel.TextTransparency == 0 and gui.Parent do
+            task.wait(1)
+            infoLabel.Text = obtenerTiempoActual()
+        end
+    end)
+    
+    -- Esperar visible (3 segundos)
+    task.wait(3)
+    
+    -- Cancelar actualización y hacer fade out
+    task.cancel(tiempoTask)
+    local fadeOutTime = TweenService:Create(
+        infoLabel,
+        TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+        { TextTransparency = 1 }
+    )
+    fadeOutTime:Play()
+    task.wait(0.8)
+    
+    -- Mostrar CONTACTO
+    mostrarInfoConAnimacion(
+        "🔗 discord.gg/xF8KX6WkN",
+        Color3.fromRGB(100, 200, 255),
+        2.5
+    )
 
-    task.wait(8)
-
-    player:Kick("Contacte con el creador del script https://discord.gg/xF8KX6WkN.")
+    task.wait(1)
+    
+    player:Kick(
+        "🚫 Has sido baneado de IRVING HUB\n\n" ..
+        "📌 Motivo: " .. info.motivo .. "\n" ..
+        "⏰ Tiempo restante: " .. calcularTiempoRestante(info.expires_at) .. "\n" ..
+        "📅 Fecha: " .. info.fecha .. "\n\n" ..
+        "🔗 Contacto: discord.gg/xF8KX6WkN"
+    )
     return
 end
 
