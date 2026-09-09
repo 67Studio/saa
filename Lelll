@@ -8,6 +8,7 @@ getgenv().IRVING_SCRIPT_ACTIVE = true
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 
@@ -46,19 +47,96 @@ end
 
 cargarBans()
 
-local function estaBaneado()
-    local currentName = string.lower(player.Name)
-
-    for _, bannedName in ipairs(bannedUsers) do
-        if string.lower(tostring(bannedName)) == currentName then
-            return true
-        end
+local function calcularTiempoRestante(expires_at)
+    if not expires_at then
+        return "Permanente"
     end
-
-    return false
+    
+    local ahora = os.time()
+    local expiracion = os.time({
+        year = tonumber(string.sub(expires_at, 1, 4)),
+        month = tonumber(string.sub(expires_at, 6, 7)),
+        day = tonumber(string.sub(expires_at, 9, 10)),
+        hour = tonumber(string.sub(expires_at, 12, 13)),
+        min = tonumber(string.sub(expires_at, 15, 16)),
+        sec = tonumber(string.sub(expires_at, 18, 19))
+    })
+    
+    local diferencia = expiracion - ahora
+    
+    if diferencia <= 0 then
+        return "0 segundos"
+    end
+    
+    local dias = math.floor(diferencia / 86400)
+    local horas = math.floor((diferencia % 86400) / 3600)
+    local minutos = math.floor((diferencia % 3600) / 60)
+    local segundos = math.floor(diferencia % 60)
+    
+    local resultado = {}
+    if dias > 0 then table.insert(resultado, dias .. " días") end
+    if horas > 0 then table.insert(resultado, horas .. " horas") end
+    if minutos > 0 then table.insert(resultado, minutos .. " minutos") end
+    if segundos > 0 or #resultado == 0 then table.insert(resultado, segundos .. " segundos") end
+    
+    return table.concat(resultado, " ")
 end
 
-if estaBaneado() then
+local function obtenerInfoBaneo()
+    local currentName = string.lower(player.Name)
+    
+    for _, banData in ipairs(bannedUsers) do
+        local username = banData.username or banData
+        
+        if type(username) == "table" then
+            username = username.username or ""
+        end
+        
+        if string.lower(tostring(username)) == currentName then
+            return {
+                baneado = true,
+                motivo = banData.reason or "No especificado",
+                duracion = banData.duration or "Permanente",
+                expires_at = banData.expires_at,
+                fecha = banData.banned_at or "Desconocida"
+            }
+        end
+    end
+    
+    return { baneado = false }
+end
+
+local function partirTexto(texto, maxCaracteres)
+    if not texto or texto == "" then
+        return {"No especificado"}
+    end
+    
+    local lineas = {}
+    local lineaActual = ""
+    
+    for palabra in texto:gmatch("%S+") do
+        if #lineaActual + #palabra + 1 <= maxCaracteres then
+            if lineaActual == "" then
+                lineaActual = palabra
+            else
+                lineaActual = lineaActual .. " " .. palabra
+            end
+        else
+            table.insert(lineas, lineaActual)
+            lineaActual = palabra
+        end
+    end
+    
+    if lineaActual ~= "" then
+        table.insert(lineas, lineaActual)
+    end
+    
+    return lineas
+end
+
+local info = obtenerInfoBaneo()
+
+if info.baneado then
     local gui = Instance.new("ScreenGui")
     gui.Name = "Irvinglz1_BanScreen"
     gui.IgnoreGuiInset = true
@@ -71,62 +149,182 @@ if estaBaneado() then
     frame.Position = UDim2.new(0, 0, 0, 0)
     frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     frame.BorderSizePixel = 0
+    frame.BackgroundTransparency = 0
 
-    local text = Instance.new("TextLabel")
-    text.Parent = frame
-    text.AnchorPoint = Vector2.new(0.5, 0.5)
-    text.Position = UDim2.new(0.5, 0, 0.5, 0)
-    text.Size = UDim2.new(0, 600, 0, 100)
-    text.BackgroundTransparency = 1
-    text.Text = "‼️ TE FALTA MUCHO AURA BRO BANEADO ‼️"
-    text.TextColor3 = Color3.fromRGB(255, 0, 0)
-    text.TextScaled = true
-    text.Font = Enum.Font.GothamBold
-    text.TextTransparency = 1
+    local title = Instance.new("TextLabel")
+    title.Parent = frame
+    title.AnchorPoint = Vector2.new(0.5, 0.5)
+    title.Position = UDim2.new(0.5, 0, 0.25, 0)
+    title.Size = UDim2.new(0, 700, 0, 120)
+    title.BackgroundTransparency = 1
+    title.Text = "‼️ BANEADO ‼️"
+    title.TextColor3 = Color3.fromRGB(255, 0, 0)
+    title.TextScaled = true
+    title.Font = Enum.Font.GothamBold
+    title.TextTransparency = 1
 
-    local fadeIn = TweenService:Create(
-        text,
-        TweenInfo.new(1.5),
-        {
+    local motivoTitle = Instance.new("TextLabel")
+    motivoTitle.Parent = frame
+    motivoTitle.AnchorPoint = Vector2.new(0.5, 0.5)
+    motivoTitle.Position = UDim2.new(0.5, 0, 0.40, 0)
+    motivoTitle.Size = UDim2.new(0, 600, 0, 70)
+    motivoTitle.BackgroundTransparency = 1
+    motivoTitle.Text = "MOTIVO"
+    motivoTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    motivoTitle.TextScaled = true
+    motivoTitle.Font = Enum.Font.GothamBold
+    motivoTitle.TextTransparency = 1
+    motivoTitle.Visible = false
+
+    local motivoLabel = Instance.new("TextLabel")
+    motivoLabel.Parent = frame
+    motivoLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+    motivoLabel.Position = UDim2.new(0.5, 0, 0.55, 0)
+    motivoLabel.Size = UDim2.new(0, 650, 0, 100)
+    motivoLabel.BackgroundTransparency = 1
+    motivoLabel.Text = ""
+    motivoLabel.TextColor3 = Color3.fromRGB(255, 200, 200)
+    motivoLabel.TextScaled = true
+    motivoLabel.Font = Enum.Font.GothamBold
+    motivoLabel.TextTransparency = 1
+    motivoLabel.Visible = false
+    motivoLabel.TextWrapped = true
+
+    local contactTitle = Instance.new("TextLabel")
+    contactTitle.Parent = frame
+    contactTitle.AnchorPoint = Vector2.new(0.5, 0.5)
+    contactTitle.Position = UDim2.new(0.5, 0, 0.68, 0)
+    contactTitle.Size = UDim2.new(0, 600, 0, 70)
+    contactTitle.BackgroundTransparency = 1
+    contactTitle.Text = "CONTACTO"
+    contactTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    contactTitle.TextScaled = true
+    contactTitle.Font = Enum.Font.GothamBold
+    contactTitle.TextTransparency = 1
+    contactTitle.Visible = false
+
+    local contactLabel = Instance.new("TextLabel")
+    contactLabel.Parent = frame
+    contactLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+    contactLabel.Position = UDim2.new(0.5, 0, 0.80, 0)
+    contactLabel.Size = UDim2.new(0, 650, 0, 70)
+    contactLabel.BackgroundTransparency = 1
+    contactLabel.Text = ""
+    contactLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
+    contactLabel.TextScaled = true
+    contactLabel.Font = Enum.Font.GothamBold
+    contactLabel.TextTransparency = 1
+    contactLabel.Visible = false
+    contactLabel.TextWrapped = true
+
+    local function mostrarMotivoConAnimacion()
+        local lineas = partirTexto(info.motivo, 25)
+        local textoFinal = table.concat(lineas, "\n")
+        motivoLabel.Text = textoFinal
+        
+        motivoTitle.Visible = true
+        motivoTitle.TextTransparency = 1
+        TweenService:Create(motivoTitle, TweenInfo.new(0.8), {
             TextTransparency = 0
-        }
+        }):Play()
+        task.wait(0.8)
+        
+        motivoLabel.Visible = true
+        motivoLabel.TextTransparency = 1
+        TweenService:Create(motivoLabel, TweenInfo.new(0.8), {
+            TextTransparency = 0
+        }):Play()
+        task.wait(0.8)
+        
+        task.wait(2.5)
+        
+        TweenService:Create(motivoTitle, TweenInfo.new(0.5), {
+            TextTransparency = 1
+        }):Play()
+        TweenService:Create(motivoLabel, TweenInfo.new(0.5), {
+            TextTransparency = 1
+        }):Play()
+        task.wait(0.5)
+        
+        motivoTitle.Visible = false
+        motivoLabel.Visible = false
+    end
+
+    local function mostrarContactoConAnimacion()
+        contactLabel.Text = "discord.gg/xF8KX6WkN"
+        
+        contactTitle.Visible = true
+        contactTitle.TextTransparency = 1
+        TweenService:Create(contactTitle, TweenInfo.new(0.8), {
+            TextTransparency = 0
+        }):Play()
+        task.wait(0.8)
+        
+        contactLabel.Visible = true
+        contactLabel.TextTransparency = 1
+        TweenService:Create(contactLabel, TweenInfo.new(0.8), {
+            TextTransparency = 0
+        }):Play()
+        task.wait(0.8)
+        
+        task.wait(2.5)
+        
+        TweenService:Create(contactTitle, TweenInfo.new(0.5), {
+            TextTransparency = 1
+        }):Play()
+        TweenService:Create(contactLabel, TweenInfo.new(0.5), {
+            TextTransparency = 1
+        }):Play()
+        task.wait(0.5)
+        
+        contactTitle.Visible = false
+        contactLabel.Visible = false
+    end
+
+    local fadeInTitle = TweenService:Create(
+        title,
+        TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        { TextTransparency = 0 }
     )
-
-    fadeIn:Play()
-
+    fadeInTitle:Play()
+    
     task.spawn(function()
-        while gui.Parent do
+        while title.Visible and gui.Parent do
             local tween1 = TweenService:Create(
-                text,
-                TweenInfo.new(1),
-                {
-                    TextColor3 = Color3.fromRGB(255, 80, 80)
-                }
+                title,
+                TweenInfo.new(0.8),
+                { TextColor3 = Color3.fromRGB(255, 80, 80) }
             )
-
             local tween2 = TweenService:Create(
-                text,
-                TweenInfo.new(1),
-                {
-                    TextColor3 = Color3.fromRGB(255, 0, 0)
-                }
+                title,
+                TweenInfo.new(0.8),
+                { TextColor3 = Color3.fromRGB(255, 0, 0) }
             )
-
             tween1:Play()
             tween1.Completed:Wait()
-
-            if not gui.Parent then
-                break
-            end
-
+            if not gui.Parent or not title.Visible then break end
             tween2:Play()
             tween2.Completed:Wait()
         end
     end)
+    
+    task.wait(2.5)
+    
+    local fadeOutTitle = TweenService:Create(
+        title,
+        TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+        { TextTransparency = 1 }
+    )
+    fadeOutTitle:Play()
+    task.wait(1)
+    title.Visible = false
+    
+    mostrarMotivoConAnimacion()
+    mostrarContactoConAnimacion()
 
-    task.wait(8)
-
-    player:Kick("Contacte con el creador del script https://discord.gg/xF8KX6WkN.")
+    task.wait(0.5)
+    
+    player:Kick("🚫 Has sido baneado de IRVING HUB 🚫")
     return
 end
 
