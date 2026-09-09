@@ -324,9 +324,7 @@ if info.baneado then
 
     task.wait(0.5)
     
-    player:Kick(
-        "🚫 Has sido baneado de IRVING HUB 🚫" ..
-    )
+    player:Kick("🚫 Has sido baneado de IRVING HUB 🚫")
     return
 end
 
