@@ -154,7 +154,7 @@ if info.baneado then
     local title = Instance.new("TextLabel")
     title.Parent = frame
     title.AnchorPoint = Vector2.new(0.5, 0.5)
-    title.Position = UDim2.new(0.5, 0, 0.25, 0)
+    title.Position = UDim2.new(0.5, 0, 0.20, 0)
     title.Size = UDim2.new(0, 700, 0, 120)
     title.BackgroundTransparency = 1
     title.Text = "‼️ BANEADO ‼️"
@@ -166,8 +166,8 @@ if info.baneado then
     local motivoTitle = Instance.new("TextLabel")
     motivoTitle.Parent = frame
     motivoTitle.AnchorPoint = Vector2.new(0.5, 0.5)
-    motivoTitle.Position = UDim2.new(0.5, 0, 0.40, 0)
-    motivoTitle.Size = UDim2.new(0, 600, 0, 70)
+    motivoTitle.Position = UDim2.new(0.5, 0, 0.35, 0)
+    motivoTitle.Size = UDim2.new(0, 600, 0, 60)
     motivoTitle.BackgroundTransparency = 1
     motivoTitle.Text = "MOTIVO"
     motivoTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -179,8 +179,8 @@ if info.baneado then
     local motivoLabel = Instance.new("TextLabel")
     motivoLabel.Parent = frame
     motivoLabel.AnchorPoint = Vector2.new(0.5, 0.5)
-    motivoLabel.Position = UDim2.new(0.5, 0, 0.55, 0)
-    motivoLabel.Size = UDim2.new(0, 650, 0, 100)
+    motivoLabel.Position = UDim2.new(0.5, 0, 0.47, 0)
+    motivoLabel.Size = UDim2.new(0, 650, 0, 80)
     motivoLabel.BackgroundTransparency = 1
     motivoLabel.Text = ""
     motivoLabel.TextColor3 = Color3.fromRGB(255, 200, 200)
@@ -190,11 +190,37 @@ if info.baneado then
     motivoLabel.Visible = false
     motivoLabel.TextWrapped = true
 
+    local tiempoTitle = Instance.new("TextLabel")
+    tiempoTitle.Parent = frame
+    tiempoTitle.AnchorPoint = Vector2.new(0.5, 0.5)
+    tiempoTitle.Position = UDim2.new(0.5, 0, 0.58, 0)
+    tiempoTitle.Size = UDim2.new(0, 600, 0, 60)
+    tiempoTitle.BackgroundTransparency = 1
+    tiempoTitle.Text = "TIEMPO RESTANTE"
+    tiempoTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tiempoTitle.TextScaled = true
+    tiempoTitle.Font = Enum.Font.GothamBold
+    tiempoTitle.TextTransparency = 1
+    tiempoTitle.Visible = false
+
+    local tiempoLabel = Instance.new("TextLabel")
+    tiempoLabel.Parent = frame
+    tiempoLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+    tiempoLabel.Position = UDim2.new(0.5, 0, 0.70, 0)
+    tiempoLabel.Size = UDim2.new(0, 650, 0, 70)
+    tiempoLabel.BackgroundTransparency = 1
+    tiempoLabel.Text = ""
+    tiempoLabel.TextColor3 = Color3.fromRGB(255, 220, 100)
+    tiempoLabel.TextScaled = true
+    tiempoLabel.Font = Enum.Font.GothamBold
+    tiempoLabel.TextTransparency = 1
+    tiempoLabel.Visible = false
+
     local contactTitle = Instance.new("TextLabel")
     contactTitle.Parent = frame
     contactTitle.AnchorPoint = Vector2.new(0.5, 0.5)
-    contactTitle.Position = UDim2.new(0.5, 0, 0.68, 0)
-    contactTitle.Size = UDim2.new(0, 600, 0, 70)
+    contactTitle.Position = UDim2.new(0.5, 0, 0.80, 0)
+    contactTitle.Size = UDim2.new(0, 600, 0, 60)
     contactTitle.BackgroundTransparency = 1
     contactTitle.Text = "CONTACTO"
     contactTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -206,8 +232,8 @@ if info.baneado then
     local contactLabel = Instance.new("TextLabel")
     contactLabel.Parent = frame
     contactLabel.AnchorPoint = Vector2.new(0.5, 0.5)
-    contactLabel.Position = UDim2.new(0.5, 0, 0.80, 0)
-    contactLabel.Size = UDim2.new(0, 650, 0, 70)
+    contactLabel.Position = UDim2.new(0.5, 0, 0.90, 0)
+    contactLabel.Size = UDim2.new(0, 650, 0, 60)
     contactLabel.BackgroundTransparency = 1
     contactLabel.Text = ""
     contactLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
@@ -248,6 +274,49 @@ if info.baneado then
         
         motivoTitle.Visible = false
         motivoLabel.Visible = false
+    end
+
+    local function mostrarTiempoConAnimacion()
+        local function actualizarTiempo()
+            return calcularTiempoRestante(info.expires_at)
+        end
+        
+        tiempoLabel.Text = actualizarTiempo()
+        
+        tiempoTitle.Visible = true
+        tiempoTitle.TextTransparency = 1
+        TweenService:Create(tiempoTitle, TweenInfo.new(0.8), {
+            TextTransparency = 0
+        }):Play()
+        task.wait(0.8)
+        
+        tiempoLabel.Visible = true
+        tiempoLabel.TextTransparency = 1
+        TweenService:Create(tiempoLabel, TweenInfo.new(0.8), {
+            TextTransparency = 0
+        }):Play()
+        task.wait(0.8)
+        
+        local tiempoTask = task.spawn(function()
+            while tiempoLabel.TextTransparency == 0 and gui.Parent do
+                task.wait(1)
+                tiempoLabel.Text = actualizarTiempo()
+            end
+        end)
+        
+        task.wait(3)
+        
+        task.cancel(tiempoTask)
+        TweenService:Create(tiempoTitle, TweenInfo.new(0.5), {
+            TextTransparency = 1
+        }):Play()
+        TweenService:Create(tiempoLabel, TweenInfo.new(0.5), {
+            TextTransparency = 1
+        }):Play()
+        task.wait(0.5)
+        
+        tiempoTitle.Visible = false
+        tiempoLabel.Visible = false
     end
 
     local function mostrarContactoConAnimacion()
@@ -320,6 +389,7 @@ if info.baneado then
     title.Visible = false
     
     mostrarMotivoConAnimacion()
+    mostrarTiempoConAnimacion()
     mostrarContactoConAnimacion()
 
     task.wait(0.5)
