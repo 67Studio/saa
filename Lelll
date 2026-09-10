@@ -1521,6 +1521,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "Nose", 72293596419310)
 AddSong(SongsTb, "BigSoto Bzrp [NuevaCancion]", 135272749570886)
 AddSong(SongsTb, "Naqueto - Yvn lvcas [NuevaCancion]", 76754385791475)
 AddSong(SongsTb, "Mi Nena - Nueva Conducta [NuevaCancion]", 134361335899706)
@@ -2707,7 +2708,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "1.9.9"
+    Content = "2.0.0"
 })
 
 local Players = game:GetService("Players")
