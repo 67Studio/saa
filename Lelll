@@ -1591,6 +1591,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "NIKAKAIDEA [NuevaCancion]", 102657834841070)
 AddSong(SongsTb, "le quiere bajar [NuevaCancion]", 92354865759525)
 AddSong(SongsTb, "Noa Noche En Medellín [NuevaCancion]", 99256604123487)
 AddSong(SongsTb, "Porte Fino [NuevaCancion]", 80677465709646)
@@ -2782,7 +2783,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.0.4"
+    Content = "2.0.5"
 })
 
 local Players = game:GetService("Players")
