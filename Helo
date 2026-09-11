@@ -81,7 +81,7 @@ local function ShowLoadingScreen()
     end
 
     -- Si está en el juego correcto, mostrar mensaje normal
-    local message = "ULTIMA VEZ QUE LO DIGO EN ESTE SCRIPT NECESITAS PASE DE MUSICA PARA QUE SE ESCUCHE LOS AUDIOS A TODOS Y DESBANEADOS TODOS"
+    local message = "OS QUIERO A TODOS. AUDIOS = ESUCHAR NECESITAR PASE"
     for i = 1, #message do
         textLabel.Text = string.sub(message, 1, i)
         textLabel.TextColor3 = Color3.fromRGB(255,255,255)
