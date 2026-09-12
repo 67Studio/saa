@@ -1591,6 +1591,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "Tainy, Rauw Alejandro & JHAYCO - Rosita [NuevaCancion]", 115681518617952)
 AddSong(SongsTb, "Marcianeke - DIMELO MÁ ft Pailita [NuevaCancion]", 74475244149345)
 AddSong(SongsTb, "Bad Bunny, Feid - PERRO NEGRO [NuevaCancion]", 104834915251457)
 AddSong(SongsTb, "NIKAKAIDEA [NuevaCancion]", 102657834841070)
@@ -2785,7 +2786,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.0.7"
+    Content = "2.0.8"
 })
 
 local Players = game:GetService("Players")
