@@ -1591,6 +1591,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "FlowWare [NuevaCancion]", 70553084556448)
 AddSong(SongsTb, "WoW - Yk Its Junaa [NuevaCancion]", 117315524151507)
 AddSong(SongsTb, "pase y toque[NuevaCancion]", 106102159933794)
 AddSong(SongsTb, "KAOZZX El Mike V1 [NuevaCancion]", 99853885036276)
@@ -2789,7 +2790,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.1.1"
+    Content = "2.1.2"
 })
 
 local Players = game:GetService("Players")
