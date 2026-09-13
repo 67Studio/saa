@@ -1591,6 +1591,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "LAJA TE SIENTES SOLA-MADE BY SOYOSCAR68  [NuevaCancion]", 119960276315660)
 AddSong(SongsTb, "Baby Supreme [NuevaCancion]", 120434145866379)
 AddSong(SongsTb, "FlowWare [NuevaCancion]", 70553084556448)
 AddSong(SongsTb, "WoW - Yk Its Junaa [NuevaCancion]", 117315524151507)
@@ -2791,7 +2792,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.1.3"
+    Content = "2.1.4"
 })
 
 local Players = game:GetService("Players")
