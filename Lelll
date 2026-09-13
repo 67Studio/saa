@@ -1591,6 +1591,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "Pasado De farmacia [NuevaCancion]", 130126957905471)
 AddSong(SongsTb, "Mamy Lil naay [NuevaCancion]", 136818512125739)
 AddSong(SongsTb, "Swagger [NuevaCancion]", 71343492751663)
 AddSong(SongsTb, "La droga es mala [NuevaCancion]", 126900583173544)
@@ -2795,7 +2796,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.1.7"
+    Content = "2.1.8"
 })
 
 local Players = game:GetService("Players")
