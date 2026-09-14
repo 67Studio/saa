@@ -1591,7 +1591,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
-AddSong(SongsTb, "Skokka-MADE BY SOYOSCAR68 [NuevaCancion]", 9908115003942)
+AddSong(SongsTb, "Skokka-BY SOYOSCAR68 [NuevaCancion]", 9908115003942)
 AddSong(SongsTb, "P.V. victor mendivil Marky_11 y Slashamane [NuevaCancion]", 99428076858749)
 AddSong(SongsTb, "Pasado De farmacia [NuevaCancion]", 130126957905471)
 AddSong(SongsTb, "Mamy Lil naay [NuevaCancion]", 136818512125739)
