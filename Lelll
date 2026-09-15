@@ -1591,6 +1591,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "pa arriba pa abajo lento ozi [Sugerencia de M3LOON]", 129723425642125)
 AddSong(SongsTb, "Terranova [Sugerencia de M3LOON]", 131763483961136)
 AddSong(SongsTb, "Saquen el cristal [Sugerencia de XIXStivenIXI]", 104813810100265)
 AddSong(SongsTb, "Cuaziteo [Sugerencia de Josmil_11 Gracias!!]", 71251641989884)
@@ -2799,7 +2800,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.2.3"
+    Content = "2.2.4"
 })
 
 local Players = game:GetService("Players")
