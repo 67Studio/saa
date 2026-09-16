@@ -1591,6 +1591,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "CANSADA [Jorge_intro Jorgue_78]", 95476903722799)
 AddSong(SongsTb, "124_z Bebesitabebelin [ Milke_x]", 126529839322967)
 AddSong(SongsTb, "nose [milke_x]", 80488815553151)
 AddSong(SongsTb, "Esperándote [Jorgue_78 milke_x]", 80420147200412)
@@ -2812,7 +2813,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.4.2"
+    Content = "2.4.3"
 })
 
 local Players = game:GetService("Players")
