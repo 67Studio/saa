@@ -1676,7 +1676,6 @@ AddSong(SongsTb, "nalguita y teta", 109159861086023)
 AddSong(SongsTb, "La Navaja Victor Mendieta", 128999238382127)
 AddSong(SongsTb, "1v1 Victor Mendivil", 105965692492381)
 AddSong(SongsTb, "Lil Pimp 187 Pimp Dat Ho", 84001921733662)
-AddSong(SongsTb, "50/50 Ando en la Disco (Da Players Town)", 113647013354970)
 AddSong(SongsTb, "Culitos bailando", 113875800950122)
 AddSong(SongsTb, "Hanzel La H Loyalty 4 Ever", 93643154442544)
 AddSong(SongsTb, "Diles - Bad Bunny", 74880410112427)
@@ -2800,7 +2799,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.2.4"
+    Content = "2.2.5"
 })
 
 local Players = game:GetService("Players")
