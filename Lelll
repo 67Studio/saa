@@ -1693,7 +1693,6 @@ AddSong(SongsTb, "One Of The Girls - Cris Mj", 100940565244037)
 AddSong(SongsTb, "Elecciones - Victor Mendivil", 131059155322646)
 AddSong(SongsTb, "El Solorio V2 - Makabelico", 131768874224372)
 AddSong(SongsTb, "Soy de Laredo - El MakaBeliko", 125707067447312)
-AddSong(SongsTb, "Vitiligo - Dani Flow", 113194332438124)
 AddSong(SongsTb, "Kamikaze - Natael C.", 92531434219099)
 AddSong(SongsTb, "Hago pactos", 105232506951457)
 AddSong(SongsTb, "El papy v1 - MakaBeliko", 111830642213484)
@@ -2801,7 +2800,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.2.7"
+    Content = "2.2.8"
 })
 
 local Players = game:GetService("Players")
