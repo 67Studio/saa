@@ -1591,6 +1591,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "FOREIGN [SUGERENCIA DE MILKE_X]", 96448997190133)
 AddSong(SongsTb, "Nose[Sugerencia de Milke_x]", 103622383502249)
 AddSong(SongsTb, "Como antes [Milke_x Jorgue_78]", 114815589658182)
 AddSong(SongsTb, "Skokaaaaaaaa by oscar67[Sugerencia de JH_LIAN]", 99081150039422)
@@ -2815,7 +2816,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.4.7"
+    Content = "2.4.8"
 })
 
 local Players = game:GetService("Players")
