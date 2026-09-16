@@ -1591,6 +1591,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "rari peso pluma [Sugerencia de eltallovicente123]]", 102689026895497)
 AddSong(SongsTb, "No se de warfell [Sugerencia de eltallovicente123]", 124754962956595)
 AddSong(SongsTb, "Una Baby En Santiago [Nueva Cancion]", 137784048924046)
 AddSong(SongsTb, "50/50 Ando en la Disco (Da Players Town)", 113647013354970)
@@ -2801,7 +2802,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.2.9"
+    Content = "2.3.0"
 })
 
 local Players = game:GetService("Players")
