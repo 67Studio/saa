@@ -1591,6 +1591,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "Diavla [made by Milke_x]", 85241845241373)
 AddSong(SongsTb, "Nose [Sugerencia de JH_LIAN]", 99081150039422)
 AddSong(SongsTb, "Nose [Sugerencia de eltallovicente123]", 111991747714255)
 AddSong(SongsTb, "rari peso pluma [Sugerencia de eltallovicente123]]", 102689026895497)
@@ -2804,7 +2805,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.3.4"
+    Content = "2.3.5"
 })
 
 local Players = game:GetService("Players")
