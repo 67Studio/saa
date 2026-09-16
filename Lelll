@@ -1591,6 +1591,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "Esperándote [Jorgue_78 milke_x]", 80420147200412)
 AddSong(SongsTb, "See_Trap7 Jorge_7x Milke_x", 99431678056535)
 AddSong(SongsTb, "Maka  [Made by Milke_x]", 113045147285146)
 AddSong(SongsTb, "Corrido [Made by Milke_x]", 108484635464666)
@@ -2809,7 +2810,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.3.9"
+    Content = "2.4.0"
 })
 
 local Players = game:GetService("Players")
