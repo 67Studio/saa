@@ -1591,6 +1591,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "Old Audio BALINIZA Y SU EQUIPON [milke, y plkso]", 132657824331252)
 AddSong(SongsTb, "DE MUJER [Sugerencia de 23_GAEL]", 112829835839977)
 AddSong(SongsTb, "Punta CAna [Sugerencia de JH_LIAN]", 96170434808217)
 AddSong(SongsTb, "Nose [Sugerencia de JH_LIAN]", 74181901266359)
@@ -2819,7 +2820,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.5.1"
+    Content = "2.5.2"
 })
 
 local Players = game:GetService("Players")
