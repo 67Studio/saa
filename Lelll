@@ -1598,6 +1598,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "rola de Axel7", 106434053204610)
 AddSong(SongsTb, "ROJO VIVO [NO ES LOUD TAMPOCI CREO Q VAYA]", 140563236804727)
 AddSong(SongsTb, "Si Mijo Si [NuevaCancion]", 129825897352810)
 AddSong(SongsTb, "no se de anuel [Sugerencia de AguanteEl_Agu]", 72142029907010)
@@ -2834,7 +2835,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.6.3"
+    Content = "2.6.4"
 })
 
 local Players = game:GetService("Players")
