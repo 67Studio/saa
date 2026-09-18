@@ -1599,7 +1599,6 @@ PlaysTb:CreateParagraph({
 })
 
 AddSong(SongsTb, "Riki 67", 94106216739501)
-AddSong(SongsTb, "Riki - Neton Vega [MADE BY SOYOSCAR68]", 9410621673950)
 AddSong(SongsTb, "NOSE [Sugerencia de JXZ]", 125108600647147)
 AddSong(SongsTb, "Ganas Kris r [Made by Almighty]", 96546210289866)
 AddSong(SongsTb, "tripabuski [Sugerencia de M3LOON]", 76399771617087)
@@ -2832,7 +2831,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.5.7"
+    Content = "2.5.8"
 })
 
 local Players = game:GetService("Players")
