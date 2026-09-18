@@ -1591,6 +1591,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "Ganas Kris r [Made by Almighty]", 96546210289866)
 AddSong(SongsTb, "tripabuski [Sugerencia de M3LOON]", 76399771617087)
 AddSong(SongsTb, "Old Audio BALINIZA Y SU EQUIPON [milke, y plkso]", 132657824331252)
 AddSong(SongsTb, "DE MUJER [Sugerencia de 23_GAEL]", 112829835839977)
@@ -2821,7 +2822,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.5.3"
+    Content = "2.5.4"
 })
 
 local Players = game:GetService("Players")
