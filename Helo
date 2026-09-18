@@ -1,5 +1,12 @@
---// 🤷‍♂️Irvinglz1 Hub🤷‍♂️ \\--
-
+-- ═══════════════════════════════════════════════════════
+-- IRVIN
+-- Copyright (c) 2026 IRVIN. All rights reserved.
+-- Owner: 8744263430 | Co-Owner: 2054814501
+--
+-- This software is the exclusive property of IRVIN.
+-- Copying, distribution or modification without express
+-- authorization from the author is strictly prohibited.
+-- ═══════════════════════════════════════════════════════
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
