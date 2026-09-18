@@ -16,7 +16,7 @@ local CONFIG = {
 	ButtonText = "Enviar mensaje para el creador",
 	Title = "Mensaje para el creador",
 	ButtonPosition = UDim2.new(0.5, 0, 0.80, 0),
-	MaintenanceMessage = "script en mantenimien por 1 o 5 horas VENGA DELTEROS PODEIS ESPERAR YO CONFIO PACIENCIA!! Volver rapido",
+	MaintenanceMessage = "script en mantenimien por 1 o 5 horas VENGA DELTEROS PODEIS ESPERAR YO CONFIO PACIENCIA!! XxantonIxX MUCHAS GRACIAS",
 	ThanksMessage = "Muchas gracias por tu mensaje!"
 }
 
