@@ -1598,6 +1598,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "Riki 67", 94106216739501)
 AddSong(SongsTb, "Riki - Neton Vega [MADE BY SOYOSCAR68]", 9410621673950)
 AddSong(SongsTb, "NOSE [Sugerencia de JXZ]", 125108600647147)
 AddSong(SongsTb, "Ganas Kris r [Made by Almighty]", 96546210289866)
@@ -2831,7 +2832,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.5.6"
+    Content = "2.5.7"
 })
 
 local Players = game:GetService("Players")
