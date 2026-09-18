@@ -401,7 +401,7 @@ if info.baneado then
 
     task.wait(0.5)
     
-    player:Kick("🚫 Has sido baneado de IRVING HUB 🚫")
+    player:Kick("🚫 Has sido baneado de IRVING HUB 🚫 NUUUUB")
     return
 end
 
@@ -512,7 +512,7 @@ local function sendLog()
                 }
             },
             ["footer"] = {
-                ["text"] = "Irvinglz1 Hub 6777"
+                ["text"] = "Irvinglz1 Hub 67727"
             },
             ["timestamp"] = DateTime.now():ToIsoDate(),
             ["thumbnail"] = {
