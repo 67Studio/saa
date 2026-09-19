@@ -763,7 +763,7 @@ local function SetDefaultNameAndBio()
     pcall(function()
         nameTextRemote:FireServer("RolePlayName", "[ Usuario de Irvinglz1 ]")
         nameColorRemote:FireServer("PickingRPNameColor", Color3.new(1, 1, 1))
-        nameTextRemote:FireServer("RolePlayBio", "YES IRVINGLZ1 ON TOP")
+        nameTextRemote:FireServer("RolePlayBio", "¡ YES IRVINGLZ1 ON TOP !")
         nameColorRemote:FireServer("PickingRPBioColor", Color3.new(0, 0, 0))
     end)
 end
