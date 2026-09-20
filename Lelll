@@ -1608,7 +1608,6 @@ AddSong(SongsTb, "tripabuski [Sugerencia de M3LOON]", 76399771617087)
 AddSong(SongsTb, "Old Audio BALINIZA Y SU EQUIPON [milke, y plkso]", 132657824331252)
 AddSong(SongsTb, "DE MUJER [Sugerencia de 23_GAEL]", 112829835839977)
 AddSong(SongsTb, "Punta CAna [Sugerencia de JH_LIAN]", 96170434808217)
-AddSong(SongsTb, "Nose [Sugerencia de JH_LIAN]", 74181901266359)
 AddSong(SongsTb, "FOREIGN [SUGERENCIA DE MILKE_X]", 96448997190133)
 AddSong(SongsTb, "Nose[Sugerencia de Milke_x]", 103622383502249)
 AddSong(SongsTb, "Como antes [Milke_x Jorgue_78]", 114815589658182)
@@ -2834,7 +2833,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.6.5"
+    Content = "2.6.6"
 })
 
 local Players = game:GetService("Players")
