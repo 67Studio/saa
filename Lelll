@@ -1598,6 +1598,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "Ketde [Sugerencia de Joshua]", 93930555396098)
 AddSong(SongsTb, "El mago de la melodía [Sugerencia deTXLSaNtIaGoLXT]", 10124269884556)
 AddSong(SongsTb, "YUPI DE GORILA [Sugerencia de mi Pa XxtuvictorxX5]", 126605643122142)
 AddSong(SongsTb, "Nose [Cancion de JH_LIAN (mi hijo)]", 80735192805425)
@@ -2837,7 +2838,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.7.2"
+    Content = "2.7.3"
 })
 
 local Players = game:GetService("Players")
