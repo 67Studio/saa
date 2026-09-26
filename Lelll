@@ -1616,7 +1616,6 @@ AddSong(SongsTb, "Punta CAna [Sugerencia de JH_LIAN]", 96170434808217)
 AddSong(SongsTb, "FOREIGN [SUGERENCIA DE MILKE_X]", 96448997190133)
 AddSong(SongsTb, "Nose[Sugerencia de Milke_x]", 103622383502249)
 AddSong(SongsTb, "Como antes [Milke_x Jorgue_78]", 114815589658182)
-AddSong(SongsTb, "Skokaaaaaaaa by oscar67[Sugerencia de JH_LIAN]", 99081150039422)
 AddSong(SongsTb, "CANSADA [Jorge_intro Jorgue_78]", 95476903722799)
 AddSong(SongsTb, "124_z Bebesitabebelin [ Milke_x]", 126529839322967)
 AddSong(SongsTb, "nose [milke_x]", 80488815553151)
@@ -2837,7 +2836,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.7.4"
+    Content = "2.7.5"
 })
 
 local Players = game:GetService("Players")
