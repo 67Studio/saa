@@ -1600,7 +1600,6 @@ PlaysTb:CreateParagraph({
 
 AddSong(SongsTb, "Ketde [Sugerencia de Joshua]", 93930555396098)
 AddSong(SongsTb, "El mago de la melodía [Sugerencia deTXLSaNtIaGoLXT]", 10124269884556)
-AddSong(SongsTb, "YUPI DE GORILA [Sugerencia de mi Pa XxtuvictorxX5]", 126605643122142)
 AddSong(SongsTb, "Nose [Cancion de JH_LIAN (mi hijo)]", 80735192805425)
 AddSong(SongsTb, "NI KAKA IDEA [Suegerencia de TXLSaNtIaGoLXT ]", 108721795687965)
 AddSong(SongsTb, "50/50 Ando en la Disco (Da Players Town)", 113647013354970)
@@ -2838,7 +2837,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.7.3"
+    Content = "2.7.4"
 })
 
 local Players = game:GetService("Players")
