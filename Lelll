@@ -1691,7 +1691,6 @@ AddSong(SongsTb, "CANSADA [NuevaCancion]", 75500567967936)
 AddSong(SongsTb, "Victor nose que", 129449587699547)
 AddSong(SongsTb, "NOSE CUAL ES", 131108887514627)
 AddSong(SongsTb, "Torpe Rompe Bolsillos Hinchados (Acapella)", 100052544825343)
-AddSong(SongsTb, "ALASKA V1", 113365385636689)
 AddSong(SongsTb, "Yeyo amor, cómo ESTÁS???", 89058278989739)
 AddSong(SongsTb, "DESVELADO", 82223376167137)
 AddSong(SongsTb, "Manuel Rodriguez El Black", 128552555209564)
@@ -2838,7 +2837,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.8.5"
+    Content = "2.8.6"
 })
 
 local Players = game:GetService("Players")
