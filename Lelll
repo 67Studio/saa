@@ -1598,6 +1598,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "Mi Mai luis Brown [NuevaCancion]", 930053494960)
 AddSong(SongsTb, "Glizzy Zazaaaa[NuevaCancion]", 110433757003368)
 AddSong(SongsTb, "Victor Mendigoza", 120626425740489)
 AddSong(SongsTb, "Nose cuál es pero está 10/10[NuevaCancion]", 98382295999442)
@@ -2840,7 +2841,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.7.9"
+    Content = "2.8.0"
 })
 
 local Players = game:GetService("Players")
