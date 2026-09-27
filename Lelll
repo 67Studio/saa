@@ -1707,7 +1707,6 @@ AddSong(SongsTb, "Tiniebla", 103601957304373)
 AddSong(SongsTb, "Comandante Bonito- Makabelico", 114616883039515)
 AddSong(SongsTb, "King Of Waches Omar C.", 90859442818485)
 AddSong(SongsTb, "Óscar Maydon Don Dimadon", 135220782344702)
-AddSong(SongsTb, "Natanael Cano Amor Tumbado", 110808477946579)
 AddSong(SongsTb, "Faraón Love Shady Duro 2 Horas", 139466297868662)
 AddSong(SongsTb, "MAESTRO", 137615795245000)
 AddSong(SongsTb, "los alegres del barranco", 133757497048417)
@@ -2839,7 +2838,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.8.4"
+    Content = "2.8.5"
 })
 
 local Players = game:GetService("Players")
