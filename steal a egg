@@ -1,4 +1,3 @@
-```lua
 --[[
 ============================================================
 🌮⚡ ANIME CUTSCENE — CARRERA + LLUVIA DE TACOS
@@ -1556,4 +1555,3 @@ end
 print(
 	"[Cutscene] Finalizada correctamente 🌮⚡"
 )
-```
