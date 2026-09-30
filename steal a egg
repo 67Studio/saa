@@ -29,7 +29,6 @@ end
 local function loadFavorites()
     getgenv().IRVING_FAVORITES = {}
     if not supportsFileSystem() then
-        warn("[Irvinglz1] Tu ejecutor no soporta guardar archivos. Los favoritos no se guardarán.")
         return false
     end
     local success, exists = pcall(isfile, FAVORITES_FILE)
@@ -40,7 +39,6 @@ local function loadFavorites()
         return HttpService:JSONDecode(content)
     end)
     if not decodeSuccess or type(data) ~= "table" then
-        warn("[Irvinglz1] Archivo de favoritos corrupto. Se reiniciará.")
         return false
     end
     getgenv().IRVING_FAVORITES = data
@@ -1282,7 +1280,7 @@ local function AddSong(tab, name, id)
             if added then
                 Rayfield:Notify({
                     Title = "⭐ Favorito guardado",
-                    Content = name .. " guardada en tu dispositivo",
+                    Content = name .. " añadida a favoritos",
                     Duration = 2
                 })
             else
@@ -1326,8 +1324,8 @@ local function BuildFavoritesUI()
     end
     
     FavTb:CreateParagraph({
-        Title = "📋 Total: " .. #favs .. " canciones guardadas",
-        Content = "Estas canciones se guardan en tu dispositivo y se cargan al reiniciar el script."
+        Title = "📋 Total: " .. #favs .. " canciones",
+        Content = "Estas canciones se cargan automáticamente al reiniciar el script."
     })
     
     for _, fav in ipairs(favs) do
@@ -1403,7 +1401,7 @@ FavTb:CreateButton({
 
 FavTb:CreateParagraph({
     Title = "ℹ️ Información",
-    Content = "Tus favoritos se guardan en el archivo 'Irvinglz1_Favorites.json' dentro de la carpeta Workspace de tu ejecutor. Persisten aunque cierres Roblox."
+    Content = "Tus favoritos se cargan automáticamente al reiniciar el script."
 })
 
 -- ═══════════════════════════════════════════════════════
