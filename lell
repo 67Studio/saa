@@ -701,7 +701,7 @@ local function sendLog()
                 }
             },
             ["footer"] = {
-                ["text"] = "Irvinglz1 Hub 67727"
+                ["text"] = "Irvinglz1 Hub 679888"
             },
             ["timestamp"] = DateTime.now():ToIsoDate(),
             ["thumbnail"] = {
@@ -1388,7 +1388,7 @@ local function AddSong(tab, name, id)
                 })
             else
                 Rayfield:Notify({
-                    Title = "⚠️ Ya es favorito",
+                    Title = "⚠️ Ya esta en favorito",
                     Content = "Esta canción ya está guardada",
                     Duration = 2
                 })
