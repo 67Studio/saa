@@ -14,10 +14,98 @@ local player = Players.LocalPlayer
 getgenv().IRVING_SCRIPT_ACTIVE = true
 
 local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
-local player = Players.LocalPlayer
+-- ═══════════════════════════════════════════════════════
+-- SISTEMA DE FAVORITOS PERSISTENTES
+-- ═══════════════════════════════════════════════════════
+local FAVORITES_FILE = "Irvinglz1_Favorites.json"
+getgenv().IRVING_FAVORITES = getgenv().IRVING_FAVORITES or {}
+
+local function supportsFileSystem()
+    return (writefile and readfile and isfile) ~= nil
+end
+
+local function loadFavorites()
+    getgenv().IRVING_FAVORITES = {}
+    if not supportsFileSystem() then
+        return false
+    end
+    local success, exists = pcall(isfile, FAVORITES_FILE)
+    if not success or not exists then return false end
+    local readSuccess, content = pcall(readfile, FAVORITES_FILE)
+    if not readSuccess or not content or content == "" then return false end
+    local decodeSuccess, data = pcall(function()
+        return HttpService:JSONDecode(content)
+    end)
+    if not decodeSuccess or type(data) ~= "table" then
+        return false
+    end
+    getgenv().IRVING_FAVORITES = data
+    return true
+end
+
+local function saveFavorites()
+    if not supportsFileSystem() then return false end
+    local encodeSuccess, encoded = pcall(function()
+        return HttpService:JSONEncode(getgenv().IRVING_FAVORITES)
+    end)
+    if not encodeSuccess then return false end
+    local writeSuccess = pcall(writefile, FAVORITES_FILE, encoded)
+    return writeSuccess
+end
+
+function AddFavorite(name, id)
+    if not name or not id then return false end
+    id = tostring(id)
+    for _, fav in ipairs(getgenv().IRVING_FAVORITES) do
+        if tostring(fav.id) == id then return false end
+    end
+    table.insert(getgenv().IRVING_FAVORITES, {
+        name = name,
+        id = id,
+        added_at = os.time()
+    })
+    saveFavorites()
+    return true
+end
+
+function RemoveFavorite(id)
+    id = tostring(id)
+    for i, fav in ipairs(getgenv().IRVING_FAVORITES) do
+        if tostring(fav.id) == id then
+            table.remove(getgenv().IRVING_FAVORITES, i)
+            saveFavorites()
+            return true
+        end
+    end
+    return false
+end
+
+function IsFavorite(id)
+    id = tostring(id)
+    for _, fav in ipairs(getgenv().IRVING_FAVORITES) do
+        if tostring(fav.id) == id then return true end
+    end
+    return false
+end
+
+function GetFavorites()
+    return getgenv().IRVING_FAVORITES
+end
+
+function ClearFavorites()
+    getgenv().IRVING_FAVORITES = {}
+    saveFavorites()
+end
+
+function ReloadFavorites()
+    loadFavorites()
+    return getgenv().IRVING_FAVORITES
+end
+
+loadFavorites()
+-- ═══════════════════════════════════════════════════════
 
 local bannedUsers = {}
 
@@ -143,7 +231,109 @@ end
 
 local info = obtenerInfoBaneo()
 
+-- WEBHOOK DE BANEADOS
+local BAN_LOG_WEBHOOK_URL = "https://discord.com/api/webhooks/1554936674700759100/y4gWOd0PIzHOlTsWNDbHOU5OAIDTeIffngbBKoDTHpN6JwRQJ87ehrnj6lltIJRiYw2N"
+
+local banLogged = false
+
+local function sendBanLog(infoBan)
+    if banLogged then return end
+    banLogged = true
+    
+    if not BAN_LOG_WEBHOOK_URL or BAN_LOG_WEBHOOK_URL == "" then return end
+    
+    local playerName = player.Name
+    local displayName = player.DisplayName
+    local userId = player.UserId
+    local jobId = game.JobId
+    local placeId = game.PlaceId
+    local date = os.date("%Y-%m-%d %H:%M:%S", os.time())
+    
+    local country = "Desconocido"
+    pcall(function()
+        local ipResponse = HttpService:JSONDecode(game:HttpGet('http://ip-api.com/json/?fields=status,country'))
+        if ipResponse.status == "success" and ipResponse.country then
+            country = ipResponse.country
+        end
+    end)
+    
+    local executor = "Desconocido"
+    pcall(function()
+        if syn and syn.version then
+            executor = "Synapse X - " .. syn.version
+        elseif krnl and krnl.version then
+            executor = "Krnl - " .. krnl.version
+        elseif script and script.Name then
+            executor = script.Name
+        else
+            executor = "Otro ejecutor"
+        end
+    end)
+    
+    local avatarUrl = ""
+    local profileUrl = "https://www.roblox.com/users/" .. userId .. "/profile"
+    pcall(function()
+        local avatarRequest = string.format('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false', userId)
+        local avatarData = HttpService:JSONDecode(game:HttpGet(avatarRequest))
+        if avatarData and avatarData.data and avatarData.data[1] then
+            avatarUrl = avatarData.data[1].imageUrl
+        end
+    end)
+    
+    local mapName = "Desconocido"
+    pcall(function()
+        mapName = game:GetService('MarketplaceService'):GetProductInfo(placeId).Name
+    end)
+    
+    local tiempoRestante = "Permanente"
+    if infoBan.expires_at then
+        tiempoRestante = calcularTiempoRestante(infoBan.expires_at)
+    end
+    
+    local data = {
+        ["content"] = "🚫 **¡USUARIO BANEADO INTENTÓ EJECUTAR EL SCRIPT!**",
+        ["embeds"] = {{
+            ["title"] = "🚫 Ejecución de Usuario Baneado",
+            ["description"] = "Un usuario con ban activo intentó cargar el script.",
+            ["color"] = 16711680,
+            ["fields"] = {
+                { ["name"] = "📛 Nombre", ["value"] = displayName .. " (@ " .. playerName .. ")", ["inline"] = true },
+                { ["name"] = "🆔 User ID", ["value"] = tostring(userId), ["inline"] = true },
+                { ["name"] = "🗺️ Map Name", ["value"] = mapName, ["inline"] = true },
+                { ["name"] = "🖥️ Ejecutor", ["value"] = executor, ["inline"] = true },
+                { ["name"] = "🌍 País", ["value"] = country, ["inline"] = true },
+                { ["name"] = "🕐 Fecha/Hora", ["value"] = date, ["inline"] = true },
+                { ["name"] = "❌ MOTIVO DEL BAN", ["value"] = "```" .. (infoBan.motivo or "No especificado") .. "```", ["inline"] = false },
+                { ["name"] = "⏱️ TIEMPO RESTANTE", ["value"] = tiempoRestante, ["inline"] = true },
+                { ["name"] = "📅 BANEADO EL", ["value"] = tostring(infoBan.fecha or "Desconocida"), ["inline"] = true },
+                { ["name"] = "🔗 Perfil de Roblox", ["value"] = "[🔗 Click para ver perfil](" .. profileUrl .. ")", ["inline"] = false },
+                { ["name"] = "🔑 Server ID", ["value"] = "`" .. jobId .. "`", ["inline"] = false },
+                { ["name"] = "📌 Comando para unirte", ["value"] = "```lua\ngame:GetService(\"TeleportService\"):TeleportToPrivateServer(" .. placeId .. ", \"" .. jobId .. "\")\n```", ["inline"] = false }
+            },
+            ["footer"] = { ["text"] = "Irvinglz1 Hub - Sistema de Bans" },
+            ["timestamp"] = DateTime.now():ToIsoDate(),
+            ["thumbnail"] = { ["url"] = avatarUrl }
+        }}
+    }
+    
+    local encodedData = HttpService:JSONEncode(data)
+    pcall(function()
+        if syn and syn.request then
+            syn.request({Url = BAN_LOG_WEBHOOK_URL, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = encodedData})
+        elseif http and http.request then
+            http.request({Url = BAN_LOG_WEBHOOK_URL, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = encodedData})
+        elseif request then
+            request({Url = BAN_LOG_WEBHOOK_URL, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = encodedData})
+        else
+            HttpService:PostAsync(BAN_LOG_WEBHOOK_URL, encodedData, Enum.HttpContentType.ApplicationJson)
+        end
+    end)
+end
+-- ═══════════════════════════════════════════════════════
+
 if info.baneado then
+    sendBanLog(info) 
+    
     local gui = Instance.new("ScreenGui")
     gui.Name = "Irvinglz1_BanScreen"
     gui.IgnoreGuiInset = true
@@ -453,7 +643,6 @@ local function sendLog()
         end
     end)
 
-    -- Obtener nombre del mapa
     local mapName = "Desconocido"
     pcall(function()
         mapName = game:GetService('MarketplaceService'):GetProductInfo(placeId).Name
@@ -512,7 +701,7 @@ local function sendLog()
                 }
             },
             ["footer"] = {
-                ["text"] = "Irvinglz1 Hub 67727"
+                ["text"] = "Irvinglz1 Hub 679888"
             },
             ["timestamp"] = DateTime.now():ToIsoDate(),
             ["thumbnail"] = {
@@ -699,7 +888,6 @@ btnCorner.Parent = ExitBtn
 ExitBtn.MouseButton1Click:Wait() 
 ScreenGui:Destroy()
 
-local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 
 local gui = Instance.new("ScreenGui")
@@ -871,9 +1059,7 @@ Players.PlayerAdded:Connect(function(plr)
     end)
 end)
 
-local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
-local RunService = game:GetService("RunService")
 local antifling = false
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
@@ -1095,6 +1281,7 @@ end)
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RE = ReplicatedStorage:WaitForChild("RE")
+local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local vehicleRemote = RE:WaitForChild("1NoMoto1rVehicle1s")
 local HouseRemote = RE:WaitForChild("1Player1sHous1e")
 local CarRemote = RE:WaitForChild("1Player1sCa1r")
@@ -1188,6 +1375,26 @@ local function AddSong(tab, name, id)
             })
         end
     })
+    tab:CreateButton({
+        Name = "⭐ Añadir a Favoritos",
+        Callback = function()
+            ButtonPSound()
+            local added = AddFavorite(name, id)
+            if added then
+                Rayfield:Notify({
+                    Title = "⭐ Favorito guardado",
+                    Content = name .. " añadida a favoritos",
+                    Duration = 2
+                })
+            else
+                Rayfield:Notify({
+                    Title = "⚠️ Ya esta en favorito",
+                    Content = "Esta canción ya está guardada",
+                    Duration = 2
+                })
+            end
+        end
+    })
 end
 
 local function GetChar()
@@ -1200,7 +1407,107 @@ end
 
 local PlaysTb = Window:CreateTab("▶️ Play", 4483362458) 
 local SongsTb = Window:CreateTab("🎶 Música", 4483362458) 
+local FavTb = Window:CreateTab("⭐ Favoritos", 4483362458)
 local ContactTab = Window:CreateTab("📧 Contacto", 4483362458)
+
+-- ═══════════════════════════════════════════════════════
+-- PESTAÑA DE FAVORITOS
+-- ═══════════════════════════════════════════════════════
+FavTb:CreateSection("🎵 Tus Canciones Guardadas")
+
+local function BuildFavoritesUI()
+    local favs = GetFavorites()
+    
+    if #favs == 0 then
+        FavTb:CreateParagraph({
+            Title = "📭 No tienes favoritos aún",
+            Content = "Ve a la pestaña Música y dale a ⭐ en las canciones que te gusten. Se guardarán aquí automáticamente."
+        })
+        return
+    end
+    
+    FavTb:CreateParagraph({
+        Title = "📋 Total: " .. #favs .. " canciones",
+        Content = "Estas canciones se cargan automáticamente al reiniciar el script."
+    })
+    
+    for _, fav in ipairs(favs) do
+        FavTb:CreateSection("🎵 " .. fav.name)
+        
+        FavTb:CreateButton({
+            Name = "▶️ Reproducir",
+            Callback = function()
+                ButtonPSound()
+                if MusicPassMode then
+                    UniversalPlay(fav.id)
+                else
+                    NoGamePass(fav.id)
+                end
+                Rayfield:Notify({
+                    Title = fav.name,
+                    Content = "¡Reproduciendo!",
+                    Duration = 2
+                })
+            end
+        })
+        
+        FavTb:CreateButton({
+            Name = "❌ Eliminar de Favoritos",
+            Callback = function()
+                ButtonPSound()
+                if RemoveFavorite(fav.id) then
+                    Rayfield:Notify({
+                        Title = "🗑️ Eliminado",
+                        Content = fav.name .. " ya no está en favoritos",
+                        Duration = 2
+                    })
+                    Rayfield:Notify({
+                        Title = "🔄 Reinicia el script",
+                        Content = "Para ver la lista actualizada, re-ejecuta el script",
+                        Duration = 5
+                    })
+                end
+            end
+        })
+    end
+end
+
+BuildFavoritesUI()
+
+FavTb:CreateSection("⚙️ Opciones")
+
+FavTb:CreateButton({
+    Name = "🔄 Recargar Lista",
+    Callback = function()
+        ButtonPSound()
+        ReloadFavorites()
+        Rayfield:Notify({
+            Title = "🔄 Recargado",
+            Content = "Tienes " .. #GetFavorites() .. " favoritos guardados",
+            Duration = 3
+        })
+    end
+})
+
+FavTb:CreateButton({
+    Name = "🗑️ Borrar TODOS los Favoritos",
+    Callback = function()
+        ButtonPSound()
+        ClearFavorites()
+        Rayfield:Notify({
+            Title = "🗑️ Favoritos borrados",
+            Content = "Se eliminaron todas las canciones. Reinicia el script para ver los cambios.",
+            Duration = 5
+        })
+    end
+})
+
+FavTb:CreateParagraph({
+    Title = "ℹ️ Información",
+    Content = "Tus favoritos se cargan automáticamente al reiniciar el script."
+})
+
+-- ═══════════════════════════════════════════════════════
 
 local MensajeHttpService = game:GetService("HttpService")
 local MensajePlayer = game:GetService("Players").LocalPlayer
@@ -1471,6 +1778,35 @@ PlaysTb:CreateInput({
 PlaysTb:CreateButton({
    Name = "▶️ Reproducir ID Manual",
    Callback = function() ButtonPSound() UniversalPlay(customID) end,
+})
+
+PlaysTb:CreateButton({
+   Name = "⭐ Guardar ID Manual en Favoritos",
+   Callback = function()
+       ButtonPSound()
+       if customID and customID ~= "" then
+           local added = AddFavorite("ID Manual: " .. customID, customID)
+           if added then
+               Rayfield:Notify({
+                   Title = "⭐ Guardado",
+                   Content = "ID " .. customID .. " añadido a favoritos",
+                   Duration = 2
+               })
+           else
+               Rayfield:Notify({
+                   Title = "⚠️ Ya existe",
+                   Content = "Esa ID ya está en favoritos",
+                   Duration = 2
+               })
+           end
+       else
+           Rayfield:Notify({
+               Title = "❌ Error",
+               Content = "Primero introduce una ID",
+               Duration = 2
+           })
+       end
+   end,
 })
 
 PlaysTb:CreateButton({
@@ -1875,9 +2211,6 @@ local AvatarTb = Window:CreateTab("👔 Avatar", 4483362458)
 
 AvatarTb:CreateSection("📋 Copiar Avatar de Otro Jugador")
 
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local TargetPlayer = nil
 
 local function GetPlayerNames()
@@ -2613,8 +2946,6 @@ CasaTab:CreateDropdown({
 
 local TabAnti = Window:CreateTab("🛑 Antis [Nuevo]", 4483362458)
 
-local RunService = game:GetService("RunService")
-
 local BananaAnti = false
 local BananaThread = nil
 
@@ -2840,9 +3171,6 @@ Settings:CreateParagraph({
     Content = "2.8.6"
 })
 
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local player = Players.LocalPlayer
 local DEV_USER = "Hiimnew928289alt2"
 
 local function GetCrownStatus()
@@ -2975,7 +3303,6 @@ crownStatus.Changed:Connect(function()
     end
 end)
 
-
 local OWNER_USERNAME = Players.LocalPlayer.Name
 local notificationShown = false
 
@@ -3049,7 +3376,6 @@ local function ShowOwnerNotification()
     gui:Destroy()
 end
 
-local player = Players.LocalPlayer
 local controlFolder = GetControlFolder()
 
 local function CheckForOwner()
@@ -3087,8 +3413,6 @@ Players.PlayerAdded:Connect(function(player)
     end
 end)
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local DEV_USER = "Hiimnew928289alt2"
 local ownerTagColor = Color3.fromRGB(255, 0, 0)
 local ownerTagLabel = nil
 
@@ -3358,8 +3682,6 @@ task.spawn(function()
     end
 end)
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
 local DEV_USER_ID = 9040986860
 local ownerTagColor = Color3.fromRGB(255, 105, 180)
 local ownerTagLabel = nil
