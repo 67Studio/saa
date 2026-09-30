@@ -2022,7 +2022,6 @@ AddSong(SongsTb, "YOGURCITO BLESSD [NuevaCancion]", 137685175841613)
 AddSong(SongsTb, "MAS FAMA REMP LOBO66 [NuevaCancion]", 79317711363563)
 AddSong(SongsTb, "SINOMELLORANVIVO LA OBSESION [NuevaCancion]", 81633648426381)
 AddSong(SongsTb, "TIRAMISUSHI MATIAS CANDIA [NuevaCancion]", 70799971319619)
-AddSong(SongsTb, "CANSADA [NuevaCancion]", 75500567967936)
 AddSong(SongsTb, "Victor nose que", 129449587699547)
 AddSong(SongsTb, "NOSE CUAL ES", 131108887514627)
 AddSong(SongsTb, "Torpe Rompe Bolsillos Hinchados (Acapella)", 100052544825343)
@@ -3167,7 +3166,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.8.7"
+    Content = "2.8.8"
 })
 
 local DEV_USER = "Hiimnew928289alt2"
