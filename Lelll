@@ -1934,6 +1934,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "La Chimichanga", 85249040247397)
 AddSong(SongsTb, "Mi Mai luis Brown [NuevaCancion]", 93005349496098)
 AddSong(SongsTb, "Glizzy Zazaaaa[NuevaCancion]", 110433757003368)
 AddSong(SongsTb, "Victor Mendigoza", 120626425740489)
@@ -3166,7 +3167,7 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({
     Title = "Version",
-    Content = "2.8.8"
+    Content = "2.8.9"
 })
 
 local DEV_USER = "Hiimnew928289alt2"
