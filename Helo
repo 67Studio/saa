@@ -88,7 +88,7 @@ local function ShowLoadingScreen()
     end
 
     -- Si está en el juego correcto, mostrar mensaje normal
-    local message = "NOMAS KEY!! VENDO ADMIN PANEL 800 ROBUXS!"
+    local message = "NO MÁS KEY"
     for i = 1, #message do
         textLabel.Text = string.sub(message, 1, i)
         textLabel.TextColor3 = Color3.fromRGB(255,255,255)
@@ -202,7 +202,7 @@ local DevDesc = Instance.new("TextLabel")
 DevDesc.Parent = DevFrame
 DevDesc.Position = UDim2.new(0,60,0,30)
 DevDesc.Size = UDim2.new(0,190,0,20)
-DevDesc.Text = "🔰Creador🔰"
+DevDesc.Text = "👑Creador👑"
 DevDesc.TextColor3 = Color3.fromRGB(180,180,180)
 DevDesc.Font = Enum.Font.Gotham
 DevDesc.TextSize = 12
