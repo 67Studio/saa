@@ -16,7 +16,7 @@ local CONFIG = {
 	ButtonText = "Enviar mensaje para el creador",
 	Title = "Mensaje para el creador",
 	ButtonPosition = UDim2.new(0.5, 0, 0.80, 0),
-	MaintenanceMessage = "SCRITP EN MANTENIMIENTO YUHUUUUYYU",
+	MaintenanceMessage = "IRVIN ME LA PELAS PUTO EGOISTA DE MRD",
 	ThanksMessage = "Muchas gracias por tu mensaje!"
 }
 
