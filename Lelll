@@ -432,7 +432,7 @@ if info.baneado then
     end
 
     local function mostrarContactoConAnimacion()
-        contactLabel.Text = "discord.gg/xF8KX6WkN"
+        contactLabel.Text = "Contacta al creador"
         contactTitle.Visible = true
         contactTitle.TextTransparency = 1
         TweenService:Create(contactTitle, TweenInfo.new(0.8), { TextTransparency = 0 }):Play()
@@ -607,12 +607,10 @@ local DevFrame = Instance.new("Frame")
 local DevIcon = Instance.new("ImageLabel")
 local DevName = Instance.new("TextLabel")
 local DevUser = Instance.new("TextLabel")
-local DevTikTok = Instance.new("TextLabel")
 local IconCorner = Instance.new("UICorner")
 
 local TARGET_USERNAME = "Hiimnew928289alt2"
 local DISPLAY_NAME = "pedritohacjel"
-local TIKTOK_USER = "@iirvinglzc1"
 
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.Name = "KazeMusicHub_Maintenance"
@@ -685,7 +683,7 @@ IconCorner.CornerRadius = UDim.new(1, 0)
 IconCorner.Parent = DevIcon
 
 DevName.Parent = DevFrame
-DevName.Position = UDim2.new(0, 80, 0, 12)
+DevName.Position = UDim2.new(0, 80, 0, 25)
 DevName.Size = UDim2.new(0, 180, 0, 20)
 DevName.Text = DISPLAY_NAME
 DevName.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -695,7 +693,7 @@ DevName.TextXAlignment = Enum.TextXAlignment.Left
 DevName.BackgroundTransparency = 1
 
 DevUser.Parent = DevFrame
-DevUser.Position = UDim2.new(0, 80, 0, 35)
+DevUser.Position = UDim2.new(0, 80, 0, 50)
 DevUser.Size = UDim2.new(0, 180, 0, 20)
 DevUser.Text = "@" .. TARGET_USERNAME
 DevUser.TextColor3 = Color3.fromRGB(180, 180, 180)
@@ -703,16 +701,6 @@ DevUser.TextSize = 13
 DevUser.Font = Enum.Font.Gotham
 DevUser.TextXAlignment = Enum.TextXAlignment.Left
 DevUser.BackgroundTransparency = 1
-
-DevTikTok.Parent = DevFrame
-DevTikTok.Position = UDim2.new(0, 80, 0, 55)
-DevTikTok.Size = UDim2.new(0, 180, 0, 20)
-DevTikTok.Text = "TikTok: " .. TIKTOK_USER
-DevTikTok.TextColor3 = Color3.fromRGB(255, 0, 80)
-DevTikTok.TextSize = 12
-DevTikTok.Font = Enum.Font.GothamMedium
-DevTikTok.TextXAlignment = Enum.TextXAlignment.Left
-DevTikTok.BackgroundTransparency = 1
 
 ExitBtn.Parent = MainFrame
 ExitBtn.Position = UDim2.new(0.5, -70, 0, 240)
