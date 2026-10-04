@@ -1,9 +1,9 @@
 -- ═══════════════════════════════════════════════════════
--- IRVIN
--- Copyright (c) 2026 IRVIN. All rights reserved.
+-- KAZE MUSIC HUB
+-- Copyright (c) 2026 KAZE MUSIC HUB. All rights reserved.
 -- Owner: 8744263430 | Co-Owner: 2054814501
 --
--- This software is the exclusive property of IRVIN.
+-- This software is the exclusive property of KAZE MUSIC HUB.
 -- Copying, distribution or modification without express
 -- authorization from the author is strictly prohibited.
 -- ═══════════════════════════════════════════════════════
@@ -13,22 +13,17 @@ local TweenService = game:GetService("TweenService")
 
 -- ===== CONFIGURACIÓN =====
 local EXPECTED_PLACE_ID = 4924922222
-local SCRIPT_URL = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Mante"
+local SCRIPT_URL = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Lelll"
 local TARGET_USERNAME = "Hiimnew928289alt2"
-local DISCORD_INVITE = "https://discord.gg/CDNRhNguz"
-
-local PARTNER1_USER_ID = 5712710685
-local PARTNER1_NAME = "IIXxIrving_alhapxXII"
-local PARTNER1_DISCORD = "https://discord.gg/CDNRhNguz"
-local PARTNER1_TIKTOK = "@iirvinglzc1"
 
 local PARTNER2_USER_ID = 1990522332
 local PARTNER2_NAME = "Jqjsldllrel27"
 local PARTNER2_DISPLAY = "000i_fer"
+local PARTNER2_DISCORD = "https://discord.gg/CDNRhNguz"
 
 local function ShowLoadingScreen()
     local gui = Instance.new("ScreenGui")
-    gui.Name = "Irvinglz1LoadingScreen"
+    gui.Name = "KazeMusicHubLoadingScreen"
     gui.Parent = game:GetService("CoreGui")
     gui.IgnoreGuiInset = true
 
@@ -55,7 +50,6 @@ local function ShowLoadingScreen()
         TextTransparency = 0
     }):Play()
 
-    -- Verificar Place ID
     local currentPlaceId = game.PlaceId
     
     if currentPlaceId ~= EXPECTED_PLACE_ID then
@@ -82,13 +76,11 @@ local function ShowLoadingScreen()
         fadeOut.Completed:Wait()
         gui:Destroy()
         
-        -- Kickear al jugador
         game:GetService("Players").LocalPlayer:Kick("ESTE SCRIPT NO SE USA EN ESTE JUEGO SUBNORMAL")
         return
     end
 
-    -- Si está en el juego correcto, mostrar mensaje normal
-    local message = "Verga borro el scritp el proximo med"
+    local message = "NO MÁS KEY"
     for i = 1, #message do
         textLabel.Text = string.sub(message, 1, i)
         textLabel.TextColor3 = Color3.fromRGB(255,255,255)
@@ -114,7 +106,6 @@ end
 
 ShowLoadingScreen()
 
--- Si el script fue bloqueado, no continuar
 if game.PlaceId ~= EXPECTED_PLACE_ID then
     return
 end
@@ -122,12 +113,12 @@ end
 -- ===== CREAR GUI PRINCIPAL =====
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = game:GetService("CoreGui")
-ScreenGui.Name = "Irvinglz1_Loader"
+ScreenGui.Name = "KazeMusicHub_Loader"
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Parent = ScreenGui
-MainFrame.Size = UDim2.new(0, 300, 0, 420)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -210)
+MainFrame.Size = UDim2.new(0, 300, 0, 360)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -180)
 MainFrame.BackgroundColor3 = Color3.fromRGB(12,12,12)
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -139,7 +130,7 @@ UICorner.Parent = MainFrame
 local Title = Instance.new("TextLabel")
 Title.Parent = MainFrame
 Title.Size = UDim2.new(1,0,0,40)
-Title.Text = "🤷‍♂️Irvinglz1 Hub🤷‍♂️"
+Title.Text = "🎵 Kaze Music Hub 🎵"
 Title.TextColor3 = Color3.fromRGB(0, 150, 255)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 20
@@ -209,58 +200,10 @@ DevDesc.TextSize = 12
 DevDesc.BackgroundTransparency = 1
 DevDesc.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== PARTNER 1 =====
-local Partner1Frame = Instance.new("Frame")
-Partner1Frame.Parent = MainFrame
-Partner1Frame.Position = UDim2.new(0,15,0,155)
-Partner1Frame.Size = UDim2.new(0,270,0,60)
-Partner1Frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
-
-local partner1Corner = Instance.new("UICorner")
-partner1Corner.CornerRadius = UDim.new(0,10)
-partner1Corner.Parent = Partner1Frame
-
-local Partner1Icon = Instance.new("ImageLabel")
-Partner1Icon.Parent = Partner1Frame
-Partner1Icon.Size = UDim2.new(0,40,0,40)
-Partner1Icon.Position = UDim2.new(0,10,0,10)
-Partner1Icon.BackgroundColor3 = Color3.fromRGB(40,40,40)
-
-local partner1IconCorner = Instance.new("UICorner")
-partner1IconCorner.CornerRadius = UDim.new(1,0)
-partner1IconCorner.Parent = Partner1Icon
-
-pcall(function()
-    local thumb = game.Players:GetUserThumbnailAsync(PARTNER1_USER_ID, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
-    Partner1Icon.Image = thumb
-end)
-
-local Partner1Name = Instance.new("TextLabel")
-Partner1Name.Parent = Partner1Frame
-Partner1Name.Position = UDim2.new(0,60,0,10)
-Partner1Name.Size = UDim2.new(0,190,0,20)
-Partner1Name.Text = PARTNER1_NAME
-Partner1Name.TextColor3 = Color3.fromRGB(255, 255, 255)
-Partner1Name.Font = Enum.Font.GothamBold
-Partner1Name.TextSize = 13
-Partner1Name.BackgroundTransparency = 1
-Partner1Name.TextXAlignment = Enum.TextXAlignment.Left
-
-local Partner1Desc = Instance.new("TextLabel")
-Partner1Desc.Parent = Partner1Frame
-Partner1Desc.Position = UDim2.new(0,60,0,30)
-Partner1Desc.Size = UDim2.new(0,190,0,20)
-Partner1Desc.Text = "🤝Partner🤝"
-Partner1Desc.TextColor3 = Color3.fromRGB(150,150,150)
-Partner1Desc.Font = Enum.Font.Gotham
-Partner1Desc.TextSize = 12
-Partner1Desc.BackgroundTransparency = 1
-Partner1Desc.TextXAlignment = Enum.TextXAlignment.Left
-
 -- ===== PARTNER 2 =====
 local Partner2Frame = Instance.new("Frame")
 Partner2Frame.Parent = MainFrame
-Partner2Frame.Position = UDim2.new(0,15,0,225)
+Partner2Frame.Position = UDim2.new(0,15,0,155)
 Partner2Frame.Size = UDim2.new(0,270,0,60)
 Partner2Frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
 
@@ -308,8 +251,8 @@ Partner2Desc.TextXAlignment = Enum.TextXAlignment.Left
 -- ===== LINKS =====
 local LinkText1 = Instance.new("TextLabel")
 LinkText1.Parent = MainFrame
-LinkText1.Position = UDim2.new(0,15,0,290)
-LinkText1.Size = UDim2.new(0,270,0,35)
+LinkText1.Position = UDim2.new(0,15,0,225)
+LinkText1.Size = UDim2.new(0,270,0,30)
 LinkText1.Text = "📌Links del Partner:"
 LinkText1.TextColor3 = Color3.fromRGB(255, 215, 0)
 LinkText1.Font = Enum.Font.GothamBold
@@ -319,31 +262,20 @@ LinkText1.TextXAlignment = Enum.TextXAlignment.Left
 
 local DiscordLink1 = Instance.new("TextLabel")
 DiscordLink1.Parent = MainFrame
-DiscordLink1.Position = UDim2.new(0,15,0,315)
+DiscordLink1.Position = UDim2.new(0,15,0,255)
 DiscordLink1.Size = UDim2.new(0,270,0,20)
-DiscordLink1.Text = "💬Discord: " .. PARTNER1_DISCORD
+DiscordLink1.Text = "💬Discord: " .. PARTNER2_DISCORD
 DiscordLink1.TextColor3 = Color3.fromRGB(88, 101, 242)
 DiscordLink1.Font = Enum.Font.GothamMedium
 DiscordLink1.TextSize = 11
 DiscordLink1.BackgroundTransparency = 1
 DiscordLink1.TextXAlignment = Enum.TextXAlignment.Left
 
-local TikTokLink1 = Instance.new("TextLabel")
-TikTokLink1.Parent = MainFrame
-TikTokLink1.Position = UDim2.new(0,15,0,335)
-TikTokLink1.Size = UDim2.new(0,270,0,20)
-TikTokLink1.Text = "🎵TikTok: " .. PARTNER1_TIKTOK
-TikTokLink1.TextColor3 = Color3.fromRGB(255, 0, 80)
-TikTokLink1.Font = Enum.Font.GothamMedium
-TikTokLink1.TextSize = 11
-TikTokLink1.BackgroundTransparency = 1
-TikTokLink1.TextXAlignment = Enum.TextXAlignment.Left
-
 -- ===== BOTÓN USAR =====
 local BtnUse = Instance.new("TextButton")
 BtnUse.Parent = MainFrame
 BtnUse.Size = UDim2.new(0, 240, 0, 35)
-BtnUse.Position = UDim2.new(0.5, -120, 0, 375)
+BtnUse.Position = UDim2.new(0.5, -120, 0, 305)
 BtnUse.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
 BtnUse.TextColor3 = Color3.fromRGB(255, 255, 255)
 BtnUse.Font = Enum.Font.GothamBold
@@ -366,7 +298,7 @@ BtnUse.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 
     local BlackScreen = Instance.new("ScreenGui")
-    BlackScreen.Name = "Irvinglz1BlackScreen"
+    BlackScreen.Name = "KazeMusicHubBlackScreen"
     BlackScreen.ResetOnSpawn = false
     BlackScreen.Parent = game:GetService("CoreGui")
 
@@ -380,7 +312,7 @@ BtnUse.MouseButton1Click:Connect(function()
     TextLabel.Parent = BlackFrame
     TextLabel.Size = UDim2.new(1, 0, 1, 0)
     TextLabel.BackgroundTransparency = 1
-    TextLabel.Text = "Únete al servidor\nhttps://discord.gg/CDNRhNguz"
+    TextLabel.Text = "Únete al servidor\n" .. PARTNER2_DISCORD
     TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     TextLabel.Font = Enum.Font.GothamBold
     TextLabel.TextSize = 40
