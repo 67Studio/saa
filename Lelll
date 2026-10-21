@@ -1515,6 +1515,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "After [NuevaCancion]", 123018519042477)
 AddSong(SongsTb, "Trampa-YOLAMASCARA [NuevaCancion]", 117204603732246)
 AddSong(SongsTb, "Victor Mendigoza", 120626425740489)
 AddSong(SongsTb, "Nose cuál es pero está 10/10[NuevaCancion]", 98382295999442)
@@ -2511,7 +2512,7 @@ Settings:CreateButton({
     end
 })
 
-Settings:CreateParagraph({ Title = "Version", Content = "2.9.7" })
+Settings:CreateParagraph({ Title = "Version", Content = "2.9.8" })
 
 local DEV_USER = "Hiimnew928289alt2"
 local function GetCrownStatus()
