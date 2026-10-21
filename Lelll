@@ -1535,7 +1535,6 @@ AddSong(SongsTb, "Punta CAna [Sugerencia de JH_LIAN]", 96170434808217)
 AddSong(SongsTb, "FOREIGN [SUGERENCIA DE MILKE_X]", 96448997190133)
 AddSong(SongsTb, "Nose[Sugerencia de Milke_x]", 103622383502249)
 AddSong(SongsTb, "Como antes [Milke_x Jorgue_78]", 114815589658182)
-AddSong(SongsTb, "CANSADA [Jorge_intro Jorgue_78]", 95476903722799)
 AddSong(SongsTb, "124_z Bebesitabebelin [ Milke_x]", 126529839322967)
 AddSong(SongsTb, "nose [milke_x]", 80488815553151)
 AddSong(SongsTb, "Esperándote [Jorgue_78 milke_x]", 80420147200412)
@@ -2512,7 +2511,7 @@ Settings:CreateButton({
     end
 })
 
-Settings:CreateParagraph({ Title = "Version", Content = "2.9.6" })
+Settings:CreateParagraph({ Title = "Version", Content = "2.9.7" })
 
 local DEV_USER = "Hiimnew928289alt2"
 local function GetCrownStatus()
