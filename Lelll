@@ -1522,7 +1522,6 @@ AddSong(SongsTb, "PELI DE TERROR [NuevaCancion]", 96057114806078)
 AddSong(SongsTb, "Riki", 79132365090258)
 AddSong(SongsTb, "Cansada [NuevaCancion]", 133815018859341)
 AddSong(SongsTb, "After [NuevaCancion]", 123018519042477)
-AddSong(SongsTb, "Victor Mendigoza", 120626425740489)
 AddSong(SongsTb, "Nose cuál es pero está 10/10[NuevaCancion]", 98382295999442)
 AddSong(SongsTb, "3BallMTY Chicas Tribaleras [NuevaCancion]", 92870129053050)
 AddSong(SongsTb, "Ketde [Sugerencia de Joshua]", 93930555396098)
@@ -2517,7 +2516,7 @@ Settings:CreateButton({
     end
 })
 
-Settings:CreateParagraph({ Title = "Version", Content = "3.0.5" })
+Settings:CreateParagraph({ Title = "Version", Content = "3.0.6" })
 
 local DEV_USER = "Hiimnew928289alt2"
 local function GetCrownStatus()
