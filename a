@@ -4,7 +4,7 @@ local Players = game:GetService("Players")
 local me = Players.LocalPlayer
 
 local function post(data)
-    return HttpService:JSONDecode(game:HttpPost("https://irvin-loader.lovable.app/api/public/users", HttpService:JSONEncode(data), "application/json"))
+    return HttpService:JSONDecode(game:HttpPost("https://kaze-loader.lovable.app/api/public/users", HttpService:JSONEncode(data), "application/json"))
 end
 
 local hello = post({
