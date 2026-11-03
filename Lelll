@@ -1515,6 +1515,7 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
+AddSong(SongsTb, "Miedo GRACIAS fernan827326", 129254255133539)
 AddSong(SongsTb, "ES MUY BUENA SE ME OLVIDO EL NOMBRE", 125443410480820)
 AddSong(SongsTb, "nose como se llama", 79545042555291)
 AddSong(SongsTb, "Hágalo - Koddy [NuevaCancion]", 70382002676533)
@@ -2514,7 +2515,7 @@ Settings:CreateButton({
     end
 })
 
-Settings:CreateParagraph({ Title = "Version", Content = "3.0.8" })
+Settings:CreateParagraph({ Title = "Version", Content = "3.0.9" })
 
 local DEV_USER = "Hiimnew928289alt2"
 local function GetCrownStatus()
