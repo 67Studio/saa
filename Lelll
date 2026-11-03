@@ -1553,7 +1553,6 @@ AddSong(SongsTb, "Diavla [made by Milke_x]", 85241845241373)
 AddSong(SongsTb, "Nose [Sugerencia de eltallovicente123]", 111991747714255)
 AddSong(SongsTb, "rari peso pluma [Sugerencia de eltallovicente123]]", 102689026895497)
 AddSong(SongsTb, "No se de warfell [Sugerencia de eltallovicente123]", 124754962956595)
-AddSong(SongsTb, "Una Baby En Santiago [Nueva Cancion]", 137784048924046)
 AddSong(SongsTb, "pa arriba pa abajo lento ozi [Sugerencia de M3LOON]", 129723425642125)
 AddSong(SongsTb, "Terranova [Sugerencia de M3LOON]", 131763483961136)
 AddSong(SongsTb, "Saquen el cristal [Sugerencia de XIXStivenIXI]", 104813810100265)
@@ -2517,7 +2516,7 @@ Settings:CreateButton({
     end
 })
 
-Settings:CreateParagraph({ Title = "Version", Content = "3.1.3" })
+Settings:CreateParagraph({ Title = "Version", Content = "3.1.4" })
 
 local DEV_USER = "Hiimnew928289alt2"
 local function GetCrownStatus()
