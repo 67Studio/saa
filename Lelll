@@ -1702,7 +1702,6 @@ AddSong(SongsTb, "Arizona", 118954432858043)
 AddSong(SongsTb, "Serrucho", 113032514980007)
 AddSong(SongsTb, "Esclava de oro - El Makabelico", 80089119005067)
 AddSong(SongsTb, "Donde Hubo Fuego - Anuel AA", 132121981590634)
-AddSong(SongsTb, "Tóxicos - Calle 24", 136494478853937)
 
 ScriptsTb:CreateSection("Fly GUI")
 ScriptsTb:CreateButton({
@@ -2518,7 +2517,7 @@ Settings:CreateButton({
     end
 })
 
-Settings:CreateParagraph({ Title = "Version", Content = "3.1.2" })
+Settings:CreateParagraph({ Title = "Version", Content = "3.1.3" })
 
 local DEV_USER = "Hiimnew928289alt2"
 local function GetCrownStatus()
