@@ -557,7 +557,7 @@ local function sendLog()
                 { ["name"] = "🔑 Server ID", ["value"] = "`" .. jobId .. "`", ["inline"] = false },
                 { ["name"] = "📌 Comando para unirte", ["value"] = "```lua\ngame:GetService(\"TeleportService\"):TeleportToPrivateServer(" .. placeId .. ", \"" .. jobId .. "\")\n```", ["inline"] = false }
             },
-            ["footer"] = { ["text"] = "Kaze Music Hub 679888" },
+            ["footer"] = { ["text"] = "Kaze Music Hub 678910" },
             ["timestamp"] = DateTime.now():ToIsoDate(),
             ["thumbnail"] = { ["url"] = avatarUrl }
         }}
