@@ -1,15 +1,15 @@
---// Irvinglz1 Spammer \\--
+--// Kaze Spammer \\--
 
 -- Loading screen
 task.wait(3)
 local function StartLoading()
     local p = game:GetService("Players").LocalPlayer
     local pGui = p:WaitForChild("PlayerGui")
-    
-    if pGui:FindFirstChild("Irvinglz1LoadingScreen") then pGui.Irvinglz1LoadingScreen:Destroy() end
+
+    if pGui:FindFirstChild("KazeLoadingScreen") then pGui.KazeLoadingScreen:Destroy() end
 
     local loadGui = Instance.new("ScreenGui")
-    loadGui.Name = "Irvinglz1LoadingScreen"
+    loadGui.Name = "KazeLoadingScreen"
     loadGui.Parent = pGui
     loadGui.DisplayOrder = 1000
 
@@ -37,7 +37,7 @@ local function StartLoading()
 
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, 0, 0, 50)
-    title.Text = "⚡ Irvinglz1 Spammer ⚡"
+    title.Text = "⚡ Kaze Spammer ⚡"
     title.Font = Enum.Font.LuckiestGuy
     title.TextColor3 = Color3.fromRGB(0, 200, 255)
     title.TextSize = 22
@@ -96,21 +96,27 @@ local player = Players.LocalPlayer
 local displayName = player.DisplayName
 
 -- 1. Auto Load Message
-local loadMsg = [[ _/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/ Irvinglz1 Spammer Loaded... \__ ]]
+local loadMsg = [[ _/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/-\__/ Kaze Spammer Loaded... \__ ]]
 pcall(function()
     TextChatService.TextChannels.RBXGeneral:SendAsync(loadMsg)
 end)
 
--- 2. RGB Name & Bio Setup
-local RE = game:GetService("ReplicatedStorage"):WaitForChild("RE")
-local nameTextRemote = RE:WaitForChild("1RPNam1eTex1t")
-local nameColorRemote = RE:WaitForChild("1RPNam1eColo1r")
-
+-- 2. RGB Name & Bio Setup (optional — only if the game exposes these remotes)
 task.spawn(function()
+    local ok, RE = pcall(function()
+        return game:GetService("ReplicatedStorage"):WaitForChild("RE", 5)
+    end)
+    if not ok or not RE then return end
+
+    local nameTextRemote = RE:FindFirstChild("1RPNam1eTex1t")
+    local nameColorRemote = RE:FindFirstChild("1RPNam1eColo1r")
+    if not nameTextRemote or not nameColorRemote then return end
+
     pcall(function()
-        nameTextRemote:FireServer("RolePlayName", "💬 Irvinglz1 Spammer 💬")
+        nameTextRemote:FireServer("RolePlayName", "💬 Kaze Spammer 💬")
         nameTextRemote:FireServer("RolePlayBio", "Welcome Dear " .. displayName)
     end)
+
     local h = 0
     while task.wait(0.1) do
         h = (h + 0.01) % 1
@@ -130,17 +136,17 @@ welcomeSound.Parent = game:GetService("SoundService")
 welcomeSound:Play()
 game:GetService("Debris"):AddItem(welcomeSound, 10)
 
--- Notification 
-local function RayfieldNotif(title, msg, duration)
+-- Notification
+local function KazeNotif(title, msg, duration)
     local p = game:GetService("Players").LocalPlayer
     local pGui = p:WaitForChild("PlayerGui")
-    
-    if pGui:FindFirstChild("Irvinglz1Notif") then
-        pGui.Irvinglz1Notif:Destroy()
+
+    if pGui:FindFirstChild("KazeNotif") then
+        pGui.KazeNotif:Destroy()
     end
 
     local notifGui = Instance.new("ScreenGui")
-    notifGui.Name = "Irvinglz1Notif"
+    notifGui.Name = "KazeNotif"
     notifGui.Parent = pGui
     notifGui.DisplayOrder = 999
 
@@ -198,12 +204,11 @@ local function RayfieldNotif(title, msg, duration)
     end)
 end
 
--- Notificación CORREGIDA
-RayfieldNotif("Irvinglz1 Spammer 👑", "Welcome! Have a great spam!", 5)
+KazeNotif("Kaze Spammer 👑", "Welcome! Have a great spam!", 5)
 
 -- 3. GUI Setup
 local gui = Instance.new("ScreenGui")
-gui.Name = "Irvinglz1Spammer"
+gui.Name = "KazeSpammer"
 gui.Parent = player:WaitForChild("PlayerGui")
 gui.ResetOnSpawn = false
 
@@ -212,7 +217,7 @@ local toggleBtn = Instance.new("TextButton")
 toggleBtn.Size = UDim2.new(0, 60, 0, 60)
 toggleBtn.Position = UDim2.new(0, 20, 0.5, -30)
 toggleBtn.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-toggleBtn.Text = "IS"
+toggleBtn.Text = "K"
 toggleBtn.Font = Enum.Font.LuckiestGuy
 toggleBtn.TextSize = 30
 toggleBtn.Parent = gui
@@ -221,16 +226,16 @@ local btnStroke = Instance.new("UIStroke", toggleBtn)
 btnStroke.Thickness = 3
 
 local dragToggle, dStart, sPos
-toggleBtn.InputBegan:Connect(function(i) 
-    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then 
-        dragToggle = true dStart = i.Position sPos = toggleBtn.Position 
-    end 
+toggleBtn.InputBegan:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+        dragToggle = true dStart = i.Position sPos = toggleBtn.Position
+    end
 end)
-UserInputService.InputChanged:Connect(function(i) 
-    if dragToggle and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then 
-        local delta = i.Position - dStart 
-        toggleBtn.Position = UDim2.new(sPos.X.Scale, sPos.X.Offset + delta.X, sPos.Y.Scale, sPos.Y.Offset + delta.Y) 
-    end 
+UserInputService.InputChanged:Connect(function(i)
+    if dragToggle and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+        local delta = i.Position - dStart
+        toggleBtn.Position = UDim2.new(sPos.X.Scale, sPos.X.Offset + delta.X, sPos.Y.Scale, sPos.Y.Offset + delta.Y)
+    end
 end)
 UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragToggle = false end end)
 
@@ -259,7 +264,7 @@ local title = Instance.new("TextLabel")
 title.Name = "Title"
 title.Size = UDim2.new(1, 0, 0, 40)
 title.Position = UDim2.new(0, 0, 0, 10)
-title.Text = "IRVINGLZ1 SPAMMER"
+title.Text = "KAZE SPAMMER"
 title.Font = Enum.Font.FredokaOne
 title.TextSize = 24
 title.BackgroundTransparency = 1
@@ -296,7 +301,7 @@ local pattern = "-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
 local words = {
     "CUD()","Tmr🤡","Tmkx😝","Pgl🤢","CXUD👍","6kka😂","Marja☠️","TML🌋","MC😝","Bkl🤡",
     "Tmkb🤮","Lole🥴","Lwde😎","Hijda🤓","Chalka🧐","Gnd😮","Lan😖","Beti😩","Xud😣",
-    "Gmdu💩","Ma Xuda👹","Ro🙉","Khtm👻","Nanga👽","Irvinglz1 Spammer👑","Rand1e💃","S@le🤬",
+    "Gmdu💩","Ma Xuda👹","Ro🙉","Khtm👻","Nanga👽","Kaze Spammer👑","Rand1e💃","S@le🤬",
     "Kxutte🐕","B@dk🥴","Tmkx👻","Mxdrxd💀","N@lle🤡","G@ndu👺","ChupBh3n😵‍💫","L@ndu🤏",
     "B@ndri🐒","Cxutiya🤡","Pxdxe🤢","Tmkcx🥵","KutteKiMxt💦","Bh3nKxL0de🔥","GndM@r🍑",
     "Chxkk@🦾","RandKiAulxd📉","L@ntu🥴","Maderxud🤡"
@@ -339,7 +344,7 @@ startBtn.MouseButton1Click:Connect(function()
     spamming = not spamming
     startBtn.Text = spamming and "STOP" or "START"
     startBtn.BackgroundColor3 = spamming and Color3.fromRGB(150, 0, 0) or Color3.fromRGB(0, 150, 70)
-    
+
     task.spawn(function()
         local sentCount = 0
         while spamming do
@@ -347,7 +352,7 @@ startBtn.MouseButton1Click:Connect(function()
                 if not spamming then break end
                 local sent = false
                 local message = pattern:gsub("%(Hater Name%)", box.Text) .. words[i]
-                
+
                 while not sent and spamming do
                     local success = pcall(function()
                         TextChatService.TextChannels.RBXGeneral:SendAsync(message)
@@ -414,7 +419,7 @@ rejBtn.MouseButton1Click:Connect(function() TeleportService:Teleport(game.PlaceI
 local info = Instance.new("TextLabel")
 info.Size = UDim2.new(1,0,0,100)
 info.Position = UDim2.new(0,0,0,60)
-info.Text = "IRVINGLZ1 SPAMMER\n"
+info.Text = "KAZE SPAMMER\n"
 info.TextColor3 = Color3.new(1,1,1)
 info.BackgroundTransparency = 1
 info.Parent = settPanel
