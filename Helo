@@ -79,7 +79,7 @@ local function ShowLoadingScreen()
         return
     end
 
-    local message = "IRVIN ME LA PELAS KAZE ON TOP"
+    local message = "PREPARENSE KAZE VUELVE, IRVIN NUB QUE SOLO TE ESTABA USANDO MARICON"
     for i = 1, #message do
         textLabel.Text = string.sub(message, 1, i)
         textLabel.TextColor3 = Color3.fromRGB(255,255,255)
