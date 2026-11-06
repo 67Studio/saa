@@ -1,0 +1,214 @@
+-- KAZE prompt — GUI custom, borde rainbow, Sí/No → loadstring
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
+local me = Players.LocalPlayer
+local parent = me:WaitForChild("PlayerGui")
+
+-- ═══ config ═══
+local BADGE_LETTER = "UWU"
+local BADGE_COLOR  = Color3.fromRGB(190, 38, 65)
+local TITLE        = "NUEVA COSA EN KAZE MUY COOL"
+local BODY         = "¿Quieres probarlo?"
+local BTN_YES      = "Sí"
+local BTN_NO       = "No"
+local PAYLOAD      = "https://kaze-loader.lovable.app/api/public/raw/667cbfc9-9368-4bd5-b974-ff0dbf8e8d05"
+local AUTO_CLOSE   = 12
+
+-- ═══ plataforma ═══
+local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+
+-- ═══ limpieza ═══
+local old = parent:FindFirstChild("KazePromptGui")
+if old then old:Destroy() end
+
+-- ═══ GUI ═══
+local gui = Instance.new("ScreenGui")
+gui.Name = "KazePromptGui"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.DisplayOrder = 100000
+gui.Parent = parent
+
+local toast = Instance.new("Frame")
+toast.Size = UDim2.new(0, 340, 0, 0)
+toast.AutomaticSize = Enum.AutomaticSize.Y
+toast.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+toast.BorderSizePixel = 0
+toast.Parent = gui
+Instance.new("UICorner", toast).CornerRadius = UDim.new(0, 10)
+
+-- ═══ borde rainbow ═══
+local stroke = Instance.new("UIStroke", toast)
+stroke.Thickness = 2
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+stroke.Transparency = 0
+
+local gradient = Instance.new("UIGradient", stroke)
+gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 0)),
+    ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 165, 0)),
+    ColorSequenceKeypoint.new(0.33, Color3.fromRGB(255, 255, 0)),
+    ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 255, 0)),
+    ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 200, 255)),
+    ColorSequenceKeypoint.new(0.83, Color3.fromRGB(0, 0, 255)),
+    ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 0, 255)),
+}
+gradient.Rotation = 0
+
+local rainbowConn = RunService.Heartbeat:Connect(function()
+    if not toast.Parent then rainbowConn:Disconnect() return end
+    gradient.Rotation = (gradient.Rotation + 2) % 360
+end)
+
+-- ═══ posición ═══
+local startPos, endPos
+if isMobile then
+    toast.AnchorPoint = Vector2.new(0.5, 0)
+    startPos = UDim2.new(0.5, 0, 0, -160)
+    endPos   = UDim2.new(0.5, 0, 0, 70)
+else
+    toast.AnchorPoint = Vector2.new(0.5, 0)
+    startPos = UDim2.new(0.5, 0, 0, -160)
+    endPos   = UDim2.new(0.5, 0, 0, 24)
+end
+toast.Position = startPos
+
+local pad = Instance.new("UIPadding", toast)
+pad.PaddingTop = UDim.new(0, 14)
+pad.PaddingBottom = UDim.new(0, 14)
+pad.PaddingLeft = UDim.new(0, 14)
+pad.PaddingRight = UDim.new(0, 14)
+
+local list = Instance.new("UIListLayout", toast)
+list.Padding = UDim.new(0, 10)
+list.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- ═══ fila superior ═══
+local head = Instance.new("Frame")
+head.LayoutOrder = 1
+head.Size = UDim2.new(1, 0, 0, 0)
+head.AutomaticSize = Enum.AutomaticSize.Y
+head.BackgroundTransparency = 1
+head.Parent = toast
+
+local icon = Instance.new("TextLabel")
+icon.Size = UDim2.fromOffset(44, 44)
+icon.Position = UDim2.fromOffset(0, 0)
+icon.BackgroundColor3 = BADGE_COLOR
+icon.BorderSizePixel = 0
+icon.Text = BADGE_LETTER
+icon.TextColor3 = Color3.fromRGB(255, 255, 255)
+icon.Font = Enum.Font.GothamBlack
+icon.TextSize = 22
+icon.Parent = head
+Instance.new("UICorner", icon).CornerRadius = UDim.new(0, 8)
+
+local titleLbl = Instance.new("TextLabel")
+titleLbl.Position = UDim2.fromOffset(56, 0)
+titleLbl.Size = UDim2.new(1, -56, 0, 20)
+titleLbl.BackgroundTransparency = 1
+titleLbl.Text = TITLE
+titleLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLbl.Font = Enum.Font.GothamBold
+titleLbl.TextSize = 15
+titleLbl.TextXAlignment = Enum.TextXAlignment.Left
+titleLbl.Parent = head
+
+local bodyLbl = Instance.new("TextLabel")
+bodyLbl.Position = UDim2.fromOffset(56, 22)
+bodyLbl.Size = UDim2.new(1, -56, 0, 0)
+bodyLbl.AutomaticSize = Enum.AutomaticSize.Y
+bodyLbl.BackgroundTransparency = 1
+bodyLbl.Text = BODY
+bodyLbl.TextColor3 = Color3.fromRGB(200, 200, 210)
+bodyLbl.Font = Enum.Font.Gotham
+bodyLbl.TextSize = 13
+bodyLbl.TextWrapped = true
+bodyLbl.TextXAlignment = Enum.TextXAlignment.Left
+bodyLbl.TextYAlignment = Enum.TextYAlignment.Top
+bodyLbl.Parent = head
+
+-- ═══ fila de botones ═══
+local btnRow = Instance.new("Frame")
+btnRow.LayoutOrder = 2
+btnRow.Size = UDim2.new(1, 0, 0, 36)
+btnRow.BackgroundTransparency = 1
+btnRow.Parent = toast
+
+local yesBtn = Instance.new("TextButton")
+yesBtn.Size = UDim2.new(0.5, -4, 1, 0)
+yesBtn.Position = UDim2.new(0, 0, 0, 0)
+yesBtn.BackgroundColor3 = Color3.fromRGB(0, 162, 255)
+yesBtn.Text = BTN_YES
+yesBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+yesBtn.Font = Enum.Font.GothamBold
+yesBtn.TextSize = 14
+yesBtn.AutoButtonColor = false
+yesBtn.Parent = btnRow
+Instance.new("UICorner", yesBtn).CornerRadius = UDim.new(0, 8)
+
+local noBtn = Instance.new("TextButton")
+noBtn.Size = UDim2.new(0.5, -4, 1, 0)
+noBtn.Position = UDim2.new(0.5, 4, 0, 0)
+noBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 58)
+noBtn.Text = BTN_NO
+noBtn.TextColor3 = Color3.fromRGB(220, 220, 225)
+noBtn.Font = Enum.Font.GothamBold
+noBtn.TextSize = 14
+noBtn.AutoButtonColor = false
+noBtn.Parent = btnRow
+Instance.new("UICorner", noBtn).CornerRadius = UDim.new(0, 8)
+
+-- ═══ entrada ═══
+TweenService:Create(toast, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    {Position = endPos}):Play()
+
+-- ═══ acciones ═══
+local dismissed = false
+local function dismiss()
+    if dismissed then return end
+    dismissed = true
+    TweenService:Create(toast, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+        {Position = startPos, BackgroundTransparency = 1}):Play()
+    task.delay(0.28, function()
+        if rainbowConn then rainbowConn:Disconnect() end
+        if gui.Parent then gui:Destroy() end
+    end)
+end
+
+yesBtn.MouseEnter:Connect(function()
+    TweenService:Create(yesBtn, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(0, 140, 220)}):Play()
+end)
+yesBtn.MouseLeave:Connect(function()
+    TweenService:Create(yesBtn, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(0, 162, 255)}):Play()
+end)
+noBtn.MouseEnter:Connect(function()
+    TweenService:Create(noBtn, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(70, 70, 80)}):Play()
+end)
+noBtn.MouseLeave:Connect(function()
+    TweenService:Create(noBtn, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(50, 50, 58)}):Play()
+end)
+
+yesBtn.MouseButton1Click:Connect(function()
+    dismiss()
+    task.wait(0.3)
+    local ok, err = pcall(function()
+        local loadstringFn = loadstring or (getfenv and getfenv()["loadstring"])
+        if not loadstringFn then error("loadstring no disponible en este executor") end
+        local source = game:HttpPost(PAYLOAD, "", "application/json")
+        loadstringFn(source)()
+    end)
+    if not ok then warn("[KAZE] " .. tostring(err)) end
+end)
+
+noBtn.MouseButton1Click:Connect(function()
+    dismiss()
+end)
+
+task.delay(AUTO_CLOSE, function()
+    if gui.Parent then dismiss() end
+end)
