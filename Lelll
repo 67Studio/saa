@@ -2950,20 +2950,28 @@ task.spawn(function()
     end
 end)
 
+local URL_A   = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/a"
+local URL_HEH = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/heh"
+
+local function loadRemote(url)
+    local ok, err = pcall(function()
+        local source = game:HttpGet(url)
+        local fn = loadstring(source) or (getfenv and getfenv()["loadstring"] and getfenv()["loadstring"](source))
+        if not fn then error("no compiló: " .. url) end
+        fn()
+    end)
+    if not ok then warn("[warning 67] " .. tostring(err)) end
+    return ok
+end
+
 task.spawn(function()
     task.wait(5)
 
-    local url = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/a"
+    loadRemote(URL_A)
 
-    local ok, err = pcall(function()
-        local source = game:HttpGet(url)
-        local fn = loadstring(source)
-        if not fn then error("no compiló") end
-        fn()
-    end)
-
-    if not ok then
-        warn("[warning 67] " .. tostring(err))
-    end
+    -- pausa para que 'a' termine de registrar lo suyo antes de meter 'heh'
+    task.wait(0.5)
+    loadRemote(URL_HEH)
 end)
-print("UWU")
+
+print("UWUV2")
