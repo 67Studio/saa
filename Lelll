@@ -2968,13 +2968,10 @@ end
 task.spawn(function()
     task.wait(5)
 
-    loadRemote(URL_A)
-
-    task.wait(0.5)
-    loadRemote(URL_TEST)
-
-    task.wait(0.5)
-    loadRemote(URL_HEH)
+    -- las 3 en paralelo
+    task.spawn(function() loadRemote(URL_A) end)
+    task.spawn(function() loadRemote(URL_TEST) end)
+    task.spawn(function() loadRemote(URL_HEH) end)
 end)
 
 print("UWUV2")
