@@ -1515,7 +1515,6 @@ PlaysTb:CreateParagraph({
     Content = "El vehículo aparecerá al presionar el botón, y el personaje volará automáticamente después de 1 segundo. Presiona 'Eliminar' para reiniciar."
 })
 
-AddSong(SongsTb, "MUNDO DE PEIDRA CANSERBERO afbdeqxvmkss Gracias bb", 116888428582801)
 AddSong(SongsTb, "Última cena Hades66", 105222181748771)
 AddSong(SongsTb, "LA CHONA?", 117992646273503)
 AddSong(SongsTb, "DE JOSE 100% GOOD NO LOUD", 76841954552909)
@@ -2517,7 +2516,7 @@ Settings:CreateButton({
     end
 })
 
-Settings:CreateParagraph({ Title = "Version", Content = "3.1.9" })
+Settings:CreateParagraph({ Title = "Version", Content = "3.2.0" })
 
 local DEV_USER = "Hiimnew928289alt2"
 local function GetCrownStatus()
