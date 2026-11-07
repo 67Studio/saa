@@ -2950,8 +2950,9 @@ task.spawn(function()
     end
 end)
 
-local URL_A   = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/a"
-local URL_HEH = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/heh"
+local URL_A    = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/a"
+local URL_TEST = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/test"
+local URL_HEH  = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/heh"
 
 local function loadRemote(url)
     local ok, err = pcall(function()
@@ -2969,7 +2970,9 @@ task.spawn(function()
 
     loadRemote(URL_A)
 
-    -- pausa para que 'a' termine de registrar lo suyo antes de meter 'heh'
+    task.wait(0.5)
+    loadRemote(URL_TEST)
+
     task.wait(0.5)
     loadRemote(URL_HEH)
 end)
