@@ -2520,195 +2520,13 @@ Settings:CreateButton({
 
 Settings:CreateParagraph({ Title = "Version", Content = "3.2.2" })
 
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+
 local DEV_USER = "Hiimnew928289alt2"
-local function GetCrownStatus()
-    local status = ReplicatedStorage:FindFirstChild("CrownStatus")
-    if not status then
-        status = Instance.new("BoolValue")
-        status.Name = "CrownStatus"
-        status.Value = true
-        status.Parent = ReplicatedStorage
-    end
-    return status
-end
-local crownStatus = GetCrownStatus()
-
-local function addOwnerLabel(character)
-    if not character then return end
-    local head = character:FindFirstChild("Head")
-    if not head then return end
-    if head:FindFirstChild("OwnerLabel") then return end
-    local label = Instance.new("BillboardGui")
-    label.Name = "OwnerLabel"
-    label.Size = UDim2.new(0, 100, 0, 40)
-    label.StudsOffset = Vector3.new(0, 3, 0)
-    label.AlwaysOnTop = true
-    label.Parent = head
-    local text = Instance.new("TextLabel")
-    text.Size = UDim2.new(1, 0, 1, 0)
-    text.BackgroundTransparency = 1
-    text.Text = "👑 Owner"
-    text.TextColor3 = Color3.fromRGB(255, 215, 0)
-    text.TextScaled = true
-    text.Font = Enum.Font.GothamBold
-    text.TextStrokeTransparency = 0.3
-    text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-    text.Parent = label
-end
-
-local function updateLabel(character)
-    if not character then return end
-    if crownStatus.Value then
-        addOwnerLabel(character)
-    else
-        local head = character:FindFirstChild("Head")
-        if head then
-            local existing = head:FindFirstChild("OwnerLabel")
-            if existing then existing:Destroy() end
-        end
-    end
-end
-
-local function watchOwner(plr)
-    if plr.Name ~= DEV_USER then return end
-    task.spawn(function()
-        while plr.Parent do
-            local char = plr.Character
-            if char then updateLabel(char) end
-            task.wait(1)
-        end
-    end)
-end
-
-for _, plr in pairs(Players:GetPlayers()) do
-    watchOwner(plr)
-end
-Players.PlayerAdded:Connect(function(plr)
-    watchOwner(plr)
-    if plr.Name == DEV_USER then
-        plr.CharacterAdded:Connect(function(char)
-            task.wait(0.5)
-            updateLabel(char)
-        end)
-    end
-end)
-
-player.Chatted:Connect(function(msg)
-    if msg:lower() == "!crown on" then
-        if player.Name ~= DEV_USER then
-            Rayfield:Notify({ Title = "⚠️ Sin permiso", Content = "Solo el desarrollador puede usar este comando.", Duration = 3, Image = 4483362458 })
-            return
-        end
-        crownStatus.Value = true
-        Rayfield:Notify({ Title = "👑 Owner visible", Content = "El texto 'Owner' ahora es visible.", Duration = 3, Image = 4483362458 })
-    elseif msg:lower() == "!crown off" then
-        if player.Name ~= DEV_USER then
-            Rayfield:Notify({ Title = "⚠️ Sin permiso", Content = "Solo el desarrollador puede usar este comando.", Duration = 3, Image = 4483362458 })
-            return
-        end
-        crownStatus.Value = false
-        Rayfield:Notify({ Title = "👑 Owner oculto", Content = "El texto 'Owner' ya no es visible.", Duration = 3, Image = 4483362458 })
-    end
-end)
-
-crownStatus.Changed:Connect(function()
-    local ownerPlayer = Players:FindFirstChild("Hiimnew928289alt2")
-    if ownerPlayer and ownerPlayer.Character then
-        updateLabel(ownerPlayer.Character)
-    end
-end)
-
-local OWNER_USERNAME = Players.LocalPlayer.Name
-local notificationShown = false
-
-local function GetControlFolder()
-    local folder = ReplicatedStorage:FindFirstChild("ScriptControl")
-    if not folder then
-        folder = Instance.new("Folder")
-        folder.Name = "ScriptControl"
-        folder.Parent = ReplicatedStorage
-    end
-    return folder
-end
-
-local function ShowOwnerNotification()
-    if notificationShown then return end
-    notificationShown = true
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "OwnerNotificationGUI"
-    gui.ResetOnSpawn = false
-    gui.Parent = game:GetService("CoreGui")
-    gui.DisplayOrder = 999
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 280, 0, 60)
-    frame.Position = UDim2.new(0.5, -140, 0.5, -30)
-    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    frame.BackgroundTransparency = 0.4
-    frame.BorderSizePixel = 0
-    frame.Parent = gui
-    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
-    local border = Instance.new("UIStroke", frame)
-    border.Thickness = 2
-    border.Color = Color3.fromRGB(255, 215, 0)
-    border.Transparency = 0.3
-    local text = Instance.new("TextLabel")
-    text.Size = UDim2.new(1, 0, 1, 0)
-    text.BackgroundTransparency = 1
-    text.Text = "👑 Owner en el server"
-    text.TextColor3 = Color3.fromRGB(255, 215, 0)
-    text.TextSize = 20
-    text.Font = Enum.Font.GothamBold
-    text.Parent = frame
-    task.spawn(function()
-        while gui and gui.Parent do
-            frame.BackgroundTransparency = 0.4
-            task.wait(0.5)
-            frame.BackgroundTransparency = 0.7
-            task.wait(0.5)
-        end
-    end)
-    text.TextTransparency = 1
-    TweenService:Create(text, TweenInfo.new(0.5), { TextTransparency = 0 }):Play()
-    task.wait(10)
-    TweenService:Create(text, TweenInfo.new(0.5), { TextTransparency = 1 }):Play()
-    TweenService:Create(frame, TweenInfo.new(0.5), { BackgroundTransparency = 1 }):Play()
-    task.wait(0.6)
-    gui:Destroy()
-end
-
-local controlFolder = GetControlFolder()
-local function CheckForOwner()
-    if player.Name == OWNER_USERNAME then
-        local ownerMarker = controlFolder:FindFirstChild("OwnerExecuted")
-        if not ownerMarker then
-            ownerMarker = Instance.new("BoolValue")
-            ownerMarker.Name = "OwnerExecuted"
-            ownerMarker.Value = true
-            ownerMarker.Parent = controlFolder
-        end
-    else
-        local ownerMarker = controlFolder:FindFirstChild("OwnerExecuted")
-        if ownerMarker and ownerMarker.Value then
-            ShowOwnerNotification()
-        else
-            controlFolder.ChildAdded:Connect(function(child)
-                if child.Name == "OwnerExecuted" and child.Value then
-                    ShowOwnerNotification()
-                end
-            end)
-        end
-    end
-end
-CheckForOwner()
-
-Players.PlayerAdded:Connect(function(player)
-    if player.Name == OWNER_USERNAME then
-        if player.Name ~= Players.LocalPlayer.Name then
-            notificationShown = false
-            ShowOwnerNotification()
-        end
-    end
-end)
+local DEV_USER_ID = 9040986860
 
 local ownerTagColor = Color3.fromRGB(255, 0, 0)
 local ownerTagLabel = nil
@@ -2736,21 +2554,30 @@ local function GetColorValue()
 end
 local colorValue = GetColorValue()
 
-local function addOwnerLabel(character)
+local function updateOwnerTagColor(color)
+    ownerTagColor = color
+    if ownerTagLabel then
+        pcall(function()
+            ownerTagLabel.TextColor3 = color
+        end)
+    end
+end
+
+local function addCreatorLabel(character)
     if not character then return end
     local head = character:FindFirstChild("Head")
     if not head then return end
-    if head:FindFirstChild("OwnerLabel") then
-        head:FindFirstChild("OwnerLabel"):Destroy()
+    if head:FindFirstChild("CreatorLabel") then
+        head:FindFirstChild("CreatorLabel"):Destroy()
     end
     local label = Instance.new("BillboardGui")
-    label.Name = "OwnerLabel"
-    label.Size = UDim2.new(0, 100, 0, 40)
+    label.Name = "CreatorLabel"
+    label.Size = UDim2.new(0, 120, 0, 40)
     label.StudsOffset = Vector3.new(0, 3, 0)
     label.AlwaysOnTop = true
     label.Parent = head
     local text = Instance.new("TextLabel")
-    text.Name = "OwnerText"
+    text.Name = "CreatorText"
     text.Size = UDim2.new(1, 0, 1, 0)
     text.BackgroundTransparency = 1
     text.Text = "👑 Creador de Kaze Music Hub 👑"
@@ -2762,41 +2589,6 @@ local function addOwnerLabel(character)
     text.Parent = label
     ownerTagLabel = text
 end
-
-local function removeOwnerLabel(character)
-    if not character then return end
-    local head = character:FindFirstChild("Head")
-    if head then
-        local existing = head:FindFirstChild("OwnerLabel")
-        if existing then existing:Destroy() end
-    end
-    ownerTagLabel = nil
-end
-
-local function updateOwnerTagColor(color)
-    ownerTagColor = color
-    if ownerTagLabel then
-        pcall(function()
-            ownerTagLabel.TextColor3 = color
-        end)
-    end
-end
-
-local function watchOwner()
-    local function processPlayer(plr)
-        if plr.Name ~= DEV_USER then return end
-        if plr.Character then addOwnerLabel(plr.Character) end
-        plr.CharacterAdded:Connect(function(char)
-            task.wait(0.5)
-            addOwnerLabel(char)
-        end)
-    end
-    for _, plr in pairs(Players:GetPlayers()) do
-        processPlayer(plr)
-    end
-    Players.PlayerAdded:Connect(processPlayer)
-end
-watchOwner()
 
 local arcoirisActive = true
 task.spawn(function()
@@ -2830,77 +2622,44 @@ task.spawn(function()
     end
 end)
 
-local DEV_USER_ID = 9040986860
-local ownerTagColor = Color3.fromRGB(255, 105, 180)
-local ownerTagLabel = nil
-
-local function GetOwnerColorFolder()
-    local folder = ReplicatedStorage:FindFirstChild("OwnerColorSync")
-    if not folder then
-        folder = Instance.new("Folder")
-        folder.Name = "OwnerColorSync"
-        folder.Parent = ReplicatedStorage
+local function watchCreator()
+    local function processPlayer(plr)
+        if plr.Name ~= DEV_USER then return end
+        if plr.Character then addCreatorLabel(plr.Character) end
+        plr.CharacterAdded:Connect(function(char)
+            task.wait(0.5)
+            addCreatorLabel(char)
+        end)
     end
-    return folder
-end
-
-local function GetColorValue()
-    local colorFolder = GetOwnerColorFolder()
-    local colorValue = colorFolder:FindFirstChild("CurrentColor")
-    if not colorValue then
-        colorValue = Instance.new("Color3Value")
-        colorValue.Name = "CurrentColor"
-        colorValue.Value = Color3.fromRGB(255, 105, 180)
-        colorValue.Parent = colorFolder
+    for _, plr in pairs(Players:GetPlayers()) do
+        processPlayer(plr)
     end
-    return colorValue
+    Players.PlayerAdded:Connect(processPlayer)
 end
-local colorValue = GetColorValue()
+watchCreator()
 
-local function addOwnerLabel(character)
-    if not character then return end
-    local head = character:FindFirstChild("Head")
-    if not head then return end
-    if head:FindFirstChild("OwnerLabel") then
-        head:FindFirstChild("OwnerLabel"):Destroy()
+local joseTagColor = Color3.fromRGB(255, 105, 180)
+local joseTagLabel = nil
+
+local function getJoseColorValue()
+    local folder = GetOwnerColorFolder()
+    local val = folder:FindFirstChild("CurrentJoseColor")
+    if not val then
+        val = Instance.new("Color3Value")
+        val.Name = "CurrentJoseColor"
+        val.Value = Color3.fromRGB(255, 105, 180)
+        val.Parent = folder
     end
-    local label = Instance.new("BillboardGui")
-    label.Name = "OwnerLabel"
-    label.Size = UDim2.new(0, 120, 0, 40)
-    label.StudsOffset = Vector3.new(0, 3, 0)
-    label.AlwaysOnTop = true
-    label.Parent = head
-    local text = Instance.new("TextLabel")
-    text.Name = "OwnerText"
-    text.Size = UDim2.new(1, 0, 1, 0)
-    text.BackgroundTransparency = 1
-    text.Text = "❤Jose❤"
-    text.TextColor3 = ownerTagColor
-    text.TextScaled = true
-    text.Font = Enum.Font.GothamBold
-    text.TextStrokeTransparency = 0.3
-    text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-    text.Parent = label
-    ownerTagLabel = text
-    updateOwnerTagColor(ownerTagColor)
+    return val
 end
+local joseColorValue = getJoseColorValue()
 
-local function removeOwnerLabel(character)
-    if not character then return end
-    local head = character:FindFirstChild("Head")
-    if head then
-        local existing = head:FindFirstChild("OwnerLabel")
-        if existing then existing:Destroy() end
-    end
-    ownerTagLabel = nil
-end
-
-local function updateOwnerTagColor(color)
-    ownerTagColor = color
-    if ownerTagLabel then
+local function updateJoseTagColor(color)
+    joseTagColor = color
+    if joseTagLabel then
         pcall(function()
-            ownerTagLabel.TextColor3 = color
-            ownerTagLabel.TextStrokeColor3 = Color3.fromRGB(
+            joseTagLabel.TextColor3 = color
+            joseTagLabel.TextStrokeColor3 = Color3.fromRGB(
                 math.max(0, 255 - color.R * 255),
                 math.max(0, 255 - color.G * 255),
                 math.max(0, 255 - color.B * 255)
@@ -2909,21 +2668,33 @@ local function updateOwnerTagColor(color)
     end
 end
 
-local function watchOwner()
-    local function processPlayer(plr)
-        if plr.UserId ~= DEV_USER_ID then return end
-        if plr.Character then addOwnerLabel(plr.Character) end
-        plr.CharacterAdded:Connect(function(char)
-            task.wait(0.5)
-            addOwnerLabel(char)
-        end)
+local function addJoseLabel(character)
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+    if head:FindFirstChild("JoseLabel") then
+        head:FindFirstChild("JoseLabel"):Destroy()
     end
-    for _, plr in pairs(Players:GetPlayers()) do
-        processPlayer(plr)
-    end
-    Players.PlayerAdded:Connect(processPlayer)
+    local label = Instance.new("BillboardGui")
+    label.Name = "JoseLabel"
+    label.Size = UDim2.new(0, 120, 0, 40)
+    label.StudsOffset = Vector3.new(0, 3, 0)
+    label.AlwaysOnTop = true
+    label.Parent = head
+    local text = Instance.new("TextLabel")
+    text.Name = "JoseText"
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.BackgroundTransparency = 1
+    text.Text = "❤Jose❤"
+    text.TextColor3 = joseTagColor
+    text.TextScaled = true
+    text.Font = Enum.Font.GothamBold
+    text.TextStrokeTransparency = 0.3
+    text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    text.Parent = label
+    joseTagLabel = text
+    updateJoseTagColor(joseTagColor)
 end
-watchOwner()
 
 local lilaPinkActive = true
 task.spawn(function()
@@ -2943,14 +2714,135 @@ task.spawn(function()
                     local g = math.lerp(currentColor.G, nextColor.G, i)
                     local b = math.lerp(currentColor.B, nextColor.B, i)
                     local newColor = Color3.fromRGB(r * 255, g * 255, b * 255)
-                    pcall(function() colorValue.Value = newColor end)
-                    updateOwnerTagColor(newColor)
+                    pcall(function() joseColorValue.Value = newColor end)
+                    updateJoseTagColor(newColor)
                     task.wait(0.1)
                 end
             end
         end)
     end
 end)
+
+local function watchJose()
+    local function processPlayer(plr)
+        if plr.UserId ~= DEV_USER_ID then return end
+        if plr.Character then addJoseLabel(plr.Character) end
+        plr.CharacterAdded:Connect(function(char)
+            task.wait(0.5)
+            addJoseLabel(char)
+        end)
+    end
+    for _, plr in pairs(Players:GetPlayers()) do
+        processPlayer(plr)
+    end
+    Players.PlayerAdded:Connect(processPlayer)
+end
+watchJose()
+
+-- ═══════════ TAG: holachicos_0902 (Blanco/Negro) ═══════════
+local holaTagColor = Color3.fromRGB(255, 255, 255)
+local holaTagLabel = nil
+local HOLA_USER = "holachicos_0902"
+
+local function getHolaColorValue()
+    local folder = GetOwnerColorFolder()
+    local val = folder:FindFirstChild("CurrentHolaColor")
+    if not val then
+        val = Instance.new("Color3Value")
+        val.Name = "CurrentHolaColor"
+        val.Value = Color3.fromRGB(255, 255, 255)
+        val.Parent = folder
+    end
+    return val
+end
+local holaColorValue = getHolaColorValue()
+
+local function updateHolaTagColor(color)
+    holaTagColor = color
+    if holaTagLabel then
+        pcall(function()
+            holaTagLabel.TextColor3 = color
+            -- El borde hace contraste inverso para que se lea siempre
+            holaTagLabel.TextStrokeColor3 = Color3.fromRGB(
+                math.max(0, 255 - color.R * 255),
+                math.max(0, 255 - color.G * 255),
+                math.max(0, 255 - color.B * 255)
+            )
+        end)
+    end
+end
+
+local function addHolaLabel(character)
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+    if head:FindFirstChild("HolaLabel") then
+        head:FindFirstChild("HolaLabel"):Destroy()
+    end
+    local label = Instance.new("BillboardGui")
+    label.Name = "HolaLabel"
+    label.Size = UDim2.new(0, 120, 0, 40)
+    label.StudsOffset = Vector3.new(0, 3, 0)
+    label.AlwaysOnTop = true
+    label.Parent = head
+    local text = Instance.new("TextLabel")
+    text.Name = "HolaText"
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.BackgroundTransparency = 1
+    text.Text = "😈MaxElVergaCorta😈"
+    text.TextColor3 = holaTagColor
+    text.TextScaled = true
+    text.Font = Enum.Font.GothamBold
+    text.TextStrokeTransparency = 0
+    text.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    text.Parent = label
+    holaTagLabel = text
+    updateHolaTagColor(holaTagColor)
+end
+
+-- Animación Blanco/Negro
+local holaActive = true
+task.spawn(function()
+    while holaActive do
+        pcall(function()
+            local colors = {
+                Color3.fromRGB(255, 255, 255), -- Blanco
+                Color3.fromRGB(0, 0, 0),       -- Negro
+            }
+            for colorIndex = 1, #colors do
+                if not holaActive then break end
+                local currentColor = colors[colorIndex]
+                local nextColor = colors[(colorIndex % #colors) + 1]
+                for i = 0, 1, 0.05 do
+                    if not holaActive then break end
+                    local r = math.lerp(currentColor.R, nextColor.R, i)
+                    local g = math.lerp(currentColor.G, nextColor.G, i)
+                    local b = math.lerp(currentColor.B, nextColor.B, i)
+                    local newColor = Color3.fromRGB(r * 255, g * 255, b * 255)
+                    pcall(function() holaColorValue.Value = newColor end)
+                    updateHolaTagColor(newColor)
+                    task.wait(0.1)
+                end
+            end
+        end)
+    end
+end)
+
+local function watchHola()
+    local function processPlayer(plr)
+        if plr.Name ~= HOLA_USER then return end
+        if plr.Character then addHolaLabel(plr.Character) end
+        plr.CharacterAdded:Connect(function(char)
+            task.wait(0.5)
+            addHolaLabel(char)
+        end)
+    end
+    for _, plr in pairs(Players:GetPlayers()) do
+        processPlayer(plr)
+    end
+    Players.PlayerAdded:Connect(processPlayer)
+end
+watchHola()
 
 local URLs = {
     "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/a",
