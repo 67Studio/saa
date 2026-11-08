@@ -2891,8 +2891,7 @@ end)
 
 local URLs = {
     "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/a",
-    "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/heh",
-    "https://raw.githubusercontent.com/67Studio/ELFB/refs/heads/main/insta"
+    "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/heh"
 }
 
 local function loadRemote(url)
