@@ -2,10 +2,6 @@
 -- KAZE MUSIC HUB
 -- Copyright (c) 2026 KAZE MUSIC HUB. All rights reserved.
 -- Owner: 8744263430 | Co-Owner: 2054814501
---
--- This software is the exclusive property of KAZE MUSIC HUB.
--- Copying, distribution or modification without express
--- authorization from the author is strictly prohibited.
 -- ═══════════════════════════════════════════════════════
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -19,6 +15,9 @@ local TARGET_USERNAME = "Hiimnew928289alt2"
 local PARTNER2_USER_ID = 1990522332
 local PARTNER2_NAME = "Jqjsldllrel27"
 local PARTNER2_DISPLAY = "000i_fer"
+
+local PARTNER3_USERNAME = "Noxd901"
+local PARTNER3_DISPLAY = "Soydepedrito6767"
 
 local function ShowLoadingScreen()
     local gui = Instance.new("ScreenGui")
@@ -41,13 +40,8 @@ local function ShowLoadingScreen()
     textLabel.TextTransparency = 1
     textLabel.Text = ""
 
-    TweenService:Create(bg, TweenInfo.new(1), {
-        BackgroundTransparency = 0
-    }):Play()
-
-    TweenService:Create(textLabel, TweenInfo.new(1), {
-        TextTransparency = 0
-    }):Play()
+    TweenService:Create(bg, TweenInfo.new(1), { BackgroundTransparency = 0 }):Play()
+    TweenService:Create(textLabel, TweenInfo.new(1), { TextTransparency = 0 }):Play()
 
     local currentPlaceId = game.PlaceId
     
@@ -61,14 +55,8 @@ local function ShowLoadingScreen()
         
         task.wait(2)
         
-        local fadeOut = TweenService:Create(bg, TweenInfo.new(1.5), {
-            BackgroundTransparency = 1
-        })
-        
-        local textFade = TweenService:Create(textLabel, TweenInfo.new(1.5), {
-            TextTransparency = 1
-        })
-        
+        local fadeOut = TweenService:Create(bg, TweenInfo.new(1.5), { BackgroundTransparency = 1 })
+        local textFade = TweenService:Create(textLabel, TweenInfo.new(1.5), { TextTransparency = 1 })
         fadeOut:Play()
         textFade:Play()
         
@@ -88,14 +76,8 @@ local function ShowLoadingScreen()
 
     task.wait(2)
 
-    local fadeOut = TweenService:Create(bg, TweenInfo.new(1.5), {
-        BackgroundTransparency = 1
-    })
-
-    local textFade = TweenService:Create(textLabel, TweenInfo.new(1.5), {
-        TextTransparency = 1
-    })
-
+    local fadeOut = TweenService:Create(bg, TweenInfo.new(1.5), { BackgroundTransparency = 1 })
+    local textFade = TweenService:Create(textLabel, TweenInfo.new(1.5), { TextTransparency = 1 })
     fadeOut:Play()
     textFade:Play()
 
@@ -116,8 +98,8 @@ ScreenGui.Name = "KazeMusicHub_Loader"
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Parent = ScreenGui
-MainFrame.Size = UDim2.new(0, 300, 0, 300)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -150)
+MainFrame.Size = UDim2.new(0, 300, 0, 380)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -190)
 MainFrame.BackgroundColor3 = Color3.fromRGB(12,12,12)
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -151,20 +133,14 @@ DevFrame.Parent = MainFrame
 DevFrame.Position = UDim2.new(0,15,0,85)
 DevFrame.Size = UDim2.new(0,270,0,60)
 DevFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
-
-local devCorner = Instance.new("UICorner")
-devCorner.CornerRadius = UDim.new(0,10)
-devCorner.Parent = DevFrame
+Instance.new("UICorner", DevFrame).CornerRadius = UDim.new(0,10)
 
 local DevIcon = Instance.new("ImageLabel")
 DevIcon.Parent = DevFrame
 DevIcon.Size = UDim2.new(0,40,0,40)
 DevIcon.Position = UDim2.new(0,10,0,10)
 DevIcon.BackgroundColor3 = Color3.fromRGB(40,40,40)
-
-local IconCorner = Instance.new("UICorner")
-IconCorner.CornerRadius = UDim.new(1,0)
-IconCorner.Parent = DevIcon
+Instance.new("UICorner", DevIcon).CornerRadius = UDim.new(1,0)
 
 local success, userId = pcall(function()
     return game.Players:GetUserIdFromNameAsync(TARGET_USERNAME)
@@ -199,29 +175,24 @@ DevDesc.TextSize = 12
 DevDesc.BackgroundTransparency = 1
 DevDesc.TextXAlignment = Enum.TextXAlignment.Left
 
--- ===== PARTNER 2 =====
+-- ===== PARTNER 2 (Ahora Noxd901) =====
 local Partner2Frame = Instance.new("Frame")
 Partner2Frame.Parent = MainFrame
 Partner2Frame.Position = UDim2.new(0,15,0,155)
 Partner2Frame.Size = UDim2.new(0,270,0,60)
 Partner2Frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
-
-local partner2Corner = Instance.new("UICorner")
-partner2Corner.CornerRadius = UDim.new(0,10)
-partner2Corner.Parent = Partner2Frame
+Instance.new("UICorner", Partner2Frame).CornerRadius = UDim.new(0,10)
 
 local Partner2Icon = Instance.new("ImageLabel")
 Partner2Icon.Parent = Partner2Frame
 Partner2Icon.Size = UDim2.new(0,40,0,40)
 Partner2Icon.Position = UDim2.new(0,10,0,10)
 Partner2Icon.BackgroundColor3 = Color3.fromRGB(40,40,40)
-
-local partner2IconCorner = Instance.new("UICorner")
-partner2IconCorner.CornerRadius = UDim.new(1,0)
-partner2IconCorner.Parent = Partner2Icon
+Instance.new("UICorner", Partner2Icon).CornerRadius = UDim.new(1,0)
 
 pcall(function()
-    local thumb = game.Players:GetUserThumbnailAsync(PARTNER2_USER_ID, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+    local p2id = game.Players:GetUserIdFromNameAsync(PARTNER3_USERNAME)
+    local thumb = game.Players:GetUserThumbnailAsync(p2id, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
     Partner2Icon.Image = thumb
 end)
 
@@ -229,7 +200,7 @@ local Partner2Name = Instance.new("TextLabel")
 Partner2Name.Parent = Partner2Frame
 Partner2Name.Position = UDim2.new(0,60,0,10)
 Partner2Name.Size = UDim2.new(0,190,0,20)
-Partner2Name.Text = PARTNER2_DISPLAY .. " (" .. PARTNER2_NAME .. ")"
+Partner2Name.Text = PARTNER3_DISPLAY
 Partner2Name.TextColor3 = Color3.fromRGB(255, 255, 255)
 Partner2Name.Font = Enum.Font.GothamBold
 Partner2Name.TextSize = 12
@@ -247,20 +218,59 @@ Partner2Desc.TextSize = 12
 Partner2Desc.BackgroundTransparency = 1
 Partner2Desc.TextXAlignment = Enum.TextXAlignment.Left
 
+-- ===== PARTNER 3 (Ahora 000i_fer) =====
+local Partner3Frame = Instance.new("Frame")
+Partner3Frame.Parent = MainFrame
+Partner3Frame.Position = UDim2.new(0,15,0,225)
+Partner3Frame.Size = UDim2.new(0,270,0,60)
+Partner3Frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+Instance.new("UICorner", Partner3Frame).CornerRadius = UDim.new(0,10)
+
+local Partner3Icon = Instance.new("ImageLabel")
+Partner3Icon.Parent = Partner3Frame
+Partner3Icon.Size = UDim2.new(0,40,0,40)
+Partner3Icon.Position = UDim2.new(0,10,0,10)
+Partner3Icon.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Instance.new("UICorner", Partner3Icon).CornerRadius = UDim.new(1,0)
+
+pcall(function()
+    local thumb = game.Players:GetUserThumbnailAsync(PARTNER2_USER_ID, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+    Partner3Icon.Image = thumb
+end)
+
+local Partner3Name = Instance.new("TextLabel")
+Partner3Name.Parent = Partner3Frame
+Partner3Name.Position = UDim2.new(0,60,0,10)
+Partner3Name.Size = UDim2.new(0,190,0,20)
+Partner3Name.Text = PARTNER2_DISPLAY .. " (" .. PARTNER2_NAME .. ")"
+Partner3Name.TextColor3 = Color3.fromRGB(255, 255, 255)
+Partner3Name.Font = Enum.Font.GothamBold
+Partner3Name.TextSize = 12
+Partner3Name.BackgroundTransparency = 1
+Partner3Name.TextXAlignment = Enum.TextXAlignment.Left
+
+local Partner3Desc = Instance.new("TextLabel")
+Partner3Desc.Parent = Partner3Frame
+Partner3Desc.Position = UDim2.new(0,60,0,30)
+Partner3Desc.Size = UDim2.new(0,190,0,20)
+Partner3Desc.Text = "🤝Partner🤝"
+Partner3Desc.TextColor3 = Color3.fromRGB(150,150,150)
+Partner3Desc.Font = Enum.Font.Gotham
+Partner3Desc.TextSize = 12
+Partner3Desc.BackgroundTransparency = 1
+Partner3Desc.TextXAlignment = Enum.TextXAlignment.Left
+
 -- ===== BOTÓN USAR =====
 local BtnUse = Instance.new("TextButton")
 BtnUse.Parent = MainFrame
 BtnUse.Size = UDim2.new(0, 240, 0, 35)
-BtnUse.Position = UDim2.new(0.5, -120, 0, 245)
+BtnUse.Position = UDim2.new(0.5, -120, 0, 315)
 BtnUse.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
 BtnUse.TextColor3 = Color3.fromRGB(255, 255, 255)
 BtnUse.Font = Enum.Font.GothamBold
 BtnUse.TextSize = 16
 BtnUse.Text = "▶️ USAR DAME CLICK"
-
-local btnCorner = Instance.new("UICorner")
-btnCorner.CornerRadius = UDim.new(0, 10)
-btnCorner.Parent = BtnUse
+Instance.new("UICorner", BtnUse).CornerRadius = UDim.new(0, 10)
 
 BtnUse.MouseEnter:Connect(function()
     BtnUse.BackgroundColor3 = Color3.fromRGB(0, 120, 220)
@@ -295,21 +305,13 @@ BtnUse.MouseButton1Click:Connect(function()
     TextLabel.TextScaled = true
 
     BlackFrame.BackgroundTransparency = 1
-    local fadeIn = TweenService:Create(
-        BlackFrame,
-        TweenInfo.new(0.5, Enum.EasingStyle.Quad),
-        {BackgroundTransparency = 0}
-    )
+    local fadeIn = TweenService:Create(BlackFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {BackgroundTransparency = 0})
     fadeIn:Play()
     fadeIn.Completed:Wait()
 
     task.wait(2)
 
-    local fadeOut = TweenService:Create(
-        BlackFrame,
-        TweenInfo.new(0.5, Enum.EasingStyle.Quad),
-        {BackgroundTransparency = 1}
-    )
+    local fadeOut = TweenService:Create(BlackFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {BackgroundTransparency = 1})
     fadeOut:Play()
     fadeOut.Completed:Wait()
 
