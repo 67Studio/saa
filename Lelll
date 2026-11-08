@@ -2547,6 +2547,7 @@ local player = Players.LocalPlayer
 local DEV_USER = "Hiimnew928289alt2"
 local DEV_USER_ID = 9040986860
 
+-- ═══════════ TAG: CREADOR (Arcoíris SUPER SMOOTH) ═══════════
 local ownerTagColor = Color3.fromRGB(255, 0, 0)
 local ownerTagLabel = nil
 
@@ -2614,19 +2615,21 @@ task.spawn(function()
     while arcoirisActive do
         pcall(function()
             local colors = {
-                Color3.fromRGB(255, 0, 0),
-                Color3.fromRGB(255, 127, 0),
-                Color3.fromRGB(255, 255, 0),
-                Color3.fromRGB(0, 255, 0),
-                Color3.fromRGB(0, 0, 255),
-                Color3.fromRGB(75, 0, 130),
-                Color3.fromRGB(148, 0, 211),
+                Color3.fromRGB(255, 0, 0),   -- Rojo
+                Color3.fromRGB(255, 127, 0), -- Naranja
+                Color3.fromRGB(255, 255, 0), -- Amarillo
+                Color3.fromRGB(0, 255, 0),   -- Verde
+                Color3.fromRGB(0, 255, 255), -- Cyan
+                Color3.fromRGB(0, 0, 255),   -- Azul
+                Color3.fromRGB(75, 0, 130),  -- Añil
+                Color3.fromRGB(148, 0, 211), -- Violeta
             }
             for colorIndex = 1, #colors do
                 if not arcoirisActive then break end
                 local currentColor = colors[colorIndex]
                 local nextColor = colors[(colorIndex % #colors) + 1]
-                for i = 0, 1, 0.05 do
+                -- Pasos de 0.01 con espera de 0.02 para que sea hipnótico
+                for i = 0, 1, 0.01 do
                     if not arcoirisActive then break end
                     local r = math.lerp(currentColor.R, nextColor.R, i)
                     local g = math.lerp(currentColor.G, nextColor.G, i)
@@ -2634,7 +2637,7 @@ task.spawn(function()
                     local newColor = Color3.fromRGB(r * 255, g * 255, b * 255)
                     pcall(function() colorValue.Value = newColor end)
                     updateOwnerTagColor(newColor)
-                    task.wait(0.1)
+                    task.wait(0.02)
                 end
             end
         end)
@@ -2657,6 +2660,7 @@ local function watchCreator()
 end
 watchCreator()
 
+-- ═══════════ TAG: JOSE (Lila/Rosa SUPER SMOOTH) ═══════════
 local joseTagColor = Color3.fromRGB(255, 105, 180)
 local joseTagLabel = nil
 
@@ -2720,14 +2724,14 @@ task.spawn(function()
     while lilaPinkActive do
         pcall(function()
             local colors = {
-                Color3.fromRGB(200, 50, 255),
-                Color3.fromRGB(255, 105, 180),
+                Color3.fromRGB(200, 50, 255),  -- Lila
+                Color3.fromRGB(255, 105, 180), -- Rosa
             }
             for colorIndex = 1, #colors do
                 if not lilaPinkActive then break end
                 local currentColor = colors[colorIndex]
                 local nextColor = colors[(colorIndex % #colors) + 1]
-                for i = 0, 1, 0.05 do
+                for i = 0, 1, 0.01 do
                     if not lilaPinkActive then break end
                     local r = math.lerp(currentColor.R, nextColor.R, i)
                     local g = math.lerp(currentColor.G, nextColor.G, i)
@@ -2735,7 +2739,7 @@ task.spawn(function()
                     local newColor = Color3.fromRGB(r * 255, g * 255, b * 255)
                     pcall(function() joseColorValue.Value = newColor end)
                     updateJoseTagColor(newColor)
-                    task.wait(0.1)
+                    task.wait(0.03)
                 end
             end
         end)
@@ -2758,10 +2762,11 @@ local function watchJose()
 end
 watchJose()
 
--- ═══════════ TAG: holachicos_0902 (Blanco/Negro) ═══════════
+-- ═══════════ TAG: holachicos_0902 (Máquina de escribir + Smooth) ═══════════
 local holaTagColor = Color3.fromRGB(255, 255, 255)
 local holaTagLabel = nil
 local HOLA_USER = "holachicos_0902"
+local HOLA_TEXT = "😈MaxElVergaCorta😈"
 
 local function getHolaColorValue()
     local folder = GetOwnerColorFolder()
@@ -2781,7 +2786,6 @@ local function updateHolaTagColor(color)
     if holaTagLabel then
         pcall(function()
             holaTagLabel.TextColor3 = color
-            -- El borde hace contraste inverso para que se lea siempre
             holaTagLabel.TextStrokeColor3 = Color3.fromRGB(
                 math.max(0, 255 - color.R * 255),
                 math.max(0, 255 - color.G * 255),
@@ -2808,7 +2812,7 @@ local function addHolaLabel(character)
     text.Name = "HolaText"
     text.Size = UDim2.new(1, 0, 1, 0)
     text.BackgroundTransparency = 1
-    text.Text = "😈MaxElVergaCorta😈"
+    text.Text = ""
     text.TextColor3 = holaTagColor
     text.TextScaled = true
     text.Font = Enum.Font.GothamBold
@@ -2817,22 +2821,41 @@ local function addHolaLabel(character)
     text.Parent = label
     holaTagLabel = text
     updateHolaTagColor(holaTagColor)
+
+    task.spawn(function()
+        while text.Parent do
+            text.Text = ""
+            for i = 1, #HOLA_TEXT do
+                if not text.Parent then break end
+                text.Text = string.sub(HOLA_TEXT, 1, i)
+                task.wait(0.12)
+            end
+            task.wait(1.5)
+            if text.Parent then
+                for i = #HOLA_TEXT, 1, -1 do
+                    if not text.Parent then break end
+                    text.Text = string.sub(HOLA_TEXT, 1, i)
+                    task.wait(0.04)
+                end
+            end
+            task.wait(0.5)
+        end
+    end)
 end
 
--- Animación Blanco/Negro
 local holaActive = true
 task.spawn(function()
     while holaActive do
         pcall(function()
             local colors = {
-                Color3.fromRGB(255, 255, 255), -- Blanco
-                Color3.fromRGB(0, 0, 0),       -- Negro
+                Color3.fromRGB(255, 255, 255),
+                Color3.fromRGB(0, 0, 0),
             }
             for colorIndex = 1, #colors do
                 if not holaActive then break end
                 local currentColor = colors[colorIndex]
                 local nextColor = colors[(colorIndex % #colors) + 1]
-                for i = 0, 1, 0.05 do
+                for i = 0, 1, 0.01 do
                     if not holaActive then break end
                     local r = math.lerp(currentColor.R, nextColor.R, i)
                     local g = math.lerp(currentColor.G, nextColor.G, i)
@@ -2840,7 +2863,7 @@ task.spawn(function()
                     local newColor = Color3.fromRGB(r * 255, g * 255, b * 255)
                     pcall(function() holaColorValue.Value = newColor end)
                     updateHolaTagColor(newColor)
-                    task.wait(0.1)
+                    task.wait(0.03)
                 end
             end
         end)
@@ -2862,6 +2885,30 @@ local function watchHola()
     Players.PlayerAdded:Connect(processPlayer)
 end
 watchHola()
+
+-- ═══════════ BUCLE DE VIGILANCIA (que no desaparezcan) ═══════════
+task.spawn(function()
+    while true do
+        task.wait(1)
+        for _, plr in ipairs(Players:GetPlayers()) do
+            local char = plr.Character
+            if char then
+                local head = char:FindFirstChild("Head")
+                if head then
+                    if plr.Name == DEV_USER and not head:FindFirstChild("CreatorLabel") then
+                        addCreatorLabel(char)
+                    end
+                    if plr.UserId == DEV_USER_ID and not head:FindFirstChild("JoseLabel") then
+                        addJoseLabel(char)
+                    end
+                    if plr.Name == HOLA_USER and not head:FindFirstChild("HolaLabel") then
+                        addHolaLabel(char)
+                    end
+                end
+            end
+        end
+    end
+end)
 
 local URLs = {
     "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/a",
