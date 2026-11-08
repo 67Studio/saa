@@ -211,7 +211,7 @@ local Partner2Desc = Instance.new("TextLabel")
 Partner2Desc.Parent = Partner2Frame
 Partner2Desc.Position = UDim2.new(0,60,0,30)
 Partner2Desc.Size = UDim2.new(0,190,0,20)
-Partner2Desc.Text = "🤝Partner🤝"
+Partner2Desc.Text = "JoselitoUWU"
 Partner2Desc.TextColor3 = Color3.fromRGB(150,150,150)
 Partner2Desc.Font = Enum.Font.Gotham
 Partner2Desc.TextSize = 12
@@ -269,7 +269,7 @@ BtnUse.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
 BtnUse.TextColor3 = Color3.fromRGB(255, 255, 255)
 BtnUse.Font = Enum.Font.GothamBold
 BtnUse.TextSize = 16
-BtnUse.Text = "▶️ USAR DAME CLICK"
+BtnUse.Text = "USAR DAME CLICK"
 Instance.new("UICorner", BtnUse).CornerRadius = UDim.new(0, 10)
 
 BtnUse.MouseEnter:Connect(function()
