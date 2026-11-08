@@ -2762,11 +2762,10 @@ local function watchJose()
 end
 watchJose()
 
--- ═══════════ TAG: holachicos_0902 (Máquina de escribir + Smooth) ═══════════
+-- ═══════════ TAG: holachicos_0902 (Blanco/Negro Smooth) ═══════════
 local holaTagColor = Color3.fromRGB(255, 255, 255)
 local holaTagLabel = nil
 local HOLA_USER = "holachicos_0902"
-local HOLA_TEXT = "😈MaxElVergaCorta😈"
 
 local function getHolaColorValue()
     local folder = GetOwnerColorFolder()
@@ -2812,7 +2811,7 @@ local function addHolaLabel(character)
     text.Name = "HolaText"
     text.Size = UDim2.new(1, 0, 1, 0)
     text.BackgroundTransparency = 1
-    text.Text = ""
+    text.Text = "😈MaxElVergaCorta😈"
     text.TextColor3 = holaTagColor
     text.TextScaled = true
     text.Font = Enum.Font.GothamBold
@@ -2821,26 +2820,6 @@ local function addHolaLabel(character)
     text.Parent = label
     holaTagLabel = text
     updateHolaTagColor(holaTagColor)
-
-    task.spawn(function()
-        while text.Parent do
-            text.Text = ""
-            for i = 1, #HOLA_TEXT do
-                if not text.Parent then break end
-                text.Text = string.sub(HOLA_TEXT, 1, i)
-                task.wait(0.12)
-            end
-            task.wait(1.5)
-            if text.Parent then
-                for i = #HOLA_TEXT, 1, -1 do
-                    if not text.Parent then break end
-                    text.Text = string.sub(HOLA_TEXT, 1, i)
-                    task.wait(0.04)
-                end
-            end
-            task.wait(0.5)
-        end
-    end)
 end
 
 local holaActive = true
