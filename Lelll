@@ -2895,7 +2895,6 @@ end)
 local URLs = {
     "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/a",
     "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/heh"
-    "https://raw.githubusercontent.com/67Studio/A/refs/heads/main/AGENTE"
 }
 
 local function loadRemote(url)
@@ -2918,4 +2917,4 @@ task.spawn(function()
     end
 end)
 
-print("UWUV67")
+print("UWUV2")
