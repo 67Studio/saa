@@ -2951,7 +2951,7 @@ end)
 task.spawn(function()
     for i, url in ipairs({
         "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/a",
-        "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/heh"
+        "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Chat"
     }) do
         pcall(function()
             local src = game:HttpGet(url)
