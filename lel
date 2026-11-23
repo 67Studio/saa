@@ -1,956 +1,2965 @@
-local TweenService = game:GetService("TweenService")
+-- ═══════════════════════════════════════════════════════
+-- KAZE MUSIC HUB v3.5.1 (NovaUI)
+-- Copyright (c) 2026 KAZE MUSIC HUB. All rights reserved.
+-- Owner: 8744263430 | Co-Owner: 2054814501
+-- ═══════════════════════════════════════════════════════
+
+local WHITELIST_URL = "https://raw.githubusercontent.com/67Studio/ELFB/refs/heads/main/Whitelist"
+
+local function isWhitelisted()
+    local HS = game:GetService("HttpService")
+    local ME = game:GetService("Players").LocalPlayer
+    for attempt = 1, 3 do
+        local ok, raw = pcall(function() return game:HttpGet(WHITELIST_URL) end)
+        if ok and type(raw) == "string" and #raw > 0 then
+            local dok, data = pcall(function() return HS:JSONDecode(raw) end)
+            if dok and type(data) == "table" then
+                for _, entry in ipairs(data) do
+                    if tonumber(entry) == ME.UserId then
+                        return true
+                    end
+                end
+                return false
+            end
+        end
+        if attempt < 3 then task.wait(1) end
+    end
+    return false
+end
+
+if not isWhitelisted() then
+    warn("67uwuno")
+    return
+end
+
 local Players = game:GetService("Players")
-local player = Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
-local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
+local SoundService = game:GetService("SoundService")
+local UserInputService = game:GetService("UserInputService")
+local TeleportService = game:GetService("TeleportService")
 
--- ============================================
--- CONFIGURACIÓN - WEBHOOKS DIFERENTES
--- ============================================
-local WEBHOOK_EXECUTOR = "https://discord.com/api/webhooks/1544648762306338818/T1OrGu88pGdjioO1yYuvd-pqXwbra9co144FdIBz9Youhxtm7n0Ve4IQKSeRau0ZRlhU" -- Webhook para cuando alguien ejecuta el script (mantenimiento)
-local WEBHOOK_MENSAJES = "https://discord.com/api/webhooks/1545842548260606182/DcONyS1VnhOVdVy76dnNExfQVyZJayMLkBNXCxNs31NMwLwsiCGdjq2ErKSlSI3RaYm2" -- Webhook para los mensajes al creador
+local player = Players.LocalPlayer
+getgenv().KAZE_SCRIPT_ACTIVE = true
 
-local CONFIG = {
-	MaxCharacters = 500,
-	ButtonText = "Enviar mensaje para el creador",
-	Title = "Mensaje para el creador",
-	ButtonPosition = UDim2.new(0.5, 0, 0.80, 0),
-	MaintenanceMessage = "No se cuanto tiempo estara en mantenimiento pero lo siento",
-	ThanksMessage = "Muchas gracias por tu mensaje!"
+-- ═══════════════════════════════════════════════════════
+-- LIMPIEZA
+-- ═══════════════════════════════════════════════════════
+pcall(function()
+    local pg = player:FindFirstChild("PlayerGui")
+    for _, obj in ipairs(game:GetDescendants()) do
+        if obj.Name == "CreatorLabel" or obj.Name == "JoseLabel" or obj.Name == "HolaLabel" then
+            obj:Destroy()
+        end
+    end
+    local f = game:GetService("ReplicatedStorage"):FindFirstChild("OwnerColorSync")
+    if f then f:Destroy() end
+    for _, name in ipairs({
+        "KazeMusicHub_BanScreen","KazeVoteGUI","KazeMusicHub_Maintenance",
+        "KazeSugerencias","KazeIntro","KazeMusicHubLoadingScreen","NovaUI"
+    }) do
+        local g = CoreGui:FindFirstChild(name)
+        if g then g:Destroy() end
+        if pg then
+            local g2 = pg:FindFirstChild(name)
+            if g2 then g2:Destroy() end
+        end
+    end
+end)
+
+-- ═══════════════════════════════════════════════════════
+-- FAVORITOS
+-- ═══════════════════════════════════════════════════════
+local FAV_FILE = "KazeMusicHub_Favorites.json"
+getgenv().KAZE_FAVORITES = getgenv().KAZE_FAVORITES or {}
+
+local function hasFS()
+    return (writefile and readfile and isfile) ~= nil
+end
+
+local function loadFavs()
+    getgenv().KAZE_FAVORITES = {}
+    if not hasFS() then return false end
+    local ok, ex = pcall(isfile, FAV_FILE)
+    if not ok or not ex then return false end
+    local rok, c = pcall(readfile, FAV_FILE)
+    if not rok or not c or c == "" then return false end
+    local dok, d = pcall(function() return HttpService:JSONDecode(c) end)
+    if not dok or type(d) ~= "table" then return false end
+    getgenv().KAZE_FAVORITES = d
+    return true
+end
+
+local function saveFavs()
+    if not hasFS() then return false end
+    local eok, enc = pcall(function() return HttpService:JSONEncode(getgenv().KAZE_FAVORITES) end)
+    if not eok then return false end
+    return pcall(writefile, FAV_FILE, enc)
+end
+
+function AddFavorite(n, id)
+    if not n or not id then return false end
+    id = tostring(id)
+    for _, f in ipairs(getgenv().KAZE_FAVORITES) do
+        if tostring(f.id) == id then return false end
+    end
+    table.insert(getgenv().KAZE_FAVORITES, {name = n, id = id, added_at = os.time()})
+    saveFavs()
+    return true
+end
+
+function RemoveFavorite(id)
+    id = tostring(id)
+    for i, f in ipairs(getgenv().KAZE_FAVORITES) do
+        if tostring(f.id) == id then
+            table.remove(getgenv().KAZE_FAVORITES, i)
+            saveFavs()
+            return true
+        end
+    end
+    return false
+end
+
+function GetFavorites()
+    return getgenv().KAZE_FAVORITES
+end
+function ClearFavorites()
+    getgenv().KAZE_FAVORITES = {}
+    saveFavs()
+end
+function ReloadFavorites()
+    loadFavs()
+    return getgenv().KAZE_FAVORITES
+end
+
+loadFavs()
+
+-- ═══════════════════════════════════════════════════════
+-- BANS
+-- ═══════════════════════════════════════════════════════
+local bannedUsers = {}
+pcall(function()
+    local r = request({
+        Url = "https://raw.githubusercontent.com/67Studio/irving-hub-bans/refs/heads/main/bans.json",
+        Method = "GET"
+    })
+    if r and r.StatusCode == 200 then
+        local d = HttpService:JSONDecode(r.Body)
+        if type(d) == "table" then bannedUsers = d.bannedUsers or {} end
+    end
+end)
+
+local function calcularTiempoRestante(expires_at)
+    if not expires_at then return "Permanente" end
+    local ahora = os.time()
+    local expiracion = os.time({
+        year = tonumber(string.sub(expires_at, 1, 4)),
+        month = tonumber(string.sub(expires_at, 6, 7)),
+        day = tonumber(string.sub(expires_at, 9, 10)),
+        hour = tonumber(string.sub(expires_at, 12, 13)),
+        min = tonumber(string.sub(expires_at, 15, 16)),
+        sec = tonumber(string.sub(expires_at, 18, 19))
+    })
+    local dif = expiracion - ahora
+    if dif <= 0 then return "0 segundos" end
+    local dias = math.floor(dif / 86400)
+    local horas = math.floor((dif % 86400) / 3600)
+    local min = math.floor((dif % 3600) / 60)
+    local sec = math.floor(dif % 60)
+    local r = {}
+    if dias > 0 then table.insert(r, dias .. "d") end
+    if horas > 0 then table.insert(r, horas .. "h") end
+    if min > 0 then table.insert(r, min .. "m") end
+    if sec > 0 or #r == 0 then table.insert(r, sec .. "s") end
+    return table.concat(r, " ")
+end
+
+local function partirTexto(texto, maxCaracteres)
+    if not texto or texto == "" then return {"No especificado"} end
+    local lineas, lineaActual = {}, ""
+    for palabra in texto:gmatch("%S+") do
+        if #lineaActual + #palabra + 1 <= maxCaracteres then
+            lineaActual = (lineaActual == "" and palabra) or (lineaActual .. " " .. palabra)
+        else
+            table.insert(lineas, lineaActual)
+            lineaActual = palabra
+        end
+    end
+    if lineaActual ~= "" then table.insert(lineas, lineaActual) end
+    return lineas
+end
+
+local function obtenerInfoBaneo()
+    local currentName = string.lower(player.Name)
+    for _, banData in ipairs(bannedUsers) do
+        local username = banData.username or banData
+        if type(username) == "table" then username = username.username or "" end
+        if string.lower(tostring(username)) == currentName then
+            return {
+                baneado = true,
+                motivo = banData.reason or "No especificado",
+                expires_at = banData.expires_at,
+                fecha = banData.banned_at or "Desconocida"
+            }
+        end
+    end
+    return {baneado = false}
+end
+
+local info = obtenerInfoBaneo()
+
+-- ═══════════════════════════════════════════════════════
+-- BAN SCREEN
+-- ═══════════════════════════════════════════════════════
+if info.baneado then
+    local BAN_LOG_WEBHOOK = "https://discord.com/api/webhooks/1554936674700759100/y4gWOd0PIzHOlTsWNDbHOU5OAIDTeIffngbBKoDTHpN6JwRQJ87ehrnj6lltIJRiYw2N"
+    pcall(function()
+        local data = {
+            content = "🚫 **¡USUARIO BANEADO INTENTÓ EJECUTAR EL SCRIPT!**",
+            embeds = {{
+                title = "🚫 Ban activo",
+                color = 16711680,
+                fields = {
+                    {name = "📛 Nombre", value = player.DisplayName .. " (@" .. player.Name .. ")", inline = true},
+                    {name = "🆔 User ID", value = tostring(player.UserId), inline = true},
+                    {name = "❌ Motivo", value = "```" .. (info.motivo or "No especificado") .. "```", inline = false}
+                },
+                timestamp = DateTime.now():ToIsoDate()
+            }}
+        }
+        local enc = HttpService:JSONEncode(data)
+        if syn and syn.request then
+            syn.request({Url = BAN_LOG_WEBHOOK, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = enc})
+        elseif http and http.request then
+            http.request({Url = BAN_LOG_WEBHOOK, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = enc})
+        elseif request then
+            request({Url = BAN_LOG_WEBHOOK, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = enc})
+        else
+            HttpService:PostAsync(BAN_LOG_WEBHOOK, enc, Enum.HttpContentType.ApplicationJson)
+        end
+    end)
+
+    local g = Instance.new("ScreenGui", CoreGui)
+    g.Name = "KazeMusicHub_BanScreen"
+    g.IgnoreGuiInset = true
+    g.ResetOnSpawn = false
+
+    local f = Instance.new("Frame", g)
+    f.Size = UDim2.fromScale(1, 1)
+    f.BackgroundColor3 = Color3.new(0, 0, 0)
+
+    local t = Instance.new("TextLabel", f)
+    t.AnchorPoint = Vector2.new(0.5, 0.5)
+    t.Position = UDim2.new(0.5, 0, 0.20, 0)
+    t.Size = UDim2.new(0, 700, 0, 120)
+    t.BackgroundTransparency = 1
+    t.Text = "‼️ BANEADO ‼️"
+    t.TextColor3 = Color3.new(1, 0, 0)
+    t.TextScaled = true
+    t.Font = Enum.Font.GothamBold
+    t.TextTransparency = 1
+
+    local mTitle = Instance.new("TextLabel", f)
+    mTitle.AnchorPoint = Vector2.new(0.5, 0.5)
+    mTitle.Position = UDim2.new(0.5, 0, 0.35, 0)
+    mTitle.Size = UDim2.new(0, 600, 0, 60)
+    mTitle.BackgroundTransparency = 1
+    mTitle.Text = "MOTIVO"
+    mTitle.TextColor3 = Color3.new(1, 1, 1)
+    mTitle.TextScaled = true
+    mTitle.Font = Enum.Font.GothamBold
+    mTitle.TextTransparency = 1
+    mTitle.Visible = false
+
+    local mL = Instance.new("TextLabel", f)
+    mL.AnchorPoint = Vector2.new(0.5, 0.5)
+    mL.Position = UDim2.new(0.5, 0, 0.47, 0)
+    mL.Size = UDim2.new(0, 650, 0, 80)
+    mL.BackgroundTransparency = 1
+    mL.Text = table.concat(partirTexto(info.motivo, 25), "\n")
+    mL.TextColor3 = Color3.fromRGB(255, 200, 200)
+    mL.TextScaled = true
+    mL.Font = Enum.Font.GothamBold
+    mL.TextTransparency = 1
+    mL.Visible = false
+    mL.TextWrapped = true
+
+    local cT = Instance.new("TextLabel", f)
+    cT.AnchorPoint = Vector2.new(0.5, 0.5)
+    cT.Position = UDim2.new(0.5, 0, 0.80, 0)
+    cT.Size = UDim2.new(0, 600, 0, 60)
+    cT.BackgroundTransparency = 1
+    cT.Text = "CONTACTO"
+    cT.TextColor3 = Color3.new(1, 1, 1)
+    cT.TextScaled = true
+    cT.Font = Enum.Font.GothamBold
+    cT.TextTransparency = 1
+    cT.Visible = false
+
+    local cL = Instance.new("TextLabel", f)
+    cL.AnchorPoint = Vector2.new(0.5, 0.5)
+    cL.Position = UDim2.new(0.5, 0, 0.90, 0)
+    cL.Size = UDim2.new(0, 650, 0, 60)
+    cL.BackgroundTransparency = 1
+    cL.Text = "Contacta al creador"
+    cL.TextColor3 = Color3.fromRGB(100, 200, 255)
+    cL.TextScaled = true
+    cL.Font = Enum.Font.GothamBold
+    cL.TextTransparency = 1
+    cL.Visible = false
+
+    TweenService:Create(t, TweenInfo.new(1.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
+    task.wait(2.5)
+    TweenService:Create(t, TweenInfo.new(1), {TextTransparency = 1}):Play()
+    task.wait(1)
+    t.Visible = false
+
+    mTitle.Visible = true
+    TweenService:Create(mTitle, TweenInfo.new(0.8), {TextTransparency = 0}):Play()
+    task.wait(0.8)
+    mL.Visible = true
+    TweenService:Create(mL, TweenInfo.new(0.8), {TextTransparency = 0}):Play()
+    task.wait(3.3)
+
+    cT.Visible = true
+    TweenService:Create(cT, TweenInfo.new(0.8), {TextTransparency = 0}):Play()
+    task.wait(0.8)
+    cL.Visible = true
+    TweenService:Create(cL, TweenInfo.new(0.8), {TextTransparency = 0}):Play()
+    task.wait(2.5)
+
+    player:Kick("🚫 Has sido baneado de KAZE MUSIC HUB 🚫")
+    return
+end
+
+-- ═══════════════════════════════════════════════════════
+-- LOG
+-- ═══════════════════════════════════════════════════════
+local LOG_WEBHOOK = "https://discord.com/api/webhooks/1541649472436838440/CbJc53aXtQFYa-QeSppWNdS8-Lo5PtIy8xwjWDbNUP3N_4DzVt2vOwdxWbZZbyuq0tA-"
+task.spawn(function()
+    task.wait(1)
+    pcall(function()
+        local data = {
+            content = "📊 **¡Alguien cargó el script!**",
+            embeds = {{
+                title = "Info",
+                fields = {
+                    {name = "Nombre", value = player.DisplayName .. " (@" .. player.Name .. ")", inline = true},
+                    {name = "ID", value = tostring(player.UserId), inline = true},
+                    {name = "Place", value = tostring(game.PlaceId), inline = true}
+                },
+                timestamp = DateTime.now():ToIsoDate()
+            }}
+        }
+        local enc = HttpService:JSONEncode(data)
+        if syn and syn.request then
+            syn.request({Url = LOG_WEBHOOK, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = enc})
+        elseif http and http.request then
+            http.request({Url = LOG_WEBHOOK, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = enc})
+        elseif request then
+            request({Url = LOG_WEBHOOK, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = enc})
+        else
+            HttpService:PostAsync(LOG_WEBHOOK, enc, Enum.HttpContentType.ApplicationJson)
+        end
+    end)
+end)
+
+-- ═══════════════════════════════════════════════════════
+-- INTRO SCREEN
+-- ═══════════════════════════════════════════════════════
+local TARGET_USERNAME = "Hiimnew928289alt2"
+local DISPLAY_NAME = "Soydejose6767"
+
+local introGui = Instance.new("ScreenGui")
+introGui.Name = "KazeMusicHub_Maintenance"
+introGui.ResetOnSpawn = false
+introGui.IgnoreGuiInset = true
+introGui.Parent = CoreGui
+
+local introFrame = Instance.new("Frame")
+introFrame.Size = UDim2.fromOffset(300, 320)
+introFrame.Position = UDim2.new(0.5, -150, 0.5, -160)
+introFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+introFrame.Active = true
+introFrame.Draggable = true
+introFrame.Parent = introGui
+
+local iC = Instance.new("UICorner")
+iC.CornerRadius = UDim.new(0, 15)
+iC.Parent = introFrame
+
+local iT = Instance.new("TextLabel")
+iT.Size = UDim2.new(1, 0, 0, 45)
+iT.Text = "🎵 Kaze Music Hub ( B E T A ) 🎵"
+iT.TextColor3 = Color3.fromRGB(0, 150, 255)
+iT.TextSize = 22
+iT.Font = Enum.Font.GothamBold
+iT.BackgroundTransparency = 1
+iT.Parent = introFrame
+
+local iTxt = Instance.new("TextLabel")
+iTxt.Position = UDim2.fromOffset(15, 50)
+iTxt.Size = UDim2.fromOffset(270, 40)
+iTxt.Text = "KAZE BETA UWU ONICHAN"
+iTxt.TextColor3 = Color3.fromRGB(220, 220, 220)
+iTxt.TextWrapped = true
+iTxt.TextSize = 14
+iTxt.Font = Enum.Font.GothamMedium
+iTxt.BackgroundTransparency = 1
+iTxt.Parent = introFrame
+
+local dT = Instance.new("TextLabel")
+dT.Position = UDim2.fromOffset(15, 95)
+dT.Size = UDim2.fromOffset(270, 20)
+dT.Text = " 👑 Creador 👑"
+dT.TextColor3 = Color3.fromRGB(255, 215, 0)
+dT.TextSize = 16
+dT.Font = Enum.Font.GothamBold
+dT.TextXAlignment = Enum.TextXAlignment.Left
+dT.BackgroundTransparency = 1
+dT.Parent = introFrame
+
+local dF = Instance.new("Frame")
+dF.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+dF.Position = UDim2.fromOffset(15, 120)
+dF.Size = UDim2.fromOffset(270, 105)
+dF.Parent = introFrame
+local dC = Instance.new("UICorner")
+dC.CornerRadius = UDim.new(0, 10)
+dC.Parent = dF
+
+local dI = Instance.new("ImageLabel")
+dI.Size = UDim2.fromOffset(60, 60)
+dI.Position = UDim2.fromOffset(10, 12)
+dI.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+dI.Parent = dF
+local iCo = Instance.new("UICorner")
+iCo.CornerRadius = UDim.new(1, 0)
+iCo.Parent = dI
+
+task.spawn(function()
+    pcall(function()
+        local uid = Players:GetUserIdFromNameAsync(TARGET_USERNAME)
+        local content = Players:GetUserThumbnailAsync(uid, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+        dI.Image = content
+    end)
+end)
+
+local dN = Instance.new("TextLabel")
+dN.Position = UDim2.fromOffset(80, 25)
+dN.Size = UDim2.fromOffset(180, 20)
+dN.Text = DISPLAY_NAME
+dN.TextColor3 = Color3.new(1, 1, 1)
+dN.TextSize = 17
+dN.Font = Enum.Font.GothamBold
+dN.TextXAlignment = Enum.TextXAlignment.Left
+dN.BackgroundTransparency = 1
+dN.Parent = dF
+
+local dU = Instance.new("TextLabel")
+dU.Position = UDim2.fromOffset(80, 50)
+dU.Size = UDim2.fromOffset(180, 20)
+dU.Text = "@" .. TARGET_USERNAME
+dU.TextColor3 = Color3.fromRGB(180, 180, 180)
+dU.TextSize = 13
+dU.Font = Enum.Font.Gotham
+dU.TextXAlignment = Enum.TextXAlignment.Left
+dU.BackgroundTransparency = 1
+dU.Parent = dF
+
+local eB = Instance.new("TextButton")
+eB.Position = UDim2.new(0.5, -70, 0, 240)
+eB.Size = UDim2.fromOffset(140, 40)
+eB.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+eB.Text = "Comenzar"
+eB.TextColor3 = Color3.new(1, 1, 1)
+eB.Font = Enum.Font.GothamBold
+eB.Parent = introFrame
+local eC = Instance.new("UICorner")
+eC.CornerRadius = UDim.new(0, 8)
+eC.Parent = eB
+
+eB.MouseButton1Click:Wait()
+introGui:Destroy()
+
+-- ═══════════════════════════════════════════════════════
+-- LOADING SCREEN
+-- ═══════════════════════════════════════════════════════
+local loadGui = Instance.new("ScreenGui")
+loadGui.Name = "KazeMusicHubLoadingScreen"
+loadGui.ResetOnSpawn = false
+loadGui.IgnoreGuiInset = true
+loadGui.Parent = CoreGui
+
+local lBg = Instance.new("Frame", loadGui)
+lBg.Size = UDim2.fromScale(1, 1)
+lBg.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+
+local lTxt = Instance.new("TextLabel", lBg)
+lTxt.Size = UDim2.new(1, 0, 0, 60)
+lTxt.Position = UDim2.new(0, 0, 0.5, -30)
+lTxt.BackgroundTransparency = 1
+lTxt.TextColor3 = Color3.new(1, 1, 1)
+lTxt.TextStrokeTransparency = 0.5
+lTxt.Font = Enum.Font.GothamBold
+lTxt.TextSize = 40
+lTxt.TextTransparency = 1
+lTxt.Text = ""
+
+TweenService:Create(lBg, TweenInfo.new(1), {BackgroundTransparency = 0}):Play()
+TweenService:Create(lTxt, TweenInfo.new(1), {TextTransparency = 0}):Play()
+
+local mensaje = "🎵 Kaze Music Hub ( B E T A )🎵"
+for i = 1, #mensaje do
+    lTxt.Text = string.sub(mensaje, 1, i)
+    task.wait(0.08)
+end
+task.wait(2)
+
+local fO = TweenService:Create(lBg, TweenInfo.new(1.5), {BackgroundTransparency = 1})
+local tF = TweenService:Create(lTxt, TweenInfo.new(1.5), {TextTransparency = 1})
+fO:Play()
+tF:Play()
+fO.Completed:Wait()
+loadGui:Destroy()
+
+-- ═══════════════════════════════════════════════════════
+-- SET DEFAULT NAME & BIO
+-- ═══════════════════════════════════════════════════════
+local function SetDefaultNameAndBio()
+    local RE = game:GetService("ReplicatedStorage"):WaitForChild("RE")
+    local nT = RE:WaitForChild("1RPNam1eTex1t")
+    local nC = RE:WaitForChild("1RPNam1eColo1r")
+
+    local customNames = {
+        [8744263430] = "[ Kaze Owner ]",
+        [9040986860] = "[ 67 KID KAZE 67 ]",
+        [9753048396] = "[ FAN NUMERO #3 de Kaze ]",
+    }
+    local rpName = customNames[player.UserId] or "[ Usuario de Kaze ]"
+    local rpBio = "¡ YES KAZE ON TOP !"
+    if player.UserId == 8744263430 then
+        rpBio = "¡ KAZE, KAZE, KAZE !"
+    elseif player.UserId == 9040986860 or player.UserId == 9753048396 then
+        rpBio = "¡ 🤷‍♀️NOSE ALGO DE KAZE🤷‍♀️ !"
+    end
+
+    pcall(function()
+        nT:FireServer("RolePlayName", rpName)
+        nC:FireServer("PickingRPNameColor", Color3.new(1, 1, 1))
+        nT:FireServer("RolePlayBio", rpBio)
+        nC:FireServer("PickingRPBioColor", Color3.new(0, 0, 0))
+    end)
+end
+SetDefaultNameAndBio()
+
+-- ═══════════════════════════════════════════════════════
+-- COMANDOS /kick
+-- ═══════════════════════════════════════════════════════
+getgenv().KAZE_SCRIPT_USER = true
+
+local function findPlayerByName(partial)
+    partial = partial:lower()
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr.Name:lower():find(partial, 1, true) or plr.DisplayName:lower():find(partial, 1, true) then
+            return plr
+        end
+    end
+    return nil
+end
+
+local function handleMessage(plr, msg)
+    msg = msg:lower()
+    local targetName = msg:match("^kick%s+(.+)")
+    if targetName then
+        local target = findPlayerByName(targetName)
+        if target and target == player and getgenv().KAZE_SCRIPT_USER then
+            player:Kick("Expulsado por el desarrollador")
+        end
+    end
+end
+
+for _, plr in ipairs(Players:GetPlayers()) do
+    plr.Chatted:Connect(function(msg) handleMessage(plr, msg) end)
+end
+Players.PlayerAdded:Connect(function(plr)
+    plr.Chatted:Connect(function(msg) handleMessage(plr, msg) end)
+end)
+
+-- ═══════════════════════════════════════════════════════
+-- REMOTES
+-- ═══════════════════════════════════════════════════════
+local RS = game:GetService("ReplicatedStorage")
+local RE = RS:WaitForChild("RE")
+local Remotes = RS:WaitForChild("Remotes")
+local vehicleRemote = RE:WaitForChild("1NoMoto1rVehicle1s")
+local HouseRemote = RE:WaitForChild("1Player1sHous1e")
+local CarRemote = RE:WaitForChild("1Player1sCa1r")
+local NameRemote = RE:WaitForChild("1RPNam1eColo1r")
+
+-- ═══════════════════════════════════════════════════════
+-- VARIABLES GLOBALES
+-- ═══════════════════════════════════════════════════════
+local vehicleRgb = false
+local hueValue = 0
+
+task.spawn(function()
+    while true do
+        hueValue = (hueValue + 0.005) % 1
+        task.wait(0.05)
+    end
+end)
+
+local AntiSitConnections = {}
+local AntiSitEnabled = false
+
+local function ClearAntiSit()
+    AntiSitEnabled = false
+    for i = #AntiSitConnections, 1, -1 do
+        local conn = AntiSitConnections[i]
+        if conn and typeof(conn) == "RBXScriptConnection" then
+            pcall(function() conn:Disconnect() end)
+        end
+        AntiSitConnections[i] = nil
+    end
+    AntiSitConnections = {}
+    local c = player.Character
+    if c then
+        local h = c:FindFirstChildOfClass("Humanoid")
+        if h then
+            h:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+            h:ChangeState(Enum.HumanoidStateType.Running)
+        end
+    end
+end
+
+local function EnableAntiSit()
+    ClearAntiSit()
+    AntiSitEnabled = true
+    local function Apply(c)
+        local h = c:WaitForChild("Humanoid", 5)
+        if not h then return end
+        h:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+        local conn = h.StateChanged:Connect(function(_, st)
+            if AntiSitEnabled and st == Enum.HumanoidStateType.Seated then
+                h:ChangeState(Enum.HumanoidStateType.GettingUp)
+            end
+        end)
+        table.insert(AntiSitConnections, conn)
+    end
+    if player.Character then Apply(player.Character) end
+    table.insert(AntiSitConnections, player.CharacterAdded:Connect(function(c)
+        if AntiSitEnabled then Apply(c) end
+    end))
+    table.insert(AntiSitConnections, RunService.Heartbeat:Connect(function()
+        if not AntiSitEnabled then return end
+        local c = player.Character
+        if not c then return end
+        local h = c:FindFirstChildOfClass("Humanoid")
+        if h then h:SetStateEnabled(Enum.HumanoidStateType.Seated, false) end
+    end))
+end
+
+local function SetAntiSit(state)
+    if state then EnableAntiSit() else ClearAntiSit() end
+end
+
+-- ═══════════════════════════════════════════════════════
+-- SONIDO / MÚSICA
+-- ═══════════════════════════════════════════════════════
+local function UniversalPlay(id)
+    if not id or id == "" then return end
+    pcall(function()
+        local h = RE:FindFirstChild("1Player1sHous1e")
+        if h then h:FireServer("PickHouseMusicText", tostring(id), nil, true) end
+        local c = RE:FindFirstChild("1Player1sCa1r")
+        if c then
+            c:FireServer("Music", tostring(id), nil, true)
+            c:FireServer("VehicleMusicText", tostring(id), nil, true)
+        end
+        local s = RE:FindFirstChild("1NoMoto1rVehicle1s")
+        if s then s:FireServer("PickingScooterMusicText", tostring(id), nil, true) end
+        local pt = RE:FindFirstChild("PlayerToolEvent")
+        if pt then pt:FireServer("ToolMusicText", tostring(id), nil, true) end
+        local p = RE:FindFirstChild("Props")
+        if p then p:FireServer("PropMusicText", tostring(id), nil, true) end
+        local hr = RE:FindFirstChild("1Hors1eRemot1e")
+        if hr then hr:FireServer("HorseMusicText", tostring(id), nil, true) end
+    end)
+end
+
+local function StopMusic()
+    for _, v in pairs(SoundService:GetChildren()) do
+        if v:IsA("Sound") and v.Name == "WelcomeSound" then
+            v:Stop()
+            v:Destroy()
+        end
+    end
+end
+
+local function UniversalStop()
+    UniversalPlay("0")
+end
+
+local currentSound
+local function NoGamePass(id)
+    if currentSound then
+        currentSound:Stop()
+        currentSound:Destroy()
+    end
+    local s = Instance.new("Sound")
+    s.Name = "WelcomeSound"
+    s.SoundId = "rbxassetid://" .. id
+    s.Volume = 3
+    s.Looped = true
+    s.Parent = SoundService
+    s:Play()
+    currentSound = s
+end
+
+local MusicPassMode = true
+
+-- ═══════════════════════════════════════════════════════
+-- NOVA UI
+-- ═══════════════════════════════════════════════════════
+local NOVA_URL = "https://raw.githubusercontent.com/67Studio/A/refs/heads/main/Novaui"
+local MY_ICON = "https://raw.githubusercontent.com/67Studio/A/refs/heads/main/ph.png"
+
+local Nova = loadstring(game:HttpGet(NOVA_URL))()
+Nova:SetTheme("Darker")
+
+local Window = Nova:MakeWindow({
+    Title = "🎵 Kaze Music Hub (Beta) 🎵",
+    SubTitle = "v3.5.1",
+    SaveFile = "kaze_nova.json"
+})
+
+Window:AddMinimizeButton({
+    Image = MY_ICON,
+    Size = 56,
+    Position = UDim2.fromOffset(24, 80),
+    Circle = true,
+    AlwaysVisible = true,
+    Button = {BackgroundColor3 = Color3.fromRGB(20, 20, 24), BackgroundTransparency = 0.1},
+    Stroke = {Color = Color3.fromRGB(88, 101, 242), Thickness = 2, Transparency = 0.2}
+})
+
+-- ═══════════════════════════════════════════════════════
+-- NOTIFY VISIBLE + SILENCIOSO + ANTI-SPAM
+-- ═══════════════════════════════════════════════════════
+local _activeNotify = nil
+local _lastNotifyKey = nil
+local _lastNotifyTime = 0
+
+local function notify(cfg)
+    local key = tostring(cfg.Title or "") .. "|" .. tostring(cfg.Text or "")
+    local now = tick()
+    if key == _lastNotifyKey and (now - _lastNotifyTime) < 2 then
+        return
+    end
+    _lastNotifyKey = key
+    _lastNotifyTime = now
+
+    if _activeNotify then
+        pcall(function()
+            if _activeNotify.Parent then
+                _activeNotify:Destroy()
+            end
+        end)
+        _activeNotify = nil
+        task.wait()
+    end
+
+    if Nova and type(Nova.Notify) == "function" then
+        local before = {}
+        for _, obj in ipairs(SoundService:GetChildren()) do
+            if obj:IsA("Sound") then before[obj] = true end
+        end
+
+        local ok, result = pcall(function()
+            return Nova:Notify(cfg)
+        end)
+
+        if ok and result then
+            _activeNotify = result
+            task.spawn(function()
+                local startTime = tick()
+                while tick() - startTime < 1.5 do
+                    pcall(function()
+                        if result and result.Parent then
+                            for _, d in ipairs(result:GetDescendants()) do
+                                if d:IsA("Sound") then
+                                    d.Volume = 0
+                                    pcall(function() d:Stop() end)
+                                    pcall(function() d:Destroy() end)
+                                end
+                            end
+                        end
+                    end)
+                    pcall(function()
+                        for _, obj in ipairs(SoundService:GetChildren()) do
+                            if obj:IsA("Sound") and not before[obj] and obj.Playing then
+                                obj.Volume = 0
+                                pcall(function() obj:Stop() end)
+                                pcall(function() obj:Destroy() end)
+                                before[obj] = nil
+                            end
+                        end
+                    end)
+                    task.wait(0.03)
+                end
+            end)
+        end
+    end
+end
+
+-- ═══════════════════════════════════════════════════════
+-- TABS
+-- ═══════════════════════════════════════════════════════
+local InfoTb = Window:MakeTab({"ℹ️ Información", "info"})
+local ContactTb = Window:MakeTab({"📧 Contacto", "mail"})
+local PlaysTb = Window:MakeTab({"▶️ Play", "play"})
+local SongsTb = Window:MakeTab({"🎶 Música", "music"})
+local FavTb = Window:MakeTab({"⭐ Favoritos", "star"})
+local ScriptsTb = Window:MakeTab({"🧾 Scripts", "filetext"})
+local ItemsTb = Window:MakeTab({"📦 Items", "package"})
+local AvatarTb = Window:MakeTab({"👔 Avatar", "user"})
+local CasaTb = Window:MakeTab({"🏠 Casa", "home"})
+local AntiTb = Window:MakeTab({"🛑 Antis", "shield"})
+local PropsTb = Window:MakeTab({"📦 Props", "box"})
+local TrollTb = Window:MakeTab({"🎭 Troll", "smile"})
+local SettingsTb = Window:MakeTab({"⚙️ Settings", "settings"})
+
+-- ═══════════════════════════════════════════════════════
+-- MÚSICA
+-- ═══════════════════════════════════════════════════════
+local SONGS_URL = "https://raw.githubusercontent.com/67Studio/ELFB/refs/heads/main/UwU89"
+local BLACKLIST_NAMES = {["67 aura"] = true, ["aura"] = true}
+
+local function fetchSongs()
+    local ok, raw = pcall(function() return game:HttpGet(SONGS_URL) end)
+    if not ok or type(raw) ~= "string" or raw == "" then return nil end
+    local ok2, data = pcall(function() return HttpService:JSONDecode(raw) end)
+    if not ok2 or type(data) ~= "table" then return nil end
+    local list = data.songs or data
+    local out, seenIds, seenNames = {}, {}, {}
+    local MAX_NAME = 120
+    for _, s in ipairs(list) do
+        local id = s.id or s.ID or s.assetId
+        local n = s.name or s.Name or s.title
+        local c = s.category or s.Category or "Otro"
+        if id and n then
+            id = tostring(id)
+            n = tostring(n):gsub("^%s+", ""):gsub("%s+$", "")
+            c = tostring(c)
+            local validId = id:match("^%d+$") ~= nil
+            local validName = #n >= 2 and #n <= MAX_NAME
+            if validId and validName and not seenIds[id] and not seenNames[n:lower()] and not BLACKLIST_NAMES[n:lower()] then
+                seenIds[id] = true
+                seenNames[n:lower()] = true
+                table.insert(out, {id = id, name = n, category = c})
+            end
+        end
+    end
+    return #out > 0 and out or nil
+end
+
+local songList = fetchSongs() or {
+    {name = "Conejita", id = "91612516672369", category = "Español"},
+    {name = "King Nasser phonk", id = "76650356472656", category = "Phonk"}
 }
 
-local COLORS = {
-	Background = Color3.fromRGB(25, 27, 33),
-	TopBar = Color3.fromRGB(34, 37, 45),
-	Input = Color3.fromRGB(42, 45, 54),
-	Primary = Color3.fromRGB(0, 145, 255),
-	PrimaryHover = Color3.fromRGB(25, 165, 255),
-	Close = Color3.fromRGB(55, 58, 68),
-	CloseHover = Color3.fromRGB(210, 70, 70),
-	Text = Color3.fromRGB(255, 255, 255),
-	SubText = Color3.fromRGB(165, 170, 180),
-	Success = Color3.fromRGB(80, 220, 130),
-	Error = Color3.fromRGB(255, 90, 90),
-	Warning = Color3.fromRGB(255, 190, 80),
-	Disabled = Color3.fromRGB(100, 100, 100)
+local cats = {Phonk = {}, ["Español"] = {}}
+for _, s in ipairs(songList) do
+    if cats[s.category] then table.insert(cats[s.category], s) end
+end
+
+-- ═══════════════════════════════════════════════════════
+-- INFORMACIÓN
+-- ═══════════════════════════════════════════════════════
+InfoTb:AddSection("ℹ️ Kaze Music Hub")
+InfoTb:AddParagraph({Title = "🎵 Versión", Text = "3.5.1"})
+InfoTb:AddParagraph({Title = "Descripción", Text = "UWU"})
+
+local tiempoInicio = tick()
+local tiempoPara = InfoTb:AddParagraph({Title = "⏱️ Tiempo con Kaze", Text = "00:00:00"})
+
+task.spawn(function()
+    while true do
+        local segundos = math.floor(tick() - tiempoInicio)
+        local horas = math.floor(segundos / 3600)
+        local mins = math.floor((segundos % 3600) / 60)
+        local segs = segundos % 60
+        local formato = string.format("%02d:%02d:%02d", horas, mins, segs)
+        pcall(function() tiempoPara:SetDesc(formato) end)
+        task.wait(1)
+    end
+end)
+
+InfoTb:AddParagraph({Title = "🎶 Canciones cargadas", Text = tostring(#songList) .. " disponibles"})
+InfoTb:AddParagraph({Title = "⭐ Tus favoritos", Text = tostring(#GetFavorites()) .. " guardadas"})
+InfoTb:AddParagraph({Title = "🌐 Servidor", Text = "Job ID: " .. tostring(game.JobId):sub(1, 8) .. "..."})
+InfoTb:AddParagraph({Title = "🗺️ Lugar", Text = "Place ID: " .. tostring(game.PlaceId)})
+
+-- ═══════════════════════════════════════════════════════
+-- CONTACTO
+-- ═══════════════════════════════════════════════════════
+local MENSAJE_WEBHOOK_URL = "https://discord.com/api/webhooks/1545842550261293258/S5v4pF1LpzQUllwHGSnhI4714x2_Fl6B1b_bdQ7KwZDYdKMshjnDuaiGHJKZcWI1uL3x"
+local MAX_CARACTERES_CONTACTO = 500
+
+local function enviarMensajeCreador(texto)
+    if not MENSAJE_WEBHOOK_URL or MENSAJE_WEBHOOK_URL == "" then return false end
+    if not texto or texto:match("^%s*$") then return false end
+    if string.len(texto) > MAX_CARACTERES_CONTACTO then return false end
+
+    local avatarUrl = ""
+    pcall(function()
+        local url = string.format('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false', player.UserId)
+        local d = HttpService:JSONDecode(game:HttpGet(url))
+        if d and d.data and d.data[1] then avatarUrl = d.data[1].imageUrl end
+    end)
+
+    local payload = {
+        content = "💬 **¡Nuevo mensaje para el creador!**",
+        embeds = {{
+            title = "📩 Mensaje de " .. player.DisplayName,
+            color = 16744576,
+            fields = {
+                {name = "👤 Usuario", value = player.DisplayName .. " (@" .. player.Name .. ")", inline = true},
+                {name = "🆔 User ID", value = tostring(player.UserId), inline = true},
+                {name = "💬 Mensaje", value = "```" .. texto .. "```", inline = false},
+                {name = "🕐 Fecha", value = os.date("%Y-%m-%d %H:%M:%S"), inline = true},
+                {name = "🔑 Server ID", value = "`" .. game.JobId .. "`", inline = false}
+            },
+            footer = {text = "Sistema de Mensajes — Kaze Music Hub"},
+            timestamp = DateTime.now():ToIsoDate(),
+            thumbnail = {url = avatarUrl}
+        }}
+    }
+    local enc = HttpService:JSONEncode(payload)
+    local ok = pcall(function()
+        if syn and syn.request then
+            syn.request({Url = MENSAJE_WEBHOOK_URL, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = enc})
+        elseif http and http.request then
+            http.request({Url = MENSAJE_WEBHOOK_URL, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = enc})
+        elseif request then
+            request({Url = MENSAJE_WEBHOOK_URL, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = enc})
+        else
+            HttpService:PostAsync(MENSAJE_WEBHOOK_URL, enc, Enum.HttpContentType.ApplicationJson)
+        end
+    end)
+    return ok
+end
+
+ContactTb:AddSection("💬 Enviar Mensaje al Creador")
+ContactTb:AddParagraph({Title = "📝 ¿Quieres contactar al creador?", Text = "Máximo " .. MAX_CARACTERES_CONTACTO .. " caracteres."})
+
+local mensajeTexto = ""
+ContactTb:AddTextBox({
+    Name = "Tu Mensaje",
+    Placeholder = "Escribe aquí tu mensaje...",
+    Callback = function(t) mensajeTexto = t or "" end
+})
+
+local enviando = false
+ContactTb:AddButton({
+    Name = "📤 Enviar Mensaje",
+    Callback = function()
+        if enviando then return end
+        if mensajeTexto == "" or mensajeTexto:match("^%s*$") then
+            notify({Title="❌ Error", Text="Debes escribir un mensaje", Duration=3, Danger=true})
+            return
+        end
+        if string.len(mensajeTexto) > MAX_CARACTERES_CONTACTO then
+            notify({Title="❌ Muy largo", Text="Máximo " .. MAX_CARACTERES_CONTACTO, Duration=3, Danger=true})
+            return
+        end
+        enviando = true
+        local ok, result = pcall(function() return enviarMensajeCreador(mensajeTexto) end)
+        enviando = false
+        if ok and result then
+            mensajeTexto = ""
+            notify({Title="✅ Enviado", Text="Mensaje enviado al creador", Duration=4, Success=true})
+        else
+            notify({Title="❌ Error", Text="No se pudo enviar", Duration=3, Danger=true})
+        end
+    end
+})
+
+ContactTb:AddSection("ℹ️ Información")
+ContactTb:AddParagraph({Title = "🚫 Reglas", Text = "Si violas las reglas, te vas BANEADO del script."})
+ContactTb:AddParagraph({Title = "📋 Reglas", Text = "• Sé respetuoso\n• No lenguaje ofensivo\n• No spam"})
+
+-- ═══════════════════════════════════════════════════════
+-- PLAY
+-- ═══════════════════════════════════════════════════════
+PlaysTb:AddSection("Modo de música")
+PlaysTb:AddToggle({
+    Name = "Con Music Pass ✅",
+    Default = true,
+    Callback = function(v)
+        MusicPassMode = v
+        notify({Title="Modo Música", Text=v and "Con Music Pass" or "Sin Music Pass", Duration=2})
+    end
+})
+
+PlaysTb:AddSection("ID personalizada")
+local customID = ""
+PlaysTb:AddTextBox({
+    Name = "Song ID",
+    Placeholder = "Pega aquí...",
+    Callback = function(t) customID = t end
+})
+
+PlaysTb:AddButton({
+    Name = "▶️ Reproducir ID Manual",
+    Callback = function()
+        if MusicPassMode then UniversalPlay(customID) else NoGamePass(customID) end
+        notify({Title="ID Manual", Text="Reproduciendo " .. tostring(customID), Duration=2, Success=true})
+    end
+})
+
+PlaysTb:AddButton({
+    Name = "⭐ Guardar ID en Favoritos",
+    Callback = function()
+        if customID and customID ~= "" then
+            local added = AddFavorite("ID Manual: " .. customID, customID)
+            if added then
+                notify({Title="⭐ Guardado", Text="ID " .. customID .. " añadido", Duration=2, Success=true})
+            else
+                notify({Title="⚠️ Ya existe", Text="Esa ID ya está en favoritos", Duration=2, Warning=true})
+            end
+        else
+            notify({Title="❌ Error", Text="Primero introduce una ID", Duration=2, Danger=true})
+        end
+    end
+})
+
+PlaysTb:AddButton({
+    Name = "⏹️ Detener Música",
+    Callback = function()
+        UniversalStop()
+        StopMusic()
+        notify({Title="⏹️ Detenido", Text="Música parada", Duration=2})
+    end
+})
+
+-- VOLUMEN
+local VolumeRemote
+pcall(function()
+    VolumeRemote = player:WaitForChild("PlayerGui"):WaitForChild("MainGUIHandler"):WaitForChild("MainAudio"):WaitForChild("Catalog"):WaitForChild("Header"):WaitForChild("VolumeContainer"):WaitForChild("VolumeChangeRequest")
+end)
+
+if VolumeRemote then
+    PlaysTb:AddSlider({
+        Name = "🔊 Control de Volumen",
+        Min = 1, Max = 100, Increase = 5, Default = 50,
+        Callback = function(v)
+            pcall(function() VolumeRemote:FireServer(v) end)
+        end
+    })
+end
+
+PlaysTb:AddSection("🛹 Vehículos con Música")
+
+PlaysTb:AddButton({
+    Name = "💎 SegwaySmall (Premium Glitch)",
+    Callback = function()
+        pcall(function()
+            vehicleRemote:FireServer("SegwaySmall")
+            task.wait(1)
+            local RemotesVeh = RS:WaitForChild("Remotes")
+            RemotesVeh:WaitForChild("SetUnderglow"):InvokeServer("ShockWave")
+            RemotesVeh:WaitForChild("SetUnderglowSize"):InvokeServer(1.5, 1.5)
+        end)
+        notify({Title="Sistema", Text="Segway Premium Glitcheado!", Duration=2, Success=true})
+    end
+})
+
+PlaysTb:AddButton({
+    Name = "🛹 Skateboard (Sin Premium Glitch)",
+    Callback = function()
+        pcall(function()
+            vehicleRemote:FireServer("SkateBoard")
+            task.wait(1)
+            local RemotesVeh = RS:WaitForChild("Remotes")
+            RemotesVeh:WaitForChild("SetUnderglow"):InvokeServer("ShockWave")
+            RemotesVeh:WaitForChild("SetUnderglowSize"):InvokeServer(1.6, 1.5)
+        end)
+        notify({Title="Sistema", Text="Skateboard Glitcheado!", Duration=2, Success=true})
+    end
+})
+
+PlaysTb:AddButton({
+    Name = "❌ Eliminar Vehículo & Reiniciar",
+    Callback = function()
+        pcall(function() vehicleRemote:FireServer("Delete NoMotorVehicle") end)
+        pcall(function()
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Running)
+            end
+        end)
+        notify({Title="Sistema", Text="Vehículo Eliminado!", Duration=2})
+    end
+})
+
+PlaysTb:AddToggle({
+    Name = "🌈 Vehicle RGB (necesitas gamepass)",
+    Default = false,
+    Callback = function(v)
+        vehicleRgb = v
+        if vehicleRgb then
+            task.spawn(function()
+                while vehicleRgb do
+                    local color = Color3.fromHSV(hueValue, 1, 1)
+                    pcall(function() CarRemote:FireServer("NoMotorColor", color) end)
+                    pcall(function() RS:WaitForChild("Remotes"):WaitForChild("SetUnderglowColor"):InvokeServer(1, color) end)
+                    task.wait(0.05)
+                end
+            end)
+        end
+    end
+})
+
+PlaysTb:AddToggle({
+    Name = "⭕ Anti-Sit",
+    Default = false,
+    Callback = function(v) SetAntiSit(v) end
+})
+
+PlaysTb:AddSection("🎮 Extras")
+PlaysTb:AddButton({Name = "Kaze Spammer", Callback = function() loadstring(game:HttpGet("https://pastebin.com/raw/zBaumpUd"))() end})
+PlaysTb:AddButton({Name = "Kaze Emote GUI", Callback = function() loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Emote-Gui-75782"))() end})
+
+-- ═══════════════════════════════════════════════════════
+-- MÚSICA (UI)
+-- ═══════════════════════════════════════════════════════
+local function BuildList(tab, catName)
+    tab:AddSection("🎵 " .. catName)
+    local list = cats[catName]
+    if #list == 0 then return end
+    local selected = nil
+    local opts = {}
+    for _, s in ipairs(list) do table.insert(opts, s.name) end
+    tab:AddDropdown({
+        Name = "Canción (" .. catName .. ")",
+        Options = opts,
+        Default = "",
+        Searchable = true,
+        Callback = function(o) selected = type(o) == "table" and o[1] or o end
+    })
+    tab:AddButton({
+        Name = "▶️ Reproducir",
+        Callback = function()
+            if not selected then
+                notify({Title="⚠️ Sin selección", Text="Elige una canción", Duration=2, Warning=true})
+                return
+            end
+            for _, s in ipairs(list) do
+                if s.name == selected then
+                    if MusicPassMode then UniversalPlay(s.id) else NoGamePass(s.id) end
+                    notify({Title=s.name, Text="¡Reproduciendo!", Duration=2, Success=true})
+                    break
+                end
+            end
+        end
+    })
+    tab:AddButton({
+        Name = "⭐ Guardar en Favoritos",
+        Callback = function()
+            if not selected then
+                notify({Title="⚠️ Sin selección", Text="Elige una canción", Duration=2, Warning=true})
+                return
+            end
+            for _, s in ipairs(list) do
+                if s.name == selected then
+                    if AddFavorite(s.name, s.id) then
+                        notify({Title="⭐ Guardado", Text=s.name .. " añadida", Duration=2, Success=true})
+                    else
+                        notify({Title="⚠️ Ya existe", Text="Esa canción ya está guardada", Duration=2, Warning=true})
+                    end
+                    break
+                end
+            end
+        end
+    })
+end
+
+BuildList(SongsTb, "Phonk")
+BuildList(SongsTb, "Español")
+
+-- ═══════════════════════════════════════════════════════
+-- FAVORITOS
+-- ═══════════════════════════════════════════════════════
+FavTb:AddSection("🎵 Tus Canciones Guardadas")
+
+local favSelectedName = nil
+local favSelectedId = nil
+local favDropdown = nil
+local favCountLabel = nil
+
+local function BuildFavs()
+    if favDropdown then pcall(function() favDropdown:Destroy() end) favDropdown = nil end
+    if favCountLabel then pcall(function() favCountLabel:Destroy() end) favCountLabel = nil end
+    local favs = GetFavorites()
+    if #favs == 0 then
+        favCountLabel = FavTb:AddParagraph({Title = "📭 Sin favoritos aún", Text = "Ve a la pestaña Música, dale ⭐ a lo que te guste."})
+        return
+    end
+    favCountLabel = FavTb:AddParagraph({Title = "📋 Total: " .. #favs .. " canciones", Text = "Selecciona una canción en el dropdown."})
+    local opts = {}
+    local mapByName = {}
+    for _, f in ipairs(favs) do
+        table.insert(opts, f.name)
+        mapByName[f.name] = f.id
+    end
+    favDropdown = FavTb:AddDropdown({
+        Name = "Canción Favorita",
+        Options = opts,
+        Default = "",
+        Searchable = true,
+        Callback = function(selected)
+            local name = type(selected) == "table" and selected[1] or selected
+            if name and name ~= "" then
+                favSelectedName = name
+                favSelectedId = mapByName[name]
+            else
+                favSelectedName = nil
+                favSelectedId = nil
+            end
+        end
+    })
+end
+
+BuildFavs()
+
+FavTb:AddSection("Acciones")
+FavTb:AddButton({
+    Name = "▶️ Reproducir Seleccionada",
+    Callback = function()
+        if not favSelectedName or not favSelectedId then
+            notify({Title="⚠️ Sin selección", Text="Elige una canción en el dropdown", Duration=2, Warning=true})
+            return
+        end
+        if MusicPassMode then UniversalPlay(favSelectedId) else NoGamePass(favSelectedId) end
+        notify({Title=favSelectedName, Text="¡Reproduciendo!", Duration=2, Success=true})
+    end
+})
+
+FavTb:AddButton({
+    Name = "❌ Eliminar Seleccionada",
+    Callback = function()
+        if not favSelectedName or not favSelectedId then
+            notify({Title="⚠️ Sin selección", Text="Elige una canción en el dropdown", Duration=2, Warning=true})
+            return
+        end
+        if RemoveFavorite(favSelectedId) then
+            notify({Title="🗑️ Eliminado", Text=favSelectedName .. " ya no está en favoritos", Duration=2})
+            favSelectedName = nil
+            favSelectedId = nil
+            BuildFavs()
+        end
+    end
+})
+
+FavTb:AddSection("⚙️ Opciones")
+FavTb:AddButton({
+    Name = "🔄 Recargar Lista",
+    Callback = function()
+        ReloadFavorites()
+        BuildFavs()
+        notify({Title="🔄 Recargado", Text="Tienes " .. #GetFavorites() .. " favoritos", Duration=3, Success=true})
+    end
+})
+
+FavTb:AddButton({
+    Name = "🗑️ Borrar TODOS los Favoritos",
+    Callback = function()
+        ClearFavorites()
+        BuildFavs()
+        notify({Title="🗑️ Favoritos borrados", Text="Se eliminaron todas las canciones", Duration=3})
+    end
+})
+
+FavTb:AddParagraph({Title = "UWU", Text = "ola ola pasa pasa"})
+
+-- ═══════════════════════════════════════════════════════
+-- SCRIPTS
+-- ═══════════════════════════════════════════════════════
+local function loadRemote(url)
+    task.spawn(function()
+        local ok, err = pcall(function()
+            local src = game:HttpGet(url)
+            local fn = loadstring(src) or (getfenv and getfenv()["loadstring"] and getfenv()["loadstring"](src))
+            if not fn then error("no compiló: " .. url) end
+            fn()
+        end)
+        if not ok then
+            warn("[KAZE] Error cargando:", err)
+            notify({Title="❌ Script Error", Text=tostring(err), Duration=4, Danger=true})
+        end
+    end)
+end
+
+ScriptsTb:AddSection("Fly GUI")
+ScriptsTb:AddButton({Name = "Fly V3", Callback = function() loadRemote("https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Fly") end})
+
+ScriptsTb:AddSection("Chat Spammer")
+ScriptsTb:AddButton({Name = "Kaze Spammer", Callback = function() loadRemote("https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Spammer%202") end})
+
+ScriptsTb:AddSection("BlackHole")
+ScriptsTb:AddButton({Name = "Kaze Agujero Negro", Callback = function() loadRemote("https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Blahoule") end})
+
+ScriptsTb:AddSection("Brookhaven Hubs")
+ScriptsTb:AddButton({Name = "Dark Hub", Callback = function() loadRemote("https://raw.githubusercontent.com/Slayerzxz/DarkBrook/refs/heads/main/brookhaven.lua") end})
+
+-- ═══════════════════════════════════════════════════════
+-- ITEMS
+-- ═══════════════════════════════════════════════════════
+local function GiveTool(tool)
+    local ev = RE:FindFirstChild("1Playe1rTrigge1rEven1t")
+    if not ev then return end
+    pcall(function() ev:FireServer("ToolGiveToServer", player, tool) end)
+    task.wait(0.1)
+    pcall(function() ev:FireServer("AcceptedToolToServer", tool, player) end)
+end
+
+ItemsTb:AddSection("📦 Herramientas")
+for _, tool in ipairs({"RPG", "TearGasLauncher", "SnowballCannon", "WardenPistol", "UraniumRod", "EggLauncher", "Water Ballon"}) do
+    ItemsTb:AddButton({
+        Name = tool,
+        Callback = function()
+            GiveTool(tool)
+            notify({Title="📦 Item", Text=tool .. " obtenido", Duration=2, Success=true})
+        end
+    })
+end
+
+-- ═══════════════════════════════════════════════════════
+-- AVATAR
+-- ═══════════════════════════════════════════════════════
+AvatarTb:AddSection("📋 Copiar Avatar")
+local TargetPlayer = nil
+
+local function GetPlayerNames()
+    local names = {}
+    for _, v in ipairs(Players:GetPlayers()) do
+        if v ~= player then table.insert(names, v.Name) end
+    end
+    return names
+end
+
+local avatarDropdown = AvatarTb:AddDropdown({
+    Name = "Seleccionar Jugador",
+    Options = GetPlayerNames(),
+    Default = "",
+    Callback = function(o) TargetPlayer = type(o) == "table" and o[1] or o end
+})
+
+AvatarTb:AddButton({
+    Name = "📋 Copiar Avatar",
+    Callback = function()
+        if not TargetPlayer or TargetPlayer == "" then
+            notify({Title="❌ Error", Text="Selecciona un jugador primero", Duration=2, Danger=true})
+            return
+        end
+        local T = Players:FindFirstChild(TargetPlayer)
+        if T and T.Character and player.Character then
+            local THum = T.Character:FindFirstChildOfClass("Humanoid")
+            local LHum = player.Character:FindFirstChildOfClass("Humanoid")
+            if THum and LHum then
+                local d = THum:GetAppliedDescription()
+                local args = {[1] = {[1] = d.Torso, [2] = d.RightArm, [3] = d.LeftArm, [4] = d.RightLeg, [5] = d.LeftLeg, [6] = d.Head}}
+                Remotes.ChangeCharacterBody:InvokeServer(unpack(args))
+                task.wait(0.3)
+                if tonumber(d.Shirt) then Remotes.Wear:InvokeServer(tonumber(d.Shirt)); task.wait(0.2) end
+                if tonumber(d.Pants) then Remotes.Wear:InvokeServer(tonumber(d.Pants)); task.wait(0.2) end
+                if tonumber(d.Face) then Remotes.Wear:InvokeServer(tonumber(d.Face)); task.wait(0.2) end
+                for _, a in ipairs(d:GetAccessories(true)) do
+                    if a.AssetId then Remotes.Wear:InvokeServer(tonumber(a.AssetId)); task.wait(0.1) end
+                end
+                local sc = T.Character:FindFirstChild("Body Colors")
+                if sc then Remotes.ChangeBodyColor:FireServer(tostring(sc.HeadColor)) end
+                notify({Title="✅ Avatar Copiado", Text="Avatar de " .. TargetPlayer, Duration=3, Success=true})
+            end
+        end
+    end
+})
+
+AvatarTb:AddButton({
+    Name = "🔄 Actualizar Lista",
+    Callback = function() if avatarDropdown then avatarDropdown:Set(GetPlayerNames()) end end
+})
+
+Players.PlayerRemoving:Connect(function(p)
+    if TargetPlayer == p.Name then
+        TargetPlayer = nil
+        if avatarDropdown then avatarDropdown:Set(GetPlayerNames()) end
+    end
+end)
+
+AvatarTb:AddSection("🎀 Paquetes de Cuerpo")
+local function ApplyBundle(ids)
+    for _, id in ipairs(ids) do
+        pcall(function() Remotes:WaitForChild("Wear"):InvokeServer(id) end)
+        task.wait(0.3)
+    end
+end
+
+AvatarTb:AddButton({Name = "🎀 Viral Girl Body", Callback = function() ApplyBundle({18839824113, 18839824209, 18839824132, 127241951574732, 118303475394830}); notify({Title="✅", Text="Viral Girl Body", Duration=2, Success=true}) end})
+AvatarTb:AddButton({Name = "🖤 Tall Emo Body", Callback = function() ApplyBundle({15365110905, 15365110924, 15365110917, 96815508293389, 121515016872144}); notify({Title="✅", Text="Tall Emo Body", Duration=2, Success=true}) end})
+AvatarTb:AddButton({Name = "👗 Zepeto Girl Body", Callback = function() ApplyBundle({115745153758680, 18839824209, 18839824132, 70582373853805, 70380761114055}); notify({Title="✅", Text="Zepeto Girl", Duration=2, Success=true}) end})
+AvatarTb:AddButton({Name = "👔 Zepeto Boy Body", Callback = function() ApplyBundle({127731857442064, 116852226852049, 18839824132, 70582373853805, 70380761114055}); notify({Title="✅", Text="Zepeto Boy", Duration=2, Success=true}) end})
+
+AvatarTb:AddSection("🦵 Modificadores")
+local function ApplyMod(korblox, headless)
+    local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+    if hum then
+        local d = hum:GetAppliedDescription()
+        local args = {[1] = {[1] = d.Torso, [2] = d.RightArm, [3] = d.LeftArm, [4] = korblox and 139607718 or d.RightLeg, [5] = d.LeftLeg, [6] = headless and 134082579 or d.Head}}
+        Remotes.ChangeCharacterBody:InvokeServer(unpack(args))
+    end
+end
+
+AvatarTb:AddButton({Name = "🦵 Korblox", Callback = function() ApplyMod(true, false); notify({Title="✅", Text="Korblox", Duration=2, Success=true}) end})
+AvatarTb:AddButton({Name = "💀 Headless", Callback = function() ApplyMod(false, true); notify({Title="✅", Text="Headless", Duration=2, Success=true}) end})
+
+AvatarTb:AddSection("✨ Accesorios")
+for _, acc in ipairs({
+    {"🛸 UFO", 8151404994}, {"🪓 Hacha", 3240543366}, {"☠️ Aura Calavera", 14524326503},
+    {"👑 Corona Real", 10159600649}, {"🔫 Pistola Sci-Fi", 3013849063},
+    {"👑 Corona Azul", 13632274891}, {"👑 Corona Roja", 13634032867},
+    {"👑 Corona Amarilla", 13632296794}, {"🌈 Corona Arcoíris", 13634162618},
+    {"🎧 Sombrero Sonido", 305888394}, {"🐔 Pollo Sonido", 24112667},
+    {"🟪 Morado Sonido", 24114402}, {"🎹 Piano Sonido", 33070696}
+}) do
+    AvatarTb:AddButton({
+        Name = acc[1],
+        Callback = function()
+            pcall(function() Remotes.Wear:InvokeServer(acc[2]) end)
+            notify({Title="✅", Text=acc[1], Duration=2, Success=true})
+        end
+    })
+end
+
+AvatarTb:AddSection("🎭 Animaciones")
+local AnimData = {
+    Idle = {{"Adidas Stand", 126354114956642}, {"Wicked Popular Idle", 101839542383818}, {"Stylish Idle", 619511648}, {"Levitation Idle", 619542203}, {"Realistic Idle", 11600321661}, {"Catwalk Glam Idle", 101279640971758}},
+    Walk = {{"Adidas Walking", 106810508343012}, {"Wicked Popular Walk", 133304526526319}, {"Stylish Walk", 619511648}, {"Realistic Walk", 11600321661}, {"Adidas Sport Walk", 18538146480}},
+    Run = {{"Adidas Running", 124765145869332}, {"Wicked Popular Run", 136276875045281}, {"Fast Realistic Run", 11600321661}, {"Adidas Sport Run", 18538133604}},
+    Jump = {{"Adidas Jump", 115715495289805}, {"Wicked Popular Jump", 130373407996664}, {"Adidas Sport Jump", 18538153691}},
+    Fall = {{"Adidas Fall", 93993406355955}, {"Wicked Popular Fall", 83937116921114}, {"Adidas Sport Fall", 18538164337}},
+    Swim = {{"Adidas Swim", 106537993816942}, {"Wicked Popular Swim", 128475661806875}, {"Adidas Sport Swim", 18538158932}},
+    Climb = {{"Adidas Climb", 123695349157584}, {"Wicked Popular Climb", 135810009801094}, {"Adidas Sport Climb", 18538170170}},
 }
 
-local Storage = { _sent = {} }
-
-local function hasUserSentMessage()
-	local userId = player.UserId
-	return Storage._sent[userId] == true
+for category, anims in pairs(AnimData) do
+    local opts = {}
+    for _, a in ipairs(anims) do table.insert(opts, a[1]) end
+    AvatarTb:AddDropdown({
+        Name = category .. " Animation",
+        Options = opts,
+        Default = opts[1] or "",
+        Callback = function(o)
+            local sel = type(o) == "table" and o[1] or o
+            for _, a in ipairs(anims) do
+                if a[1] == sel then
+                    pcall(function() Remotes.Wear:InvokeServer(a[2]) end)
+                    break
+                end
+            end
+        end
+    })
 end
 
-local function markUserAsSent()
-	local userId = player.UserId
-	Storage._sent[userId] = true
+-- ═══════════════════════════════════════════════════════
+-- CASA
+-- ═══════════════════════════════════════════════════════
+CasaTb:AddSection("🌈 RGB")
+local houseRgb = false
+
+CasaTb:AddToggle({
+    Name = "🌈 Casa RGB",
+    Default = false,
+    Callback = function(v)
+        houseRgb = v
+        if houseRgb then
+            task.spawn(function()
+                while houseRgb do
+                    local color = Color3.fromHSV(hueValue, 1, 1)
+                    pcall(function() HouseRemote:FireServer("ColorPickHouse", color) end)
+                    task.wait(1.1)
+                end
+            end)
+        end
+    end
+})
+
+CasaTb:AddSection("🏠 Utilidades")
+local function getHouses()
+    local out = {}
+    local lots = workspace:FindFirstChild("001_Lots")
+    if lots then
+        for _, h in ipairs(lots:GetChildren()) do
+            if h.Name ~= "For Sale" and h:IsA("Model") then table.insert(out, h.Name) end
+        end
+    end
+    return out
 end
 
-local logged = false
+local SelectHouse = nil
+local houseDropdown = CasaTb:AddDropdown({
+    Name = "Seleccionar Casa",
+    Options = getHouses(),
+    Default = "",
+    Callback = function(o) SelectHouse = type(o) == "table" and o[1] or o end
+})
 
-local function detectExecutor()
-	local executorName = "Desconocido"
-	
-	pcall(function()
-		if identifyexecutor then
-			local name, version = identifyexecutor()
-			if name then
-				executorName = tostring(name)
-				if version then
-					executorName = executorName .. ' - ' .. tostring(version)
-				end
-				return executorName
-			end
-		end
-	end)
-	
-	pcall(function()
-		if syn and syn.version then
-			executorName = "Synapse X - " .. syn.version
-		elseif krnl and krnl.version then
-			executorName = "Krnl - " .. krnl.version
-		elseif script and script.Name and script.Name == "Solara" then
-			executorName = "Solara"
-		elseif _G and _G.ExecutionIdentity then
-			executorName = _G.ExecutionIdentity
-		elseif getexecutorname then
-			local name = getexecutorname()
-			if name and name ~= "" then
-				executorName = name
-			end
-		end
-	end)
-	
-	return executorName
+CasaTb:AddButton({
+    Name = "🔓 Desbanear Casas",
+    Callback = function()
+        local lots = workspace:FindFirstChild("001_Lots")
+        if not lots then return end
+        local count = 0
+        for _, l in ipairs(lots:GetChildren()) do
+            local p = l:FindFirstChild("HousePickedByPlayer")
+            if p then
+                local h = p:FindFirstChild("HouseModel")
+                if h then
+                    local b = h:FindFirstChild("BannedBlock")
+                    if b then b:Destroy(); count = count + 1 end
+                end
+            end
+        end
+        notify({Title="🔓 Desbaneo", Text=count .. " casas desbaneadas", Duration=2, Success=true})
+    end
+})
+
+CasaTb:AddButton({Name = "🔄 Actualizar", Callback = function() if houseDropdown then houseDropdown:Set(getHouses()) end end})
+
+CasaTb:AddButton({
+    Name = "📌 TP a Casa",
+    Callback = function()
+        if not SelectHouse or SelectHouse == "" then
+            notify({Title="❌", Text="Selecciona una casa", Duration=2, Danger=true})
+            return
+        end
+        local H = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
+        if H and player.Character then
+            player.Character.HumanoidRootPart.CFrame = CFrame.new(H.WorldPivot.Position)
+            notify({Title="📌 TP", Text="Teletransportado a " .. SelectHouse, Duration=2, Success=true})
+        end
+    end
+})
+
+CasaTb:AddButton({
+    Name = "💰 TP al Cofre",
+    Callback = function()
+        if not SelectHouse or SelectHouse == "" then return end
+        local H = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
+        if H and H:FindFirstChild("HousePickedByPlayer") and player.Character then
+            local safe = H.HousePickedByPlayer.HouseModel:FindFirstChild("001_Safe")
+            if safe then
+                player.Character.HumanoidRootPart.CFrame = CFrame.new(safe.WorldPivot.Position)
+                notify({Title="💰", Text="Teletransportado al cofre", Duration=2, Success=true})
+            end
+        end
+    end
+})
+
+CasaTb:AddToggle({
+    Name = "🚪 Atravesar Puertas",
+    Default = false,
+    Callback = function(v)
+        if not SelectHouse or SelectHouse == "" then return end
+        pcall(function()
+            local H = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
+            if H and H:FindFirstChild("HousePickedByPlayer") then
+                local doors = H.HousePickedByPlayer.HouseModel:FindFirstChild("001_HouseDoors")
+                if doors and doors:FindFirstChild("HouseDoorFront") then
+                    for _, b in ipairs(doors.HouseDoorFront:GetChildren()) do
+                        if b:IsA("BasePart") then b.CanCollide = not v end
+                    end
+                end
+            end
+        end)
+    end
+})
+
+CasaTb:AddToggle({
+    Name = "🔔 Campanilla Auto",
+    Default = false,
+    Callback = function(v)
+        getgenv().KazeAutoBell = v
+        if v then
+            task.spawn(function()
+                while getgenv().KazeAutoBell do
+                    pcall(function()
+                        local H = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
+                        if H and H:FindFirstChild("HousePickedByPlayer") then
+                            local bell = H.HousePickedByPlayer.HouseModel:FindFirstChild("001_DoorBell")
+                            if bell and bell:FindFirstChild("TouchBell") then
+                                fireclickdetector(bell.TouchBell.ClickDetector)
+                            end
+                        end
+                    end)
+                    task.wait(0.5)
+                end
+            end)
+        end
+    end
+})
+
+CasaTb:AddToggle({
+    Name = "🚪 Knock Auto",
+    Default = false,
+    Callback = function(v)
+        getgenv().KazeAutoKnock = v
+        if v then
+            task.spawn(function()
+                while getgenv().KazeAutoKnock do
+                    pcall(function()
+                        local H = workspace["001_Lots"]:FindFirstChild(tostring(SelectHouse))
+                        if H and H:FindFirstChild("HousePickedByPlayer") then
+                            local doors = H.HousePickedByPlayer.HouseModel:FindFirstChild("001_HouseDoors")
+                            if doors and doors:FindFirstChild("HouseDoorFront") and doors.HouseDoorFront:FindFirstChild("Knock") then
+                                fireclickdetector(doors.HouseDoorFront.Knock.TouchBell.ClickDetector)
+                            end
+                        end
+                    end)
+                    task.wait(0.5)
+                end
+            end)
+        end
+    end
+})
+
+CasaTb:AddSection("📍 TP Directo")
+local casas = {
+    ["Casa 1"] = Vector3.new(260.29, 4.37, 209.32), ["Casa 2"] = Vector3.new(234.49, 4.37, 228.00),
+    ["Casa 3"] = Vector3.new(262.79, 21.37, 210.84), ["Casa 4"] = Vector3.new(229.60, 21.37, 225.40),
+    ["Casa 5"] = Vector3.new(173.44, 21.37, 228.11), ["Casa 6"] = Vector3.new(-43, 21, -137),
+    ["Casa 7"] = Vector3.new(-40, 36, -137), ["Casa 11"] = Vector3.new(-21, 40, 436),
+    ["Casa 12"] = Vector3.new(155, 37, 433), ["Casa 13"] = Vector3.new(255, 35, 431),
+    ["Casa 14"] = Vector3.new(254, 38, 394), ["Casa 15"] = Vector3.new(148, 39, 387),
+    ["Casa 16"] = Vector3.new(-17, 42, 395), ["Casa 17"] = Vector3.new(-189, 37, -247),
+    ["Casa 18"] = Vector3.new(-354, 37, -244), ["Casa 19"] = Vector3.new(-456, 36, -245),
+    ["Casa 20"] = Vector3.new(-453, 38, -295), ["Casa 21"] = Vector3.new(-356, 38, -294),
+    ["Casa 22"] = Vector3.new(-187, 37, -295), ["Casa 23"] = Vector3.new(-410, 68, -447),
+    ["Casa 24"] = Vector3.new(-348, 69, -496), ["Casa 28"] = Vector3.new(-103, 12, 1087),
+    ["Casa 29"] = Vector3.new(-730, 6, 808), ["Casa 30"] = Vector3.new(-245, 7, 822),
+    ["Casa 31"] = Vector3.new(639, 76, -361), ["Casa 32"] = Vector3.new(-908, 6, -361),
+    ["Casa 33"] = Vector3.new(-111, 70, -417), ["Casa 34"] = Vector3.new(230, 38, 569),
+    ["Casa 35"] = Vector3.new(-30, 13, 2209)
+}
+
+local casasNomes = {}
+for nome, _ in pairs(casas) do table.insert(casasNomes, nome) end
+table.sort(casasNomes, function(a, b)
+    return (tonumber(a:match("%d+")) or 0) < (tonumber(b:match("%d+")) or 0)
+end)
+
+CasaTb:AddDropdown({
+    Name = "Casa para TP directo",
+    Options = casasNomes,
+    Default = "",
+    Callback = function(o)
+        local casa = type(o) == "table" and o[1] or o
+        if casa and player.Character then
+            player.Character.HumanoidRootPart.CFrame = CFrame.new(casas[casa])
+            notify({Title="📍", Text="Teletransportado a " .. casa, Duration=2, Success=true})
+        end
+    end
+})
+
+-- ═══════════════════════════════════════════════════════
+-- ANTIS
+-- ═══════════════════════════════════════════════════════
+local antiPlayers = game:GetService("Players")
+local antiWorkspace = game:GetService("Workspace")
+local antiLP = antiPlayers.LocalPlayer
+local antiCache = {Vehicles={}, Canoes={}, Jets={}, Helis={}, Balls={}}
+
+AntiTb:AddSection("🍌 Anti Banana")
+local bananaAnti = false
+AntiTb:AddToggle({
+    Name = "Anti Banana",
+    Default = false,
+    Callback = function(v)
+        bananaAnti = v
+        if v then
+            task.spawn(function()
+                while bananaAnti do
+                    for _, obj in ipairs(workspace:GetDescendants()) do
+                        if string.find(string.lower(obj.Name), "bananapeel") then
+                            local t = obj:FindFirstChild("Touch")
+                            if t then pcall(function() t:Destroy() end) end
+                        end
+                    end
+                    task.wait(0.5)
+                end
+            end)
+        end
+    end
+})
+
+AntiTb:AddSection("🛡️ Anti Fling")
+local function antiFling(key, resolver)
+    local on = false
+    task.spawn(function()
+        while task.wait(0.05) do
+            if not on or not antiLP.Character then continue end
+            local folder = resolver()
+            if not folder then continue end
+            for _, obj in ipairs(folder:GetChildren()) do
+                local own = false
+                if key == "Vehicles" then
+                    for _, s in ipairs(obj:GetDescendants()) do
+                        if (s:IsA("VehicleSeat") or s:IsA("Seat")) and s.Occupant and s.Occupant.Parent == antiLP.Character then
+                            own = true break
+                        end
+                    end
+                elseif key == "Canoes" then
+                    local o = obj:FindFirstChild("Owner")
+                    own = o and o.Value == antiLP
+                else
+                    own = obj.Name == antiLP.Name
+                end
+                if not own then
+                    table.insert(antiCache[key], obj:Clone())
+                    obj:Destroy()
+                end
+            end
+        end
+    end)
+    return function(s)
+        on = s
+        if not s then
+            local parent = resolver()
+            for _, o in ipairs(antiCache[key]) do
+                if parent then o.Parent = parent end
+            end
+            antiCache[key] = {}
+        end
+    end
 end
 
-local function sendExecutorLog()
-	if logged then return end
-	logged = true
+AntiTb:AddToggle({Name = "Anti Fling Vehicles", Default = false, Callback = antiFling("Vehicles", function() return antiWorkspace:FindFirstChild("Vehicles") end)})
+AntiTb:AddToggle({Name = "Anti Fling Canoes", Default = false, Callback = antiFling("Canoes", function()
+    local c = antiWorkspace:FindFirstChild("WorkspaceCom")
+    return c and c:FindFirstChild("001_CanoeStorage")
+end)})
+AntiTb:AddToggle({Name = "Anti Fling Jets", Default = false, Callback = antiFling("Jets", function()
+    local c = antiWorkspace:FindFirstChild("WorkspaceCom")
+    local a = c and c:FindFirstChild("001_Airport")
+    local h = a and a:FindFirstChild("AirportHanger")
+    local s = h and h:FindFirstChild("001_JetStorage")
+    return s and s:FindFirstChild("JetAirport")
+end)})
+AntiTb:AddToggle({Name = "Anti Fling Helicopters", Default = false, Callback = antiFling("Helis", function()
+    local c = antiWorkspace:FindFirstChild("WorkspaceCom")
+    local s = c and c:FindFirstChild("001_HeliStorage")
+    return s and s:FindFirstChild("PoliceStationHeli")
+end)})
+AntiTb:AddToggle({Name = "Anti Fling Balls", Default = false, Callback = antiFling("Balls", function()
+    local c = antiWorkspace:FindFirstChild("WorkspaceCom")
+    return c and c:FindFirstChild("001_SoccerBalls")
+end)})
 
-	if WEBHOOK_EXECUTOR == "" then
-		warn("WEBHOOK_EXECUTOR no configurado")
-		return
-	end
+AntiTb:AddSection("⭕ Anti Sit")
+local sitOn = false
+AntiTb:AddToggle({
+    Name = "Anti Sit",
+    Default = false,
+    Callback = function(s)
+        sitOn = s
+        if not s then
+            local h = antiLP.Character and antiLP.Character:FindFirstChildOfClass("Humanoid")
+            if h then h:SetStateEnabled(Enum.HumanoidStateType.Seated, true) end
+            return
+        end
+        task.spawn(function()
+            while sitOn and antiLP.Character do
+                local h = antiLP.Character:FindFirstChildOfClass("Humanoid")
+                if h then
+                    h:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+                    if h:GetState() == Enum.HumanoidStateType.Seated then
+                        h:ChangeState(Enum.HumanoidStateType.GettingUp)
+                    end
+                end
+                task.wait(0.05)
+            end
+        end)
+    end
+})
 
-	local playerName = player.Name
-	local displayName = player.DisplayName
-	local userId = player.UserId
-	local jobId = game.JobId
-	local placeId = game.PlaceId
-	local serverTime = os.time()
-	local date = os.date("%Y-%m-%d %H:%M:%S", serverTime)
+AntiTb:AddSection("⚡ Anti-Lag")
+AntiTb:AddToggle({
+    Name = "Anti-Lag",
+    Default = false,
+    Callback = function(s)
+        if not s then return end
+        local lock, skip = {}, nil
+        local function tools(plr)
+            local list, box = {}, {}
+            if plr.Character then box[#box+1] = plr.Character end
+            local bp = plr:FindFirstChildOfClass("Backpack")
+            if bp then box[#box+1] = bp end
+            local sg = plr:FindFirstChild("StarterGear")
+            if sg then box[#box+1] = sg end
+            for _, c in ipairs(box) do
+                for _, t in ipairs(c:GetChildren()) do
+                    if t:IsA("Tool") then list[#list+1] = t end
+                end
+            end
+            return list
+        end
+        local function clean(plr)
+            if plr == skip or lock[plr] then return end
+            lock[plr] = true
+            local t = tools(plr)
+            for i = 2, #t do pcall(function() t[i]:Destroy() end) end
+            lock[plr] = false
+        end
+        local function hook(plr)
+            skip = skip or plr
+            task.defer(clean, plr)
+            local function setup(ch)
+                task.delay(0.5, function() clean(plr) end)
+                ch.ChildAdded:Connect(function(c)
+                    if c:IsA("Tool") then task.delay(0.1, function() clean(plr) end) end
+                end)
+            end
+            if plr.Character then setup(plr.Character) end
+            plr.CharacterAdded:Connect(setup)
+            local bp = plr:WaitForChild("Backpack", 10)
+            if bp then
+                bp.ChildAdded:Connect(function(c)
+                    if c:IsA("Tool") then task.delay(0.1, function() clean(plr) end) end
+                end)
+            end
+            local sg = plr:FindFirstChild("StarterGear") or plr:WaitForChild("StarterGear", 10)
+            if sg then
+                sg.ChildAdded:Connect(function(c)
+                    if c:IsA("Tool") then task.delay(0.1, function() clean(plr) end) end
+                end)
+            end
+        end
+        antiPlayers.PlayerAdded:Connect(hook)
+        for _, plr in ipairs(antiPlayers:GetPlayers()) do hook(plr) end
+        task.spawn(function()
+            while s do
+                for _, plr in ipairs(antiPlayers:GetPlayers()) do clean(plr) end
+                task.wait(2)
+            end
+        end)
+    end
+})
 
-	local country = "Desconocido"
-	pcall(function()
-		local ipResponse = HttpService:JSONDecode(game:HttpGet('http://ip-api.com/json/?fields=status,country'))
-		if ipResponse.status == "success" and ipResponse.country then
-			country = ipResponse.country
-		end
-	end)
+AntiTb:AddSection("🚪 Anti Fling Doors")
+local doors = {}
+AntiTb:AddToggle({
+    Name = "Anti Fling Doors",
+    Default = false,
+    Callback = function(s)
+        if s then
+            doors = {}
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if obj:IsA("BasePart") and obj.Name:lower():find("door") then
+                    doors[#doors+1] = {o=obj, t=obj.Transparency, c=obj.CanCollide, sh=obj.CastShadow}
+                    obj.Transparency = 1
+                    obj.CanCollide = false
+                    obj.CastShadow = false
+                    for _, c in ipairs(obj:GetChildren()) do
+                        if c:IsA("BasePart") then
+                            c.Transparency = 1
+                            c.CanCollide = false
+                        elseif c:IsA("SurfaceGui") or c:IsA("BillboardGui") then
+                            c.Enabled = false
+                        end
+                    end
+                end
+            end
+        else
+            for _, d in ipairs(doors) do
+                if d.o and d.o.Parent then
+                    d.o.Transparency = d.t
+                    d.o.CanCollide = d.c
+                    d.o.CastShadow = d.sh
+                    for _, c in ipairs(d.o:GetChildren()) do
+                        if c:IsA("BasePart") then
+                            c.Transparency = 0
+                            c.CanCollide = true
+                        elseif c:IsA("SurfaceGui") or c:IsA("BillboardGui") then
+                            c.Enabled = true
+                        end
+                    end
+                end
+            end
+            doors = {}
+        end
+    end
+})
 
-	local executor = detectExecutor()
+AntiTb:AddSection("🧱 Anti Fling Block")
+local blockRef = {}
+AntiTb:AddToggle({
+    Name = "Anti Fling Block",
+    Default = false,
+    Callback = function(s)
+        if s then
+            local lots = workspace:FindFirstChild("001_Lots")
+            if not lots then return end
+            for _, lot in ipairs(lots:GetChildren()) do
+                local picked = lot:FindFirstChild("HousePickedByPlayer")
+                local hm = picked and picked:FindFirstChild("HouseModel")
+                local m = hm and hm:FindFirstChild("Model")
+                local nl = m and m:FindFirstChild("NoLockHouseDoor")
+                local d = nl and nl:FindFirstChild("Door")
+                if d then
+                    blockRef = {d=d, p=d.Parent}
+                    d.Parent = nil
+                    break
+                end
+            end
+        elseif blockRef.d and blockRef.p then
+            blockRef.d.Parent = blockRef.p
+            blockRef = {}
+        end
+    end
+})
 
-	local avatarUrl = ""
-	pcall(function()
-		local avatarRequest = string.format('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false', userId)
-		local avatarData = HttpService:JSONDecode(game:HttpGet(avatarRequest))
-		if avatarData and avatarData.data and avatarData.data[1] then
-			avatarUrl = avatarData.data[1].imageUrl
-		end
-	end)
+-- ═══════════════════════════════════════════════════════
+-- PROPS
+-- ═══════════════════════════════════════════════════════
+local propsSelectedPlayer = nil
+local propsFlingConnection = nil
+local propsBringConnection = nil
+local propsKillConnection = nil
+local propsRGBConnection = nil
+local propsOrbitConnection = nil
+local propsRGBEnabled = false
+local _noPropsWarned = false
 
-	local mapName = "Desconocido"
-	pcall(function()
-		mapName = game:GetService('MarketplaceService'):GetProductInfo(placeId).Name
-	end)
-
-	local data = {
-		["content"] = "🚫 **¡Intento de ejecución en mantenimiento!**",
-		["embeds"] = {{
-			["title"] = "👤 Información del usuario",
-			["color"] = 16711680,
-			["fields"] = {
-				{
-					["name"] = "📛 Nombre",
-					["value"] = displayName .. " (@ " .. playerName .. ")",
-					["inline"] = true
-				},
-				{
-					["name"] = "🆔 User ID",
-					["value"] = tostring(userId),
-					["inline"] = true
-				},
-				{
-					["name"] = "🗺️ Mapa",
-					["value"] = mapName,
-					["inline"] = true
-				},
-				{
-					["name"] = "🖥️ Ejecutor",
-					["value"] = executor,
-					["inline"] = true
-				},
-				{
-					["name"] = "🌍 País",
-					["value"] = country,
-					["inline"] = true
-				},
-				{
-					["name"] = "🕐 Fecha/Hora",
-					["value"] = date,
-					["inline"] = true
-				},
-				{
-					["name"] = "🔑 Server ID",
-					["value"] = "`" .. jobId .. "`",
-					["inline"] = false
-				},
-				{
-					["name"] = "📌 Comando para unirte",
-					["value"] = "```lua\ngame:GetService(\"TeleportService\"):TeleportToPrivateServer(" .. placeId .. ", \"" .. jobId .. "\")\n```",
-					["inline"] = false
-				}
-			},
-			["footer"] = {
-				["text"] = "Irvinglz1 Hub - Modo Mantenimiento"
-			},
-			["timestamp"] = DateTime.now():ToIsoDate(),
-			["thumbnail"] = {
-				["url"] = avatarUrl
-			}
-		}}
-	}
-
-	local encodedData = HttpService:JSONEncode(data)
-	pcall(function()
-		local success = false
-		
-		if syn and syn.request then
-			local response = syn.request({
-				Url = WEBHOOK_EXECUTOR,
-				Method = "POST",
-				Headers = {["Content-Type"] = "application/json"},
-				Body = encodedData
-			})
-			if response and response.StatusCode == 204 then
-				success = true
-			end
-		end
-		
-		if not success and http and http.request then
-			local response = http.request({
-				Url = WEBHOOK_EXECUTOR,
-				Method = "POST",
-				Headers = {["Content-Type"] = "application/json"},
-				Body = encodedData
-			})
-			if response and response.StatusCode == 204 then
-				success = true
-			end
-		end
-		
-		if not success and request then
-			local response = request({
-				Url = WEBHOOK_EXECUTOR,
-				Method = "POST",
-				Headers = {["Content-Type"] = "application/json"},
-				Body = encodedData
-			})
-			if response and response.StatusCode == 204 then
-				success = true
-			end
-		end
-		
-		if not success then
-			HttpService:PostAsync(WEBHOOK_EXECUTOR, encodedData, Enum.HttpContentType.ApplicationJson)
-		end
-	end)
+local function propsGetPlayerList()
+    local t = {}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player then table.insert(t, plr.Name) end
+    end
+    return t
 end
 
-local function sendMessageToCreator(messageText)
-	if WEBHOOK_MENSAJES == "" then
-		warn("WEBHOOK_MENSAJES no configurado")
-		return false
-	end
-	
-	if hasUserSentMessage() then
-		return false
-	end
-	
-	local playerName = player.Name
-	local displayName = player.DisplayName
-	local userId = player.UserId
-	local date = os.date("%Y-%m-%d %H:%M:%S", os.time())
-	
-	local avatarUrl = ""
-	pcall(function()
-		local avatarRequest = string.format('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=420x420&format=Png&isCircular=false', userId)
-		local avatarData = HttpService:JSONDecode(game:HttpGet(avatarRequest))
-		if avatarData and avatarData.data and avatarData.data[1] then
-			avatarUrl = avatarData.data[1].imageUrl
-		end
-	end)
-	
-	local data = {
-		["content"] = "💬 **¡Nuevo mensaje para el creador!**",
-		["embeds"] = {{
-			["title"] = "📩 Mensaje de " .. displayName,
-			["color"] = 16776960,
-			["fields"] = {
-				{
-					["name"] = "👤 Usuario",
-					["value"] = displayName .. " (@ " .. playerName .. ")",
-					["inline"] = true
-				},
-				{
-					["name"] = "🆔 User ID",
-					["value"] = tostring(userId),
-					["inline"] = true
-				},
-				{
-					["name"] = "💬 Mensaje",
-					["value"] = messageText,
-					["inline"] = false
-				},
-				{
-					["name"] = "🕐 Fecha/Hora",
-					["value"] = date,
-					["inline"] = true
-				}
-			},
-			["footer"] = {
-				["text"] = "Sistema de Mensajes al Creador"
-			},
-			["timestamp"] = DateTime.now():ToIsoDate(),
-			["thumbnail"] = {
-				["url"] = avatarUrl
-			}
-		}}
-	}
-	
-	local encodedData = HttpService:JSONEncode(data)
-	local success = false
-	
-	pcall(function()
-		if syn and syn.request then
-			local response = syn.request({
-				Url = WEBHOOK_MENSAJES,
-				Method = "POST",
-				Headers = {["Content-Type"] = "application/json"},
-				Body = encodedData
-			})
-			if response and response.StatusCode == 204 then
-				success = true
-			end
-		end
-		
-		if not success and http and http.request then
-			local response = http.request({
-				Url = WEBHOOK_MENSAJES,
-				Method = "POST",
-				Headers = {["Content-Type"] = "application/json"},
-				Body = encodedData
-			})
-			if response and response.StatusCode == 204 then
-				success = true
-			end
-		end
-		
-		if not success and request then
-			local response = request({
-				Url = WEBHOOK_MENSAJES,
-				Method = "POST",
-				Headers = {["Content-Type"] = "application/json"},
-				Body = encodedData
-			})
-			if response and response.StatusCode == 204 then
-				success = true
-			end
-		end
-		
-		if not success then
-			HttpService:PostAsync(WEBHOOK_MENSAJES, encodedData, Enum.HttpContentType.ApplicationJson)
-			success = true
-		end
-	end)
-	
-	if success then
-		markUserAsSent()
-	end
-	
-	return success
-end
-
-local function createCorner(parent, radius)
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, radius)
-	corner.Parent = parent
-	return corner
-end
-
-local function createStroke(parent, color, thickness, transparency)
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = color
-	stroke.Thickness = thickness or 1
-	stroke.Transparency = transparency or 0
-	stroke.Parent = parent
-	return stroke
-end
-
-local function removeGui(name)
-	local gui = CoreGui:FindFirstChild(name)
-	if gui then
-		gui:Destroy()
-	end
-end
-
-local function showNotification(parent, text, color)
-	local old = parent:FindFirstChild("Notification")
-	if old then
-		old:Destroy()
-	end
-
-	local notification = Instance.new("TextLabel")
-	notification.Name = "Notification"
-	notification.AnchorPoint = Vector2.new(0.5, 1)
-	notification.Position = UDim2.new(0.5, 0, 1, -8)
-	notification.Size = UDim2.new(1, -40, 0, 30)
-	notification.BackgroundTransparency = 1
-	notification.Text = text
-	notification.TextColor3 = color
-	notification.TextSize = 14
-	notification.Font = Enum.Font.GothamMedium
-	notification.TextTransparency = 1
-	notification.Parent = parent
-
-	TweenService:Create(
-		notification,
-		TweenInfo.new(0.2),
-		{ TextTransparency = 0 }
-	):Play()
-
-	task.delay(2.5, function()
-		if not notification.Parent then
-			return
-		end
-		local tween = TweenService:Create(
-			notification,
-			TweenInfo.new(0.25),
-			{ TextTransparency = 1 }
-		)
-		tween:Play()
-		tween.Completed:Wait()
-		if notification then
-			notification:Destroy()
-		end
-	end)
-end
-
-local function showMessageWindow(mainGui, mainBg, mainText, mainSubText, mainButtonContainer)
-    removeGui("CreatorMessageWindow")
-
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "CreatorMessageWindow"
-    gui.IgnoreGuiInset = true
-    gui.ResetOnSpawn = false
-    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    gui.Parent = CoreGui
-
-    -- Fondo oscuro suave
-    local overlay = Instance.new("Frame")
-    overlay.Size = UDim2.fromScale(1, 1)
-    overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    overlay.BackgroundTransparency = 1
-    overlay.BorderSizePixel = 0
-    overlay.Parent = gui
-
-    -- Ventana principal compacta
-    local frame = Instance.new("Frame")
-    frame.Name = "Main"
-    frame.AnchorPoint = Vector2.new(0.5, 0.5)
-    frame.Position = UDim2.fromScale(0.5, 0.5)
-    frame.Size = UDim2.fromOffset(420, 330) -- MÁS PEQUEÑO PARA MÓVIL
-    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-    frame.BackgroundTransparency = 0.25
-    frame.BorderSizePixel = 0
-    frame.ClipsDescendants = true
-    frame.Parent = gui
-    createCorner(frame, 16)
-    createStroke(frame, Color3.fromRGB(90, 95, 110), 1, 0.15)
-
-    -- Sombra realista
-    local shadow = Instance.new("ImageLabel")
-    shadow.Image = "rbxassetid://1316045217"
-    shadow.Size = UDim2.new(1, 30, 1, 30)
-    shadow.Position = UDim2.new(0, -15, 0, -15)
-    shadow.BackgroundTransparency = 1
-    shadow.ImageTransparency = 0.45
-    shadow.Parent = frame
-
-    -- Animación de escala
-    local scale = Instance.new("UIScale")
-    scale.Scale = 0.7
-    scale.Parent = frame
-
-    -- TOP BAR COMPACTO
-    local topBar = Instance.new("Frame")
-    topBar.Size = UDim2.new(1, 0, 0, 55)
-    topBar.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-    topBar.BackgroundTransparency = 0.15
-    topBar.BorderSizePixel = 0
-    topBar.Active = true
-    topBar.Parent = frame
-
-    local title = Instance.new("TextLabel")
-    title.Position = UDim2.fromOffset(18, 8)
-    title.Size = UDim2.new(1, -70, 0, 22)
-    title.BackgroundTransparency = 1
-    title.Text = CONFIG.Title
-    title.TextColor3 = COLORS.Text
-    title.TextSize = 18
-    title.Font = Enum.Font.GothamBold
-    title.TextXAlignment = Enum.TextXAlignment.Left
-    title.Parent = topBar
-
-    -- Botón cerrar más pequeño
-    local closeButton = Instance.new("TextButton")
-    closeButton.AnchorPoint = Vector2.new(1, 0)
-    closeButton.Position = UDim2.new(1, -12, 0, 10)
-    closeButton.Size = UDim2.fromOffset(32, 32)
-    closeButton.BackgroundColor3 = COLORS.Close
-    closeButton.Text = "×"
-    closeButton.TextColor3 = COLORS.Text
-    closeButton.TextSize = 24
-    closeButton.Font = Enum.Font.GothamBold
-    closeButton.BorderSizePixel = 0
-    closeButton.Parent = topBar
-    createCorner(closeButton, 8)
-
-    -- DESCRIPCIÓN
-    local description = Instance.new("TextLabel")
-    description.Position = UDim2.fromOffset(20, 65)
-    description.Size = UDim2.new(1, -40, 0, 20)
-    description.BackgroundTransparency = 1
-    description.Text = "Tu mensaje"
-    description.TextColor3 = COLORS.Text
-    description.TextSize = 13
-    description.Font = Enum.Font.GothamMedium
-    description.TextXAlignment = Enum.TextXAlignment.Left
-    description.Parent = frame
-
-    -- INPUT MÁS GRANDE PARA MÓVIL
-    local inputFrame = Instance.new("Frame")
-    inputFrame.Position = UDim2.fromOffset(20, 90)
-    inputFrame.Size = UDim2.new(1, -40, 0, 150)
-    inputFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-    inputFrame.BackgroundTransparency = 0.35
-    inputFrame.BorderSizePixel = 0
-    inputFrame.Parent = frame
-    createCorner(inputFrame, 10)
-
-    local inputStroke = createStroke(
-        inputFrame,
-        Color3.fromRGB(75, 80, 95),
-        1,
-        0.2
-    )
-
-    local textBox = Instance.new("TextBox")
-    textBox.Position = UDim2.fromOffset(10, 10)
-    textBox.Size = UDim2.new(1, -20, 1, -20)
-    textBox.BackgroundTransparency = 1
-    textBox.ClearTextOnFocus = false
-    textBox.MultiLine = true
-    textBox.Text = ""
-    textBox.PlaceholderText = "Escribe tu mensaje..."
-    textBox.PlaceholderColor3 = Color3.fromRGB(125, 130, 145)
-    textBox.TextColor3 = COLORS.Text
-    textBox.TextSize = 15
-    textBox.Font = Enum.Font.Gotham
-    textBox.TextWrapped = true
-    textBox.TextXAlignment = Enum.TextXAlignment.Left
-    textBox.TextYAlignment = Enum.TextYAlignment.Top
-    textBox.Parent = inputFrame
-
-    -- CONTADOR
-    local counter = Instance.new("TextLabel")
-    counter.Position = UDim2.fromOffset(20, 245)
-    counter.Size = UDim2.new(1, -40, 0, 20)
-    counter.BackgroundTransparency = 1
-    counter.Text = "0 / " .. CONFIG.MaxCharacters
-    counter.TextColor3 = COLORS.SubText
-    counter.TextSize = 12
-    counter.Font = Enum.Font.Gotham
-    counter.TextXAlignment = Enum.TextXAlignment.Right
-    counter.Parent = frame
-
-    -- Verificar si ya envió mensaje
-    local alreadySent = hasUserSentMessage()
-
-    -- BOTÓN ENVIAR MÁS PEQUEÑO
-    local sendButton = Instance.new("TextButton")
-    sendButton.AnchorPoint = Vector2.new(0.5, 0)
-    sendButton.Position = UDim2.new(0.5, 0, 0, 275)
-    sendButton.Size = UDim2.fromOffset(180, 42)
-    sendButton.BorderSizePixel = 0
-    sendButton.Parent = frame
-    createCorner(sendButton, 10)
-
-    if alreadySent then
-        sendButton.BackgroundColor3 = COLORS.Disabled
-        sendButton.Text = "✓ Enviado"
-        sendButton.TextColor3 = COLORS.SubText
-        sendButton.Active = false
-        sendButton.AutoButtonColor = false
-
-        textBox.Text = "Ya enviaste tu mensaje anteriormente"
-        textBox.TextColor3 = COLORS.SubText
-        textBox.Active = false
-        textBox.Selectable = false
-
-        showNotification(
-            frame,
-            "ℹ️ Ya enviaste un mensaje anteriormente.",
-            COLORS.Warning
-        )
+local function propsUpdateTarget(playerName)
+    if playerName and playerName ~= "" then
+        propsSelectedPlayer = Players:FindFirstChild(playerName)
+        getgenv().Target = propsSelectedPlayer
     else
-        sendButton.BackgroundColor3 = COLORS.Primary
-        sendButton.Text = "📤 Enviar"
-        sendButton.TextColor3 = COLORS.Text
-        sendButton.TextSize = 17
-        sendButton.Font = Enum.Font.GothamBold
-        sendButton.Active = true
-        sendButton.AutoButtonColor = true
+        propsSelectedPlayer = nil
+        getgenv().Target = nil
     end
-
-    -- CIERRE
-    local closing = false
-    local function closeWindow()
-        if closing then return end
-        closing = true
-
-        TweenService:Create(
-            overlay,
-            TweenInfo.new(0.2),
-            { BackgroundTransparency = 1 }
-        ):Play()
-
-        local tween = TweenService:Create(
-            scale,
-            TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-            { Scale = 0.85 }
-        )
-        tween:Play()
-        tween.Completed:Wait()
-
-        if gui then gui:Destroy() end
-    end
-
-    -- FUNCIÓN PARA CUANDO CIERRA CON LA X (NO MARCA COMO ENVIADO)
-    local function closeWithoutSending()
-        closeWindow()
-    end
-
-    closeButton.MouseButton1Click:Connect(function()
-        closeWithoutSending()
-    end)
-
-    -- FUNCIÓN PARA MOSTRAR AGRADECIMIENTO Y CERRAR TODO (SOLO CUANDO ENVÍA EL MENSAJE)
-    local function showThanksAndClose()
-        if gui then
-            gui:Destroy()
-        end
-
-        if mainGui and mainBg and mainText and mainSubText and mainButtonContainer then
-            TweenService:Create(
-                mainButtonContainer,
-                TweenInfo.new(0.3),
-                { Size = UDim2.new(0, 0, 0, 0) }
-            ):Play()
-
-            TweenService:Create(
-                mainSubText,
-                TweenInfo.new(0.3),
-                { TextTransparency = 1 }
-            ):Play()
-
-            task.wait(0.3)
-
-            mainText.Text = CONFIG.ThanksMessage
-            mainText.TextColor3 = COLORS.Success
-            mainText.TextSize = 40
-            mainText.TextTransparency = 1
-
-            TweenService:Create(
-                mainText,
-                TweenInfo.new(0.5),
-                { TextTransparency = 0 }
-            ):Play()
-
-            task.wait(2.5)
-
-            TweenService:Create(
-                mainBg,
-                TweenInfo.new(1.5),
-                { BackgroundTransparency = 1 }
-            ):Play()
-
-            TweenService:Create(
-                mainText,
-                TweenInfo.new(1.5),
-                { TextTransparency = 1 }
-            ):Play()
-
-            task.wait(1.5)
-
-            if mainGui then
-                mainGui:Destroy()
-            end
-        end
-    end
-
-    -- TEXTBOX INTERACTIVO
-    if not alreadySent then
-        textBox.Focused:Connect(function()
-            TweenService:Create(
-                inputStroke,
-                TweenInfo.new(0.15),
-                { Color = COLORS.Primary, Transparency = 0 }
-            ):Play()
-        end)
-
-        textBox.FocusLost:Connect(function()
-            TweenService:Create(
-                inputStroke,
-                TweenInfo.new(0.15),
-                { Color = Color3.fromRGB(75, 80, 95), Transparency = 0.2 }
-            ):Play()
-        end)
-
-        textBox:GetPropertyChangedSignal("Text"):Connect(function()
-            if #textBox.Text > CONFIG.MaxCharacters then
-                textBox.Text = string.sub(textBox.Text, 1, CONFIG.MaxCharacters)
-            end
-
-            local length = #textBox.Text
-            counter.Text = length .. " / " .. CONFIG.MaxCharacters
-
-            if length >= CONFIG.MaxCharacters then
-                counter.TextColor3 = COLORS.Error
-            elseif length >= CONFIG.MaxCharacters * 0.8 then
-                counter.TextColor3 = COLORS.Warning
-            else
-                counter.TextColor3 = COLORS.SubText
-            end
-        end)
-
-        -- HOVER
-        sendButton.MouseEnter:Connect(function()
-            if sendButton.Active then
-                TweenService:Create(
-                    sendButton,
-                    TweenInfo.new(0.15),
-                    { BackgroundColor3 = COLORS.PrimaryHover }
-                ):Play()
-            end
-        end)
-
-        sendButton.MouseLeave:Connect(function()
-            if sendButton.Active then
-                TweenService:Create(
-                    sendButton,
-                    TweenInfo.new(0.15),
-                    { BackgroundColor3 = COLORS.Primary }
-                ):Play()
-            end
-        end)
-
-        -- ENVÍO
-        local sending = false
-
-        sendButton.MouseButton1Click:Connect(function()
-            if sending or not sendButton.Active then return end
-
-            if hasUserSentMessage() then
-                showNotification(frame, "ℹ️ Ya enviaste un mensaje anteriormente.", COLORS.Warning)
-                return
-            end
-
-            local message = textBox.Text:match("^%s*(.-)%s*$")
-
-            if message == "" then
-                showNotification(frame, "❌ Escribe un mensaje primero.", COLORS.Error)
-                return
-            end
-
-            if #message > CONFIG.MaxCharacters then
-                showNotification(frame, "❌ El mensaje es demasiado largo.", COLORS.Error)
-                return
-            end
-
-            sending = true
-            sendButton.Active = false
-            sendButton.AutoButtonColor = false
-            sendButton.Text = "⏳ Enviando..."
-
-            local success = sendMessageToCreator(message)
-
-            if success then
-                sendButton.Text = "✓ Enviado"
-                sendButton.BackgroundColor3 = COLORS.Success
-
-                showNotification(frame, "✓ ¡Mensaje enviado correctamente!", COLORS.Success)
-
-                task.wait(1.5)
-                closeWindow()
-                showThanksAndClose()
-            else
-                sendButton.Text = "Reintentar"
-                sendButton.BackgroundColor3 = COLORS.Error
-                sendButton.Active = true
-                sendButton.AutoButtonColor = true
-                sending = false
-
-                showNotification(frame, "❌ No se pudo enviar el mensaje.", COLORS.Error)
-            end
-        end)
-    end
-
-    -- DRAG
-    local dragging = false
-    local dragStart
-    local startPosition
-
-    topBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-            or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPosition = frame.Position
-        end
-    end)
-
-    topBar.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-            or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if not dragging then return end
-        if input.UserInputType == Enum.UserInputType.MouseMovement
-            or input.UserInputType == Enum.UserInputType.Touch then
-            local delta = input.Position - dragStart
-            frame.Position = UDim2.new(
-                startPosition.X.Scale,
-                startPosition.X.Offset + delta.X,
-                startPosition.Y.Scale,
-                startPosition.Y.Offset + delta.Y
-            )
-        end
-    end)
-
-    -- ANIMACIÓN DE APERTURA
-    TweenService:Create(
-        overlay,
-        TweenInfo.new(0.25),
-        { BackgroundTransparency = 0.5 }
-    ):Play()
-
-    TweenService:Create(
-        scale,
-        TweenInfo.new(0.45, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
-        { Scale = 1 }
-    ):Play()
 end
 
-local function ShowMaintenanceScreen()
-	local gui = Instance.new("ScreenGui")
-	gui.Name = "MaintenanceScreen"
-	gui.Parent = CoreGui
-	gui.IgnoreGuiInset = true
-	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+local propsDropdown = PropsTb:AddDropdown({
+    Name = "Seleccionar Jugador",
+    Options = propsGetPlayerList(),
+    Default = "",
+    Callback = function(value) propsUpdateTarget(value) end
+})
 
-	local bg = Instance.new("Frame", gui)
-	bg.Size = UDim2.new(1,0,1,0)
-	bg.BackgroundColor3 = Color3.fromRGB(10,10,10)
-	bg.BackgroundTransparency = 1
+PropsTb:AddButton({
+    Name = "🔄 Actualizar Lista",
+    Callback = function()
+        if propsDropdown then
+            propsDropdown:Set(propsGetPlayerList())
+            if propsSelectedPlayer and not Players:FindFirstChild(propsSelectedPlayer.Name) then
+                propsUpdateTarget(nil)
+            end
+        end
+    end
+})
 
-	local textLabel = Instance.new("TextLabel", bg)
-	textLabel.Size = UDim2.new(1,0,0,150)
-	textLabel.Position = UDim2.new(0,0,0.4,-75)
-	textLabel.BackgroundTransparency = 1
-	textLabel.TextColor3 = Color3.fromRGB(255,255,255)
-	textLabel.Font = Enum.Font.GothamBold
-	textLabel.TextSize = 45
-	textLabel.TextTransparency = 1
-	textLabel.Text = ""
-	textLabel.TextWrapped = true
-	textLabel.TextXAlignment = Enum.TextXAlignment.Center
+local function propsGetMyProps()
+    local list = {}
+    local workspaceCom = workspace:FindFirstChild("WorkspaceCom")
+    if not workspaceCom then return list end
+    local myName = player.Name
+    for _, folder in ipairs(workspaceCom:GetChildren()) do
+        for _, prop in ipairs(folder:GetChildren()) do
+            if prop.Name:find(myName) and prop:FindFirstChild("SetCurrentCFrame") then
+                table.insert(list, prop)
+            end
+        end
+    end
+    return list
+end
 
-	-- Animación de entrada
-	TweenService:Create(bg, TweenInfo.new(1), {
-		BackgroundTransparency = 0
-	}):Play()
+local function propsTeleport(targetCFrame)
+    local list = propsGetMyProps()
+    if #list == 0 then
+        if not _noPropsWarned then
+            _noPropsWarned = true
+            notify({Title="⚠️ Sin Props", Text="Coloca un prop primero con PropMaker", Duration=3, Warning=true})
+        end
+        return
+    end
+    _noPropsWarned = false
+    for _, prop in ipairs(list) do
+        task.spawn(function()
+            pcall(function() prop.SetCurrentCFrame:InvokeServer(targetCFrame) end)
+        end)
+    end
+end
 
-	TweenService:Create(textLabel, TweenInfo.new(1), {
-		TextTransparency = 0
-	}):Play()
+local function propsClearAll()
+    pcall(function() RE:FindFirstChild("1Clea1rTool1s"):FireServer("ClearAllProps") end)
+end
 
-	-- Escribir mensaje letra por letra
-	local message = CONFIG.MaintenanceMessage
-	for i = 1, #message do
-		textLabel.Text = string.sub(message, 1, i)
-		task.wait(0.06)
-	end
+local function propsGetTarget()
+    if not propsSelectedPlayer then return nil end
+    if not propsSelectedPlayer.Parent then
+        propsSelectedPlayer = nil
+        return nil
+    end
+    return propsSelectedPlayer
+end
 
-	task.wait(1.5)
+PropsTb:AddSection("💥 Prop Fling / Bring / Kill")
 
-	-- Contenedor para el botón
-	local buttonContainer = Instance.new("Frame", bg)
-	buttonContainer.Size = UDim2.new(0, 300, 0, 60)
-	buttonContainer.Position = UDim2.new(0.5, -150, 0.5, 40)
-	buttonContainer.BackgroundTransparency = 1
-	buttonContainer.Visible = false
-	
-	-- Botón "Enviar mensaje al creador"
-	local creatorButton = Instance.new("TextButton", buttonContainer)
-	creatorButton.Size = UDim2.new(1, 0, 1, 0)
-	creatorButton.BackgroundColor3 = COLORS.Primary
-	creatorButton.Text = CONFIG.ButtonText
-	creatorButton.TextColor3 = COLORS.Text
-	creatorButton.TextSize = 18
-	creatorButton.Font = Enum.Font.GothamBold
-	creatorButton.BorderSizePixel = 0
-	creatorButton.ZIndex = 2
-	
-	-- Sombra del botón
-	local shadow = Instance.new("Frame", creatorButton)
-	shadow.Size = UDim2.new(1, 2, 1, 2)
-	shadow.Position = UDim2.new(0, -1, 0, -1)
-	shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-	shadow.BackgroundTransparency = 0.5
-	shadow.BorderSizePixel = 0
-	
-	-- Texto adicional debajo del botón
-	local subText = Instance.new("TextLabel", bg)
-	subText.Size = UDim2.new(1,0,0,40)
-	subText.Position = UDim2.new(0,0,0.6,0)
-	subText.BackgroundTransparency = 1
-	subText.Text = "Haz clic aquí para contactar al creador"
-	subText.TextColor3 = Color3.fromRGB(200, 200, 200)
-	subText.TextSize = 16
-	subText.Font = Enum.Font.Gotham
-	subText.TextTransparency = 1
-	subText.TextWrapped = true
-	subText.TextXAlignment = Enum.TextXAlignment.Center
+PropsTb:AddToggle({
+    Name = "Prop Fling",
+    Default = false,
+    Callback = function(Value)
+        if propsFlingConnection then propsFlingConnection:Disconnect(); propsFlingConnection = nil end
+        if not Value then return end
+        propsFlingConnection = RunService.Heartbeat:Connect(function()
+            local target = propsGetTarget()
+            if not target or not target.Character then return end
+            local targetRoot = target.Character:FindFirstChild("HumanoidRootPart")
+            local targetHumanoid = target.Character:FindFirstChild("Humanoid")
+            if not targetRoot or not targetHumanoid then return end
+            if targetHumanoid.Sit then
+                propsTeleport(CFrame.new(1082537, 81322368, -4719626.5))
+                task.delay(1.5, propsClearAll)
+            else
+                propsTeleport(targetRoot.CFrame * CFrame.new(0, -(targetHumanoid.HipHeight + 2), 0))
+            end
+        end)
+    end
+})
 
-	-- Efecto hover del botón
-	creatorButton.MouseEnter:Connect(function()
-		TweenService:Create(creatorButton, TweenInfo.new(0.2), {
-			BackgroundColor3 = COLORS.PrimaryHover
-		}):Play()
-	end)
-	
-	creatorButton.MouseLeave:Connect(function()
-		TweenService:Create(creatorButton, TweenInfo.new(0.2), {
-			BackgroundColor3 = COLORS.Primary
-		}):Play()
-	end)
+PropsTb:AddToggle({
+    Name = "Prop Bring",
+    Default = false,
+    Callback = function(Value)
+        if propsBringConnection then propsBringConnection:Disconnect(); propsBringConnection = nil end
+        if not Value then return end
+        propsBringConnection = RunService.Heartbeat:Connect(function()
+            local target = propsGetTarget()
+            if not target or not target.Character then return end
+            local targetRoot = target.Character:FindFirstChild("HumanoidRootPart")
+            local targetHumanoid = target.Character:FindFirstChild("Humanoid")
+            local myChar = player.Character
+            if not targetRoot or not targetHumanoid then return end
+            if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return end
+            if targetHumanoid.Sit then
+                propsTeleport(myChar.HumanoidRootPart.CFrame * CFrame.new(0, 0, -3))
+                task.delay(1.5, propsClearAll)
+            else
+                propsTeleport(targetRoot.CFrame * CFrame.new(0, -(targetHumanoid.HipHeight + 2), 0))
+            end
+        end)
+    end
+})
 
-	-- Click del botón - Abrir ventana de mensaje
-	creatorButton.MouseButton1Click:Connect(function()
-		showMessageWindow(gui, bg, textLabel, subText, buttonContainer)
-	end)
+PropsTb:AddToggle({
+    Name = "Prop Kill",
+    Default = false,
+    Callback = function(Value)
+        if propsKillConnection then propsKillConnection:Disconnect(); propsKillConnection = nil end
+        if not Value then return end
+        propsKillConnection = RunService.Heartbeat:Connect(function()
+            local target = propsGetTarget()
+            if not target or not target.Character then return end
+            local targetRoot = target.Character:FindFirstChild("HumanoidRootPart")
+            local targetHumanoid = target.Character:FindFirstChild("Humanoid")
+            if not targetRoot or not targetHumanoid then return end
+            if targetHumanoid.Sit then
+                propsTeleport(CFrame.new(216.457, -1338.86, -477.942))
+                task.delay(1.5, propsClearAll)
+            else
+                propsTeleport(targetRoot.CFrame * CFrame.new(0, -(targetHumanoid.HipHeight + 2), 0))
+            end
+        end)
+    end
+})
 
-	-- Mostrar el botón después de un momento
-	task.wait(0.5)
-	buttonContainer.Visible = true
-	
-	-- Animación del botón
-	buttonContainer.Position = UDim2.new(0.5, -150, 0.6, 40)
-	buttonContainer.Size = UDim2.new(0, 0, 0, 0)
-	TweenService:Create(buttonContainer, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-		Position = UDim2.new(0.5, -150, 0.5, 40),
-		Size = UDim2.new(0, 300, 0, 60)
-	}):Play()
-	
-	TweenService:Create(subText, TweenInfo.new(0.6), {
-		TextTransparency = 0
-	}):Play()
+PropsTb:AddSection("🌈 Prop RGB / Orbit")
+
+PropsTb:AddToggle({
+    Name = "Prop RGB",
+    Default = false,
+    Callback = function(Value)
+        propsRGBEnabled = Value
+        if propsRGBConnection then propsRGBConnection:Disconnect(); propsRGBConnection = nil end
+        if not propsRGBEnabled then return end
+        propsRGBConnection = RunService.Heartbeat:Connect(function()
+            if not propsRGBEnabled then return end
+            local hue = (tick() * 0.5) % 1
+            local color = Color3.fromHSV(hue, 1, 1)
+            local list = propsGetMyProps()
+            for _, prop in ipairs(list) do
+                if prop and prop.Parent and prop:FindFirstChild("ChangePropColor") then
+                    pcall(function() prop.ChangePropColor:InvokeServer(color) end)
+                end
+            end
+            pcall(function()
+                player.PlayerGui:WaitForChild("NoResetGUIHandler"):WaitForChild("PropColorPicker"):WaitForChild("SetColor"):FireServer(color)
+            end)
+        end)
+    end
+})
+
+PropsTb:AddToggle({
+    Name = "Orbit Prop",
+    Default = false,
+    Callback = function(Value)
+        if propsOrbitConnection then propsOrbitConnection:Disconnect(); propsOrbitConnection = nil end
+        if not Value then return end
+        local speed = 2
+        local radius = 6
+        local heightOffset = -3
+        local angle = 0
+        propsOrbitConnection = RunService.Heartbeat:Connect(function(delta)
+            local char = player.Character
+            if not char then return end
+            local root = char:FindFirstChild("HumanoidRootPart")
+            if not root then return end
+            local list = propsGetMyProps()
+            if not list or #list == 0 then return end
+            angle += delta * speed
+            local spacing = (math.pi * 2) / #list
+            for i, prop in ipairs(list) do
+                if prop and prop.Parent then
+                    local currentAngle = angle + (i * spacing)
+                    local x = math.cos(currentAngle) * radius
+                    local z = math.sin(currentAngle) * radius
+                    local worldPos = root.Position + Vector3.new(x, heightOffset, z)
+                    local lookAt = CFrame.lookAt(worldPos, root.Position)
+                    local remote = prop:FindFirstChild("SetCurrentCFrame")
+                    if remote then
+                        pcall(function() remote:InvokeServer(lookAt) end)
+                    end
+                end
+            end
+        end)
+    end
+})
+
+PropsTb:AddSection("⚙️ Utilidades")
+PropsTb:AddButton({
+    Name = "🗑️ Limpiar todos los Props",
+    Callback = function()
+        propsClearAll()
+        notify({Title="🗑️ Props", Text="Todos los props limpiados", Duration=2, Success=true})
+    end
+})
+
+PropsTb:AddButton({
+    Name = "🔄 Contar Props Activos",
+    Callback = function()
+        notify({Title="📦 Props", Text="Tienes " .. #propsGetMyProps() .. " props activos", Duration=2, Success=true})
+    end
+})
+
+PropsTb:AddParagraph({
+    Title = "ℹ️ Cómo usar",
+    Text = "1. Coloca tus props TÚ MISMO con el PropMaker.\n2. Selecciona un jugador.\n3. Activa el toggle (Fling / Bring / Kill / RGB / Orbit)."
+})
+
+-- ═══════════════════════════════════════════════════════
+-- TROLL: HOUSE BAN (con confirmación de conos) — ÚNICO
+-- ═══════════════════════════════════════════════════════
+local trollPlayers = game:GetService("Players")
+local trollWorkspace = game:GetService("Workspace")
+local trollRS = game:GetService("ReplicatedStorage")
+local trollRunService = game:GetService("RunService")
+local trollMe = trollPlayers.LocalPlayer
+
+local posicionDestino = Vector3.new(1019.4299926758, 73, -1101.2436523438)
+local modeloSilla = "CornerHills"
+
+local trollTarget = nil
+local following = false
+local loopThread = nil
+local monitorThread = nil
+local hasHouse = false
+local houseData = nil
+local myCones = {}
+local buyingHouse = false
+local antiSentarse = false
+local conexionesAntiSentarse = {}
+local running = false
+
+local function aplicarAntiSentarse(personaje)
+    if not personaje then return end
+    local humanoide = personaje:FindFirstChildOfClass("Humanoid")
+    local raiz = personaje:FindFirstChild("HumanoidRootPart")
+    if not humanoide or not raiz then return end
+    for _, conexion in pairs(conexionesAntiSentarse) do
+        pcall(function() conexion:Disconnect() end)
+    end
+    table.clear(conexionesAntiSentarse)
+    pcall(function() humanoide:SetStateEnabled(Enum.HumanoidStateType.Seated, false) end)
+    conexionesAntiSentarse[#conexionesAntiSentarse+1] = humanoide.StateChanged:Connect(function(_, nuevo)
+        if antiSentarse and nuevo == Enum.HumanoidStateType.Seated then
+            humanoide.Sit = false
+            humanoide:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end)
+    conexionesAntiSentarse[#conexionesAntiSentarse+1] = trollRunService.Heartbeat:Connect(function()
+        if not antiSentarse then return end
+        if not personaje or not personaje.Parent then return end
+        pcall(function()
+            humanoide.Sit = false
+            if humanoide:GetState() == Enum.HumanoidStateType.Seated then
+                humanoide:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+            for _, soldadura in pairs(raiz:GetChildren()) do
+                if (soldadura:IsA("Weld") or soldadura:IsA("WeldConstraint") or soldadura:IsA("Motor6D")) and
+                   (soldadura.Name == "SeatWeld" or soldadura.Name == "VehicleSeat") then
+                    soldadura:Destroy()
+                end
+            end
+            for _, objeto in pairs(personaje:GetDescendants()) do
+                if (objeto:IsA("Weld") or objeto:IsA("WeldConstraint")) and objeto.Name == "SeatWeld" then
+                    objeto:Destroy()
+                end
+            end
+        end)
+    end)
+end
+
+local function activarAntiSentarse()
+    if antiSentarse then return end
+    antiSentarse = true
+    if trollMe.Character then aplicarAntiSentarse(trollMe.Character) end
+end
+
+local function desactivarAntiSentarse()
+    antiSentarse = false
+    for _, conexion in pairs(conexionesAntiSentarse) do
+        pcall(function() conexion:Disconnect() end)
+    end
+    table.clear(conexionesAntiSentarse)
+end
+
+trollMe.CharacterAdded:Connect(function(personaje)
+    if antiSentarse then task.wait(0.2) aplicarAntiSentarse(personaje) end
+end)
+
+local function estaSentado(jugador)
+    if not jugador or not jugador.Character then return false end
+    local personaje = jugador.Character
+    local humanoide = personaje:FindFirstChildOfClass("Humanoid")
+    if not humanoide then return false end
+    if humanoide.Sit == true or humanoide.PlatformStand == true or humanoide.SeatPart then return true end
+    local animador = personaje:FindFirstChildOfClass("Animator")
+    if animador then
+        for _, pista in pairs(animador:GetPlayingAnimationTracks()) do
+            if pista.Animation and string.find(string.lower(pista.Animation.Name), "sit") then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+local function verificarCasa()
+    local lotes = trollWorkspace:FindFirstChild("001_Lots")
+    if not lotes then return false, nil end
+    local miCasa = lotes:FindFirstChild(trollMe.Name .. "House")
+    if not miCasa then return false, nil end
+    local info = {Nombre = miCasa.Name, Existe = true, Casa = miCasa}
+    for _, hijo in pairs(miCasa:GetDescendants()) do
+        if hijo:IsA("NumberValue") and hijo.Name == "Number" then
+            info.Numero = hijo.Value break
+        end
+    end
+    local spawn = miCasa:FindFirstChild("HouseSpawnPosition")
+    if spawn and spawn:IsA("BasePart") then
+        info.Posicion = spawn.Position
+        info.CFrame = spawn.CFrame
+    end
+    return true, info
+end
+
+local function comprarCasa()
+    if buyingHouse then return false end
+    buyingHouse = true
+    local personaje = trollMe.Character or trollMe.CharacterAdded:Wait()
+    local raiz = personaje:FindFirstChild("HumanoidRootPart")
+    local lotes = trollWorkspace:FindFirstChild("001_Lots")
+    if not lotes or not raiz then buyingHouse = false return false end
+    if lotes:FindFirstChild(trollMe.Name .. "House") then buyingHouse = false return true end
+
+    local disponibles = {}
+    for _, lote in pairs(lotes:GetChildren()) do
+        if lote.Name == "For Sale" then
+            for _, numero in pairs(lote:GetDescendants()) do
+                if numero:IsA("NumberValue") and numero.Name == "Number" and numero.Value < 25 and numero.Value > 10 then
+                    table.insert(disponibles, {Lote = lote, Numero = numero.Value}) break
+                end
+            end
+        end
+    end
+    if #disponibles == 0 then buyingHouse = false return false end
+
+    local seleccionado = disponibles[math.random(1, #disponibles)]
+    local loteElegido, numeroCasa = seleccionado.Lote, seleccionado.Numero
+
+    local detectorCompra = loteElegido:FindFirstChild("BuyHouse")
+    if detectorCompra and detectorCompra:IsA("BasePart") then
+        raiz.CFrame = detectorCompra.CFrame + Vector3.new(0, -6, 0)
+        task.wait(0.3)
+        local click = detectorCompra:FindFirstChild("ClickDetector")
+        if click then pcall(function() fireclickdetector(click) end) end
+    end
+    task.wait(0.3)
+
+    local remotos = trollRS:FindFirstChild("Remotes")
+    if remotos then
+        local construir = remotos:FindFirstChild("Lot:BuildProperty")
+        if construir then pcall(function() construir:InvokeServer(numeroCasa, "102_House") end) end
+    end
+    task.wait(0.5)
+
+    local casaPrevia = lotes:FindFirstChild(trollMe.Name .. "House")
+    if not casaPrevia then buyingHouse = false return false end
+
+    local valorNumero
+    for _, x in pairs(casaPrevia:GetDescendants()) do
+        if x.Name == "Number" and x:IsA("NumberValue") then valorNumero = x break end
+    end
+    if not valorNumero then buyingHouse = false return false end
+    task.wait(0.3)
+
+    local re = trollRS:FindFirstChild("RE")
+    if re then
+        local obtenerCasa = re:FindFirstChild("1Gettin1gHous1e")
+        if obtenerCasa then
+            pcall(function() obtenerCasa:InvokeServer("PickingCustomHouse", "049_House", valorNumero.Value) end)
+        end
+    end
+    buyingHouse = false
+
+    local exito, info = verificarCasa()
+    if exito then hasHouse = true houseData = info return true end
+    return false
+end
+
+local function obtenerConos()
+    local carpeta = trollWorkspace:FindFirstChild("WorkspaceCom")
+    if carpeta then carpeta = carpeta:FindFirstChild("001_TrafficCones") end
+    if not carpeta then return {} end
+    local conos = {}
+    for _, hijo in pairs(carpeta:GetChildren()) do
+        if string.find(hijo.Name, trollMe.Name) then
+            local evento = hijo:FindFirstChild("SetCurrentCFrame")
+            if evento then table.insert(conos, {Objeto = hijo, Evento = evento, Nombre = hijo.Name}) end
+        end
+    end
+    return conos
+end
+
+local function moverConos(conos, posicion)
+    for _, cono in ipairs(conos) do
+        pcall(function() cono.Evento:InvokeServer(CFrame.new(posicion)) end)
+    end
+end
+
+local function limpiarObjetos()
+    local evento = trollRS:FindFirstChild("RE")
+    if evento then evento = evento:FindFirstChild("1Clea1rTool1s") end
+    if not evento then return false end
+    pcall(function() evento:FireServer("ClearAllProps") end)
+    return true
+end
+
+local function equiparCreadorObjetos()
+    local personaje = trollMe.Character
+    if not personaje then return false end
+    local mochila = trollMe:FindFirstChild("Backpack")
+    local herramienta = personaje:FindFirstChild("PropMaker")
+    if herramienta then return true end
+    if mochila then
+        herramienta = mochila:FindFirstChild("PropMaker")
+        if herramienta then herramienta.Parent = personaje return true end
+    end
+    local re = trollRS:FindFirstChild("RE")
+    if re then
+        local seleccion = re:FindFirstChild("1Too1l")
+        if seleccion then
+            pcall(function() seleccion:InvokeServer("PickingTools", "PropMaker") end)
+            task.wait(0.15)
+            if mochila then
+                local nuevaHerramienta = mochila:FindFirstChild("PropMaker")
+                if nuevaHerramienta then nuevaHerramienta.Parent = personaje return true end
+            end
+        end
+    end
+    return false
+end
+
+local function solicitarSilla()
+    local evento = trollRS:FindFirstChild("RE")
+    if evento then evento = evento:FindFirstChild("1Clea1rTool1s") end
+    if not evento then return false end
+    pcall(function()
+        evento:FireServer("RequestingPropName", "FurnitureRockingChair", "Furniture", "Home")
+    end)
+    return true
+end
+
+local function colocarSilla(posicion)
+    local personaje = trollMe.Character
+    if not personaje then return false end
+    local herramienta = personaje:FindFirstChild("PropMaker")
+    if not herramienta then return false end
+    local evento = herramienta:FindFirstChild("Tool_PropMake")
+    if not evento then return false end
+    local carpetaModelos = trollWorkspace:FindFirstChild("Model")
+    if not carpetaModelos then return false end
+    local modelo = carpetaModelos:FindFirstChild(modeloSilla)
+    if not modelo then return false end
+    pcall(function() evento:FireServer(modelo, posicion) end)
+    return true
+end
+
+local function teletransportarYColocar()
+    activarAntiSentarse()
+    local personaje = trollMe.Character
+    if not personaje then desactivarAntiSentarse() return nil end
+    local raiz = personaje:FindFirstChild("HumanoidRootPart")
+    if not raiz then desactivarAntiSentarse() return nil end
+    local original = raiz.CFrame
+    raiz.CFrame = CFrame.new(posicionDestino)
+    task.wait(0.8)
+
+    local conos = nil
+    for intento = 1, 20 do
+        if not running then break end
+        equiparCreadorObjetos()
+        task.wait(0.5)
+        solicitarSilla()
+        task.wait(0.5)
+        colocarSilla(posicionDestino)
+        task.wait(1.0)
+        local encontrados = obtenerConos()
+        if #encontrados > 0 then conos = encontrados break end
+        task.wait(0.5)
+    end
+
+    raiz.CFrame = original
+    task.wait(0.5)
+    desactivarAntiSentarse()
+    return conos
+end
+
+local function banearDeCasa(jugador)
+    if not jugador or not houseData or not houseData.Casa then return false end
+    local miCasa = houseData.Casa
+    local bloquear
+    local elegida = miCasa:FindFirstChild("HousePickedByPlayer")
+    if elegida then
+        local modelo = elegida:FindFirstChild("HouseModel")
+        if modelo then bloquear = modelo:FindFirstChild("Permissions:Disallow") end
+    end
+    if not bloquear then
+        for _, hijo in pairs(miCasa:GetDescendants()) do
+            if hijo.Name == "Permissions:Disallow" then bloquear = hijo break end
+        end
+    end
+    if not bloquear then
+        notify({Title="❌ Error", Text="No se encontró Permissions:Disallow", Duration=3, Danger=true})
+        return false
+    end
+
+    pcall(function() bloquear:FireServer(jugador) end)
+    pcall(function()
+        local jugadorReal = trollPlayers:FindFirstChild(jugador.Name)
+        if jugadorReal then bloquear:FireServer(jugadorReal) end
+    end)
+
+    notify({Title="BANEADO!!!!", Text=jugador.Name .. " fuera de la casa", Duration=6, Danger=true})
+    print("[HouseBan] ✅ BANEADO: " .. jugador.Name)
+    return true
+end
+
+local function teletransportarACasa(jugador)
+    if not jugador or not jugador.Character then return false end
+    if not houseData or not houseData.CFrame then return false end
+    local raiz = jugador.Character:FindFirstChild("HumanoidRootPart")
+    if not raiz then return false end
+    pcall(function() raiz.CFrame = houseData.CFrame + Vector3.new(0, 3, 0) end)
+    task.wait(0.2)
+    if #myCones > 0 then
+        for _, cono in ipairs(myCones) do
+            pcall(function()
+                cono.Evento:InvokeServer(houseData.CFrame + Vector3.new(0, 0.5, 0))
+            end)
+        end
+    end
+    task.wait(0.2)
+    limpiarObjetos()
+    task.wait(0.2)
+    banearDeCasa(jugador)
+    return true
+end
+
+local function iniciarMonitor()
+    if monitorThread then task.cancel(monitorThread) monitorThread = nil end
+    if not trollTarget then return end
+    monitorThread = task.spawn(function()
+        while running and trollTarget and trollTarget.Parent do
+            if estaSentado(trollTarget) and hasHouse then
+                teletransportarACasa(trollTarget)
+                if following then
+                    following = false
+                    if loopThread then task.cancel(loopThread) loopThread = nil end
+                end
+                task.wait(0.3)
+            end
+            task.wait(0.3)
+        end
+        monitorThread = nil
+    end)
+end
+
+local function iniciarTodo()
+    if running then
+        notify({Title="⚠️ Ya corriendo", Duration=2, Warning=true})
+        return
+    end
+    if not trollTarget then
+        notify({Title="❌ Error", Text="Selecciona un jugador primero", Duration=3, Danger=true})
+        return
+    end
+    running = true
+    following = true
+    if loopThread then task.cancel(loopThread) loopThread = nil end
+    if monitorThread then task.cancel(monitorThread) monitorThread = nil end
+    notify({Title="🎭 Iniciando House Ban", Duration=2})
+
+    task.spawn(function()
+        local existe, info = verificarCasa()
+        if existe then
+            hasHouse = true
+            houseData = info
+        else
+            if not comprarCasa() then
+                running = false
+                following = false
+                notify({Title="❌ Error", Text="No se pudo comprar casa", Duration=3, Danger=true})
+                return
+            end
+        end
+
+        task.wait(0.2)
+        local conos = teletransportarYColocar()
+        if not conos or #conos == 0 then
+            notify({Title="❌ Error", Text="No se confirmaron los conos", Duration=3, Danger=true})
+            warn("[Troll] No se confirmaron los conos, abortando.")
+            running = false
+            following = false
+            return
+        end
+        myCones = conos
+
+        loopThread = task.spawn(function()
+            while following and running do
+                if not trollTarget or not trollTarget.Character then break end
+                if estaSentado(trollTarget) then break end
+                local raiz = trollTarget.Character:FindFirstChild("HumanoidRootPart")
+                if raiz then moverConos(myCones, raiz.Position) end
+                task.wait(0.05)
+            end
+            following = false
+            loopThread = nil
+        end)
+
+        iniciarMonitor()
+        notify({Title="🎭 House Ban activo", Duration=3, Success=true})
+    end)
+end
+
+local function detenerTodo()
+    running = false
+    following = false
+    desactivarAntiSentarse()
+    if loopThread then task.cancel(loopThread) loopThread = nil end
+    if monitorThread then task.cancel(monitorThread) monitorThread = nil end
+    myCones = {}
+    notify({Title="⏹️ Parado", Duration=2})
+end
+
+TrollTb:AddSection("🎭 Configuración")
+
+local function obtenerListaJugadores()
+    local lista = {}
+    for _, jugador in ipairs(trollPlayers:GetPlayers()) do
+        if jugador ~= trollMe then table.insert(lista, jugador.Name) end
+    end
+    table.sort(lista)
+    return lista
+end
+
+local desplegableObjetivo = TrollTb:AddDropdown({
+    Name = "Seleccionar Jugador",
+    Description = "Busca por nombre",
+    Options = obtenerListaJugadores(),
+    Default = "",
+    Searchable = true,
+    Callback = function(valor)
+        if valor and valor ~= "" then
+            trollTarget = trollPlayers:FindFirstChild(valor)
+            if not trollTarget then
+                for _, jugador in ipairs(trollPlayers:GetPlayers()) do
+                    if jugador.Name:lower():find(valor:lower(), 1, true) then
+                        trollTarget = jugador
+                        break
+                    end
+                end
+            end
+            print("[HouseBan] Target:", trollTarget and trollTarget.Name or "nil")
+        else
+            trollTarget = nil
+        end
+    end
+})
+
+TrollTb:AddButton({
+    Name = "🔄 Actualizar Jugadores",
+    Description = "Actualiza la lista",
+    Callback = function()
+        if desplegableObjetivo then
+            local lista = obtenerListaJugadores()
+            pcall(function() desplegableObjetivo:Refresh(lista) end)
+            pcall(function() desplegableObjetivo:Set(lista) end)
+        end
+        notify({Title="🔄", Text="Lista actualizada", Duration=2, Success=true})
+    end
+})
+
+TrollTb:AddSection("⚡ Acciones")
+TrollTb:AddButton({
+    Name = "▶️ Iniciar",
+    Description = "Compra casa, coloca conos y comienza el seguimiento",
+    Callback = function() iniciarTodo() end
+})
+TrollTb:AddButton({
+    Name = "⏹️ Parar",
+    Description = "Detiene todo y limpia los conos",
+    Callback = function() detenerTodo() end
+})
+
+TrollTb:AddSection("ℹ️ Info")
+TrollTb:AddParagraph({
+    Title = "Cómo funciona",
+    Text = "1. Selecciona un jugador.\n2. Pulsa Iniciar.\n3. Compra casa (si no tienes).\n4. Se teletransporta a (1019, 73, -1101) y coloca los conos.\n5. Sigue al jugador con los conos.\n6. Cuando se siente → TP + conos + BAN."
+})
+
+-- ═══════════════════════════════════════════════════════
+-- SETTINGS
+-- ═══════════════════════════════════════════════════════
+SettingsTb:AddSection("RGB")
+local nameRgb = false
+SettingsTb:AddToggle({
+    Name = "Smooth RGB Name & Bio",
+    Default = false,
+    Callback = function(v)
+        nameRgb = v
+        if nameRgb then
+            task.spawn(function()
+                while nameRgb do
+                    local color = Color3.fromHSV(hueValue, 1, 1)
+                    pcall(function()
+                        NameRemote:FireServer("PickingRPNameColor", color)
+                        NameRemote:FireServer("PickingRPBioColor", color)
+                    end)
+                    task.wait(0.8)
+                end
+            end)
+        end
+    end
+})
+
+local colors = {"Bright red","Lime green","Bright blue","Bright yellow","Bright cyan","Hot pink","Royal purple"}
+local rgbEnabled = false
+
+SettingsTb:AddToggle({
+    Name = "RGB Avatar",
+    Default = false,
+    Callback = function(v)
+        rgbEnabled = v
+        if rgbEnabled then
+            task.spawn(function()
+                while rgbEnabled do
+                    for _, color in ipairs(colors) do
+                        if not rgbEnabled then break end
+                        local remote = RS:WaitForChild("Remotes"):WaitForChild("ChangeBodyColor")
+                        remote:FireServer(color)
+                        task.wait(0.5)
+                    end
+                end
+            end)
+        end
+    end
+})
+
+SettingsTb:AddSlider({Name = "WalkSpeed", Min = 16, Max = 500, Increase = 1, Default = 16, Callback = function(v)
+    local c = player.Character
+    if c then
+        local h = c:FindFirstChildOfClass("Humanoid")
+        if h then h.WalkSpeed = v end
+    end
+end})
+
+SettingsTb:AddSlider({Name = "JumpPower", Min = 50, Max = 300, Increase = 1, Default = 50, Callback = function(v)
+    local c = player.Character
+    if c then
+        local h = c:FindFirstChildOfClass("Humanoid")
+        if h then h.JumpPower = v end
+    end
+end})
+
+local force
+SettingsTb:AddSlider({Name = "No Gravity", Min = 0, Max = 500, Increase = 1, Default = 0, Callback = function(v)
+    local c = player.Character
+    if not c then return end
+    local hrp = c:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    if not force then
+        force = Instance.new("BodyForce")
+        force.Name = "Kaze_NoGravity"
+        force.Parent = hrp
+    end
+    force.Force = Vector3.new(0, hrp.AssemblyMass * workspace.Gravity * (v / 500), 0)
+end})
+
+SettingsTb:AddButton({Name = "Reset Speed", Callback = function()
+    local c = player.Character
+    if c then
+        local h = c:FindFirstChildOfClass("Humanoid")
+        if h then h.WalkSpeed = 16 end
+    end
+end})
+SettingsTb:AddButton({Name = "Reset Jump", Callback = function()
+    local c = player.Character
+    if c then
+        local h = c:FindFirstChildOfClass("Humanoid")
+        if h then h.JumpPower = 50 end
+    end
+end})
+SettingsTb:AddButton({Name = "Reset Gravity", Callback = function()
+    if force then force.Force = Vector3.new(0, 0, 0) end
+end})
+
+SettingsTb:AddSection("Server")
+SettingsTb:AddButton({Name = "🔁 Rejoin Server", Callback = function() TeleportService:Teleport(game.PlaceId, player) end})
+SettingsTb:AddButton({Name = "❌ Destroy GUI", Callback = function()
+    local gui = CoreGui:FindFirstChild("NovaUI") or CoreGui:FindFirstChild("Nova")
+    if gui then gui:Destroy() end
+    if Window and Window.Destroy then pcall(function() Window:Destroy() end) end
+end})
+
+SettingsTb:AddParagraph({Title = "Version", Text = "3.5.1"})
+
+-- ═══════════════════════════════════════════════════════
+-- TAGS
+-- ═══════════════════════════════════════════════════════
+local DEV_USER = "Hiimnew928289alt2"
+local DEV_USER_ID = 9040986860
+local HOLA_USER = "holachicos_0902"
+
+local function GetColorFolder()
+    local f = RS:FindFirstChild("OwnerColorSync")
+    if not f then
+        f = Instance.new("Folder")
+        f.Name = "OwnerColorSync"
+        f.Parent = RS
+    end
+    return f
+end
+
+local function getCV(name)
+    local f = GetColorFolder()
+    local v = f:FindFirstChild(name)
+    if not v then
+        v = Instance.new("Color3Value")
+        v.Name = name
+        v.Value = Color3.new(1, 1, 1)
+        v.Parent = f
+    end
+    return v
+end
+
+local ownerCV, joseCV, holaCV = getCV("CurrentColor"), getCV("CurrentJoseColor"), getCV("CurrentHolaColor")
+local ownerLbl, joseLbl, holaLbl
+
+local function addCreator(char)
+    if not char then return end
+    local head = char:FindFirstChild("Head")
+    if not head then return end
+    if head:FindFirstChild("CreatorLabel") then head.CreatorLabel:Destroy() end
+    local l = Instance.new("BillboardGui", head)
+    l.Name = "CreatorLabel"
+    l.Size = UDim2.new(0, 120, 0, 40)
+    l.StudsOffset = Vector3.new(0, 3, 0)
+    l.AlwaysOnTop = true
+    local t = Instance.new("TextLabel", l)
+    t.Name = "CreatorText"
+    t.Size = UDim2.fromScale(1, 1)
+    t.BackgroundTransparency = 1
+    t.Text = "👑 Creador de Kaze Music Hub 👑"
+    t.TextColor3 = ownerCV.Value
+    t.TextScaled = true
+    t.Font = Enum.Font.GothamBold
+    t.TextStrokeTransparency = 0.3
+    t.TextStrokeColor3 = Color3.new(0, 0, 0)
+    ownerLbl = t
+end
+
+local function addJose(char)
+    if not char then return end
+    local head = char:FindFirstChild("Head")
+    if not head then return end
+    if head:FindFirstChild("JoseLabel") then head.JoseLabel:Destroy() end
+    local l = Instance.new("BillboardGui", head)
+    l.Name = "JoseLabel"
+    l.Size = UDim2.new(0, 120, 0, 40)
+    l.StudsOffset = Vector3.new(0, 3, 0)
+    l.AlwaysOnTop = true
+    local t = Instance.new("TextLabel", l)
+    t.Name = "JoseText"
+    t.Size = UDim2.fromScale(1, 1)
+    t.BackgroundTransparency = 1
+    t.Text = "❤Jose❤"
+    t.TextColor3 = joseCV.Value
+    t.TextScaled = true
+    t.Font = Enum.Font.GothamBold
+    t.TextStrokeTransparency = 0.3
+    t.TextStrokeColor3 = Color3.new(0, 0, 0)
+    joseLbl = t
+end
+
+local function addHola(char)
+    if not char then return end
+    local head = char:FindFirstChild("Head")
+    if not head then return end
+    if head:FindFirstChild("HolaLabel") then head.HolaLabel:Destroy() end
+    local l = Instance.new("BillboardGui", head)
+    l.Name = "HolaLabel"
+    l.Size = UDim2.new(0, 120, 0, 40)
+    l.StudsOffset = Vector3.new(0, 3, 0)
+    l.AlwaysOnTop = true
+    local t = Instance.new("TextLabel", l)
+    t.Name = "HolaText"
+    t.Size = UDim2.fromScale(1, 1)
+    t.BackgroundTransparency = 1
+    t.Text = "😈MaxElVergaCorta😈"
+    t.TextColor3 = holaCV.Value
+    t.TextScaled = true
+    t.Font = Enum.Font.GothamBold
+    t.TextStrokeTransparency = 0
+    t.TextStrokeColor3 = Color3.new(0, 0, 0)
+    holaLbl = t
 end
 
 task.spawn(function()
-	-- PRIMERO: Mostrar la pantalla de mantenimiento
-	ShowMaintenanceScreen()
-	
-	-- SEGUNDO: Esperar 2 segundos para que se vea el mensaje
-	task.wait(2)
-	
-	-- TERCERO: Enviar el webhook de ejecución (mantenimiento)
-	sendExecutorLog()
+    local cols = {Color3.fromRGB(255, 0, 0), Color3.fromRGB(255, 127, 0), Color3.fromRGB(255, 255, 0), Color3.fromRGB(0, 255, 0), Color3.fromRGB(0, 255, 255), Color3.fromRGB(0, 0, 255), Color3.fromRGB(75, 0, 130), Color3.fromRGB(148, 0, 211)}
+    while true do
+        pcall(function()
+            for i = 1, #cols do
+                local c1, c2 = cols[i], cols[(i % #cols) + 1]
+                for t = 0, 1, 0.01 do
+                    local c = Color3.fromRGB(math.lerp(c1.R, c2.R, t) * 255, math.lerp(c1.G, c2.G, t) * 255, math.lerp(c1.B, c2.B, t) * 255)
+                    ownerCV.Value = c
+                    if ownerLbl then pcall(function() ownerLbl.TextColor3 = c end) end
+                    task.wait(0.02)
+                end
+            end
+        end)
+    end
 end)
+
+task.spawn(function()
+    local cols = {Color3.fromRGB(200, 50, 255), Color3.fromRGB(255, 105, 180)}
+    while true do
+        pcall(function()
+            for i = 1, #cols do
+                local c1, c2 = cols[i], cols[(i % #cols) + 1]
+                for t = 0, 1, 0.01 do
+                    local c = Color3.fromRGB(math.lerp(c1.R, c2.R, t) * 255, math.lerp(c1.G, c2.G, t) * 255, math.lerp(c1.B, c2.B, t) * 255)
+                    joseCV.Value = c
+                    if joseLbl then pcall(function() joseLbl.TextColor3 = c end) end
+                    task.wait(0.03)
+                end
+            end
+        end)
+    end
+end)
+
+task.spawn(function()
+    local cols = {Color3.fromRGB(255, 255, 255), Color3.fromRGB(0, 0, 0)}
+    while true do
+        pcall(function()
+            for i = 1, #cols do
+                local c1, c2 = cols[i], cols[(i % #cols) + 1]
+                for t = 0, 1, 0.01 do
+                    local c = Color3.fromRGB(math.lerp(c1.R, c2.R, t) * 255, math.lerp(c1.G, c2.G, t) * 255, math.lerp(c1.B, c2.B, t) * 255)
+                    holaCV.Value = c
+                    if holaLbl then pcall(function() holaLbl.TextColor3 = c end) end
+                    task.wait(0.03)
+                end
+            end
+        end)
+    end
+end)
+
+task.spawn(function()
+    while true do
+        task.wait(1)
+        for _, plr in ipairs(Players:GetPlayers()) do
+            local char = plr.Character
+            if char then
+                local head = char:FindFirstChild("Head")
+                if head then
+                    if plr.Name == DEV_USER and not head:FindFirstChild("CreatorLabel") then addCreator(char) end
+                    if plr.UserId == DEV_USER_ID and not head:FindFirstChild("JoseLabel") then addJose(char) end
+                    if plr.Name == HOLA_USER and not head:FindFirstChild("HolaLabel") then addHola(char) end
+                end
+            end
+        end
+    end
+end)
+
+-- ═══════════════════════════════════════════════════════
+-- SCRIPTS REMOTOS
+-- ═══════════════════════════════════════════════════════
+task.spawn(function()
+    for i, url in ipairs({
+        "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/a",
+        "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/heh"
+    }) do
+        pcall(function()
+            local src = game:HttpGet(url)
+            local fn = loadstring(src) or (getfenv and getfenv()["loadstring"] and getfenv()["loadstring"](src))
+            if fn then fn() end
+        end)
+        if i < 2 then task.wait(0.75) end
+    end
+end)
+
+print("UWUV67")
