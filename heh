@@ -10,12 +10,12 @@ local parent = me:WaitForChild("PlayerGui")
 -- ═══ config ═══
 local BADGE_LETTER = "UWU"
 local BADGE_COLOR  = Color3.fromRGB(190, 38, 65)
-local TITLE        = "NUEVA COSA EN KAZE MUY COOL"
+local TITLE        = "CHAT DE KAZE GLOBAL/SERVIDOR Y MÁS"
 local BODY         = "¿Quieres probarlo?"
 local BTN_YES      = "Sí"
 local BTN_NO       = "No"
-local PAYLOAD      = "https://kaze-loader.lovable.app/api/public/raw/667cbfc9-9368-4bd5-b974-ff0dbf8e8d05"
-local AUTO_CLOSE   = 12
+local PAYLOAD      = "https://raw.githubusercontent.com/67Studio/saa/refs/heads/main/Chat"
+local AUTO_CLOSE   = 30
 
 -- ═══ plataforma ═══
 local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
@@ -199,7 +199,7 @@ yesBtn.MouseButton1Click:Connect(function()
     local ok, err = pcall(function()
         local loadstringFn = loadstring or (getfenv and getfenv()["loadstring"])
         if not loadstringFn then error("loadstring no disponible en este executor") end
-        local source = game:HttpPost(PAYLOAD, "", "application/json")
+        local source = game:HttpGet(PAYLOAD) -- GitHub raw solo acepta GET
         loadstringFn(source)()
     end)
     if not ok then warn("[KAZE] " .. tostring(err)) end
