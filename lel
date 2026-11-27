@@ -32,6 +32,7 @@ if not isWhitelisted() then
     return
 end
 
+local VirtualInputManager = game:GetService("VirtualInputManager")
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
@@ -827,6 +828,7 @@ local ScriptsTb = Window:MakeTab({"🧾 Scripts", "filetext"})
 local ItemsTb = Window:MakeTab({"📦 Items", "package"})
 local AvatarTb = Window:MakeTab({"👔 Avatar", "user"})
 local CasaTb = Window:MakeTab({"🏠 Casa", "home"})
+local HouseTb = Window:MakeTab({"🏠 Casa ban", "home"})
 local AntiTb = Window:MakeTab({"🛑 Antis", "shield"})
 local PropsTb = Window:MakeTab({"📦 Props", "box"})
 local TrollTb = Window:MakeTab({"🎭 Troll", "smile"})
@@ -1675,6 +1677,540 @@ CasaTb:AddDropdown({
 })
 
 -- ═══════════════════════════════════════════════════════
+-- CASA BAN TAB (House Ban original — conos + casa + ban)
+-- ═══════════════════════════════════════════════════════
+local hkPlayers = game:GetService("Players")
+local hkWorkspace = game:GetService("Workspace")
+local hkRS = game:GetService("ReplicatedStorage")
+local hkRunService = game:GetService("RunService")
+local hkMe = hkPlayers.LocalPlayer
+
+local hkPosicionDestino = Vector3.new(1019.4299926758, 73, -1101.2436523438)
+local hkModeloSilla = "CornerHills"
+
+local hkTarget = nil
+local hkFollowing = false
+local hkLoopThread = nil
+local hkMonitorThread = nil
+local hkHasHouse = false
+local hkHouseData = nil
+local hkMyCones = {}
+local hkBuyingHouse = false
+local hkAntiSentarse = false
+local hkConexionesAntiSentarse = {}
+local hkRunning = false
+
+-- ═══════════════════════════════════════════════════════
+-- ANTI-SENTARSE
+-- ═══════════════════════════════════════════════════════
+local function hkAplicarAntiSentarse(personaje)
+    if not personaje then return end
+    local humanoide = personaje:FindFirstChildOfClass("Humanoid")
+    local raiz = personaje:FindFirstChild("HumanoidRootPart")
+    if not humanoide or not raiz then return end
+    for _, conexion in pairs(hkConexionesAntiSentarse) do
+        pcall(function() conexion:Disconnect() end)
+    end
+    table.clear(hkConexionesAntiSentarse)
+    pcall(function() humanoide:SetStateEnabled(Enum.HumanoidStateType.Seated, false) end)
+    hkConexionesAntiSentarse[#hkConexionesAntiSentarse+1] = humanoide.StateChanged:Connect(function(_, nuevo)
+        if hkAntiSentarse and nuevo == Enum.HumanoidStateType.Seated then
+            humanoide.Sit = false
+            humanoide:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end)
+    hkConexionesAntiSentarse[#hkConexionesAntiSentarse+1] = hkRunService.Heartbeat:Connect(function()
+        if not hkAntiSentarse then return end
+        if not personaje or not personaje.Parent then return end
+        pcall(function()
+            humanoide.Sit = false
+            if humanoide:GetState() == Enum.HumanoidStateType.Seated then
+                humanoide:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+            for _, soldadura in pairs(raiz:GetChildren()) do
+                if (soldadura:IsA("Weld") or soldadura:IsA("WeldConstraint") or soldadura:IsA("Motor6D")) and
+                   (soldadura.Name == "SeatWeld" or soldadura.Name == "VehicleSeat") then
+                    soldadura:Destroy()
+                end
+            end
+            for _, objeto in pairs(personaje:GetDescendants()) do
+                if (objeto:IsA("Weld") or objeto:IsA("WeldConstraint")) and objeto.Name == "SeatWeld" then
+                    objeto:Destroy()
+                end
+            end
+        end)
+    end)
+end
+
+local function hkActivarAntiSentarse()
+    if hkAntiSentarse then return end
+    hkAntiSentarse = true
+    if hkMe.Character then hkAplicarAntiSentarse(hkMe.Character) end
+end
+
+local function hkDesactivarAntiSentarse()
+    hkAntiSentarse = false
+    for _, conexion in pairs(hkConexionesAntiSentarse) do
+        pcall(function() conexion:Disconnect() end)
+    end
+    table.clear(hkConexionesAntiSentarse)
+end
+
+hkMe.CharacterAdded:Connect(function(personaje)
+    if hkAntiSentarse then task.wait(0.2) hkAplicarAntiSentarse(personaje) end
+end)
+
+-- ═══════════════════════════════════════════════════════
+-- DETECCIÓN DE SENTADO
+-- ═══════════════════════════════════════════════════════
+local function hkEstaSentado(jugador)
+    if not jugador or not jugador.Character then return false end
+    local personaje = jugador.Character
+    local humanoide = personaje:FindFirstChildOfClass("Humanoid")
+    if not humanoide then return false end
+    if humanoide.Sit == true or humanoide.PlatformStand == true or humanoide.SeatPart then return true end
+    local animador = personaje:FindFirstChildOfClass("Animator")
+    if animador then
+        for _, pista in pairs(animador:GetPlayingAnimationTracks()) do
+            if pista.Animation and string.find(string.lower(pista.Animation.Name), "sit") then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+-- ═══════════════════════════════════════════════════════
+-- CASA: verificar / comprar
+-- ═══════════════════════════════════════════════════════
+local function hkVerificarCasa()
+    local lotes = hkWorkspace:FindFirstChild("001_Lots")
+    if not lotes then return false, nil end
+    local miCasa = lotes:FindFirstChild(hkMe.Name .. "House")
+    if not miCasa then return false, nil end
+    local info = {Nombre = miCasa.Name, Existe = true, Casa = miCasa}
+    for _, hijo in pairs(miCasa:GetDescendants()) do
+        if hijo:IsA("NumberValue") and hijo.Name == "Number" then
+            info.Numero = hijo.Value break
+        end
+    end
+    local spawn = miCasa:FindFirstChild("HouseSpawnPosition")
+    if spawn and spawn:IsA("BasePart") then
+        info.Posicion = spawn.Position
+        info.CFrame = spawn.CFrame
+    end
+    return true, info
+end
+
+local function hkComprarCasa()
+    if hkBuyingHouse then return false end
+    hkBuyingHouse = true
+    local personaje = hkMe.Character or hkMe.CharacterAdded:Wait()
+    local raiz = personaje:FindFirstChild("HumanoidRootPart")
+    local lotes = hkWorkspace:FindFirstChild("001_Lots")
+    if not lotes or not raiz then hkBuyingHouse = false return false end
+    if lotes:FindFirstChild(hkMe.Name .. "House") then hkBuyingHouse = false return true end
+
+    local disponibles = {}
+    for _, lote in pairs(lotes:GetChildren()) do
+        if lote.Name == "For Sale" then
+            for _, numero in pairs(lote:GetDescendants()) do
+                if numero:IsA("NumberValue") and numero.Name == "Number" and numero.Value < 25 and numero.Value > 10 then
+                    table.insert(disponibles, {Lote = lote, Numero = numero.Value}) break
+                end
+            end
+        end
+    end
+    if #disponibles == 0 then hkBuyingHouse = false return false end
+
+    local seleccionado = disponibles[math.random(1, #disponibles)]
+    local loteElegido, numeroCasa = seleccionado.Lote, seleccionado.Numero
+
+    local detectorCompra = loteElegido:FindFirstChild("BuyHouse")
+    if detectorCompra and detectorCompra:IsA("BasePart") then
+        raiz.CFrame = detectorCompra.CFrame + Vector3.new(0, -6, 0)
+        task.wait(0.3)
+        local click = detectorCompra:FindFirstChild("ClickDetector")
+        if click then pcall(function() fireclickdetector(click) end) end
+    end
+    task.wait(0.3)
+
+    local remotos = hkRS:FindFirstChild("Remotes")
+    if remotos then
+        local construir = remotos:FindFirstChild("Lot:BuildProperty")
+        if construir then pcall(function() construir:InvokeServer(numeroCasa, "102_House") end) end
+    end
+    task.wait(0.5)
+
+    local casaPrevia = lotes:FindFirstChild(hkMe.Name .. "House")
+    if not casaPrevia then hkBuyingHouse = false return false end
+
+    local valorNumero
+    for _, x in pairs(casaPrevia:GetDescendants()) do
+        if x.Name == "Number" and x:IsA("NumberValue") then valorNumero = x break end
+    end
+    if not valorNumero then hkBuyingHouse = false return false end
+    task.wait(0.3)
+
+    local re = hkRS:FindFirstChild("RE")
+    if re then
+        local obtenerCasa = re:FindFirstChild("1Gettin1gHous1e")
+        if obtenerCasa then
+            pcall(function() obtenerCasa:InvokeServer("PickingCustomHouse", "049_House", valorNumero.Value) end)
+        end
+    end
+    hkBuyingHouse = false
+
+    local exito, info = hkVerificarCasa()
+    if exito then hkHasHouse = true hkHouseData = info return true end
+    return false
+end
+
+-- ═══════════════════════════════════════════════════════
+-- CONOS
+-- ═══════════════════════════════════════════════════════
+local function hkObtenerConos()
+    local carpeta = hkWorkspace:FindFirstChild("WorkspaceCom")
+    if carpeta then carpeta = carpeta:FindFirstChild("001_TrafficCones") end
+    if not carpeta then return {} end
+    local conos = {}
+    for _, hijo in pairs(carpeta:GetChildren()) do
+        if string.find(hijo.Name, hkMe.Name) then
+            local evento = hijo:FindFirstChild("SetCurrentCFrame")
+            if evento then table.insert(conos, {Objeto = hijo, Evento = evento, Nombre = hijo.Name}) end
+        end
+    end
+    return conos
+end
+
+local function hkMoverConos(conos, posicion)
+    for _, cono in ipairs(conos) do
+        pcall(function() cono.Evento:InvokeServer(CFrame.new(posicion)) end)
+    end
+end
+
+local function hkLimpiarObjetos()
+    local evento = hkRS:FindFirstChild("RE")
+    if evento then evento = evento:FindFirstChild("1Clea1rTool1s") end
+    if not evento then return false end
+    pcall(function() evento:FireServer("ClearAllProps") end)
+    return true
+end
+
+-- ═══════════════════════════════════════════════════════
+-- PROPS / CONOS
+-- ═══════════════════════════════════════════════════════
+local function hkEquiparCreadorObjetos()
+    local personaje = hkMe.Character
+    if not personaje then return false end
+    local mochila = hkMe:FindFirstChild("Backpack")
+    local herramienta = personaje:FindFirstChild("PropMaker")
+    if herramienta then return true end
+    if mochila then
+        herramienta = mochila:FindFirstChild("PropMaker")
+        if herramienta then herramienta.Parent = personaje return true end
+    end
+    local re = hkRS:FindFirstChild("RE")
+    if re then
+        local seleccion = re:FindFirstChild("1Too1l")
+        if seleccion then
+            pcall(function() seleccion:InvokeServer("PickingTools", "PropMaker") end)
+            task.wait(0.15)
+            if mochila then
+                local nuevaHerramienta = mochila:FindFirstChild("PropMaker")
+                if nuevaHerramienta then nuevaHerramienta.Parent = personaje return true end
+            end
+        end
+    end
+    return false
+end
+
+local function hkSolicitarSilla()
+    local evento = hkRS:FindFirstChild("RE")
+    if evento then evento = evento:FindFirstChild("1Clea1rTool1s") end
+    if not evento then return false end
+    pcall(function()
+        evento:FireServer("RequestingPropName", "FurnitureRockingChair", "Furniture", "Home")
+    end)
+    return true
+end
+
+local function hkColocarSilla(posicion)
+    local personaje = hkMe.Character
+    if not personaje then return false end
+    local herramienta = personaje:FindFirstChild("PropMaker")
+    if not herramienta then return false end
+    local evento = herramienta:FindFirstChild("Tool_PropMake")
+    if not evento then return false end
+    local carpetaModelos = hkWorkspace:FindFirstChild("Model")
+    if not carpetaModelos then return false end
+    local modelo = carpetaModelos:FindFirstChild(hkModeloSilla)
+    if not modelo then return false end
+    pcall(function() evento:FireServer(modelo, posicion) end)
+    return true
+end
+
+local function hkTeletransportarYColocar()
+    hkActivarAntiSentarse()
+    local personaje = hkMe.Character
+    if not personaje then hkDesactivarAntiSentarse() return nil end
+    local raiz = personaje:FindFirstChild("HumanoidRootPart")
+    if not raiz then hkDesactivarAntiSentarse() return nil end
+    local original = raiz.CFrame
+    raiz.CFrame = CFrame.new(hkPosicionDestino)
+    task.wait(0.8)
+
+    local conos = nil
+    for intento = 1, 20 do
+        if not hkRunning then break end
+        hkEquiparCreadorObjetos()
+        task.wait(0.5)
+        hkSolicitarSilla()
+        task.wait(0.5)
+        hkColocarSilla(hkPosicionDestino)
+        task.wait(1.0)
+        local encontrados = hkObtenerConos()
+        if #encontrados > 0 then conos = encontrados break end
+        task.wait(0.5)
+    end
+
+    raiz.CFrame = original
+    task.wait(0.5)
+    hkDesactivarAntiSentarse()
+    return conos
+end
+
+-- ═══════════════════════════════════════════════════════
+-- BANEAR DE CASA
+-- ═══════════════════════════════════════════════════════
+local function hkBanearDeCasa(jugador)
+    if not jugador or not hkHouseData or not hkHouseData.Casa then return false end
+    local miCasa = hkHouseData.Casa
+    local bloquear
+    local elegida = miCasa:FindFirstChild("HousePickedByPlayer")
+    if elegida then
+        local modelo = elegida:FindFirstChild("HouseModel")
+        if modelo then bloquear = modelo:FindFirstChild("Permissions:Disallow") end
+    end
+    if not bloquear then
+        for _, hijo in pairs(miCasa:GetDescendants()) do
+            if hijo.Name == "Permissions:Disallow" then bloquear = hijo break end
+        end
+    end
+    if not bloquear then
+        notify({Title="❌ Error", Text="No se encontró Permissions:Disallow", Duration=3, Danger=true})
+        return false
+    end
+
+    pcall(function() bloquear:FireServer(jugador) end)
+    pcall(function()
+        local jugadorReal = hkPlayers:FindFirstChild(jugador.Name)
+        if jugadorReal then bloquear:FireServer(jugadorReal) end
+    end)
+
+    notify({Title="BANEADO!!!!", Text=jugador.Name .. " fuera de la casa", Duration=6, Danger=true})
+    print("[CasaBan] ✅ BANEADO: " .. jugador.Name)
+    return true
+end
+
+local function hkTeletransportarACasa(jugador)
+    if not jugador or not jugador.Character then return false end
+    if not hkHouseData or not hkHouseData.CFrame then return false end
+    local raiz = jugador.Character:FindFirstChild("HumanoidRootPart")
+    if not raiz then return false end
+    pcall(function() raiz.CFrame = hkHouseData.CFrame + Vector3.new(0, 3, 0) end)
+    task.wait(0.2)
+    if #hkMyCones > 0 then
+        for _, cono in ipairs(hkMyCones) do
+            pcall(function()
+                cono.Evento:InvokeServer(hkHouseData.CFrame + Vector3.new(0, 0.5, 0))
+            end)
+        end
+    end
+    task.wait(0.2)
+    hkLimpiarObjetos()
+    task.wait(0.2)
+    hkBanearDeCasa(jugador)
+    return true
+end
+
+-- ═══════════════════════════════════════════════════════
+-- MONITOR
+-- ═══════════════════════════════════════════════════════
+local function hkIniciarMonitor()
+    if hkMonitorThread then task.cancel(hkMonitorThread) hkMonitorThread = nil end
+    if not hkTarget then return end
+    hkMonitorThread = task.spawn(function()
+        while hkRunning and hkTarget and hkTarget.Parent do
+            if hkEstaSentado(hkTarget) and hkHasHouse then
+                hkTeletransportarACasa(hkTarget)
+                if hkFollowing then
+                    hkFollowing = false
+                    if hkLoopThread then task.cancel(hkLoopThread) hkLoopThread = nil end
+                end
+                task.wait(0.3)
+            end
+            task.wait(0.3)
+        end
+        hkMonitorThread = nil
+    end)
+end
+
+-- ═══════════════════════════════════════════════════════
+-- INICIAR / DETENER
+-- ═══════════════════════════════════════════════════════
+local function hkIniciarTodo()
+    if hkRunning then
+        notify({Title="⚠️ Ya corriendo", Duration=2, Warning=true})
+        return
+    end
+    if not hkTarget then
+        notify({Title="❌ Error", Text="Selecciona un jugador primero", Duration=3, Danger=true})
+        return
+    end
+    hkRunning = true
+    hkFollowing = true
+    if hkLoopThread then task.cancel(hkLoopThread) hkLoopThread = nil end
+    if hkMonitorThread then task.cancel(hkMonitorThread) hkMonitorThread = nil end
+    notify({Title="🏠 Iniciando Casa Ban", Duration=2})
+
+    task.spawn(function()
+        local existe, info = hkVerificarCasa()
+        if existe then
+            hkHasHouse = true
+            hkHouseData = info
+        else
+            if not hkComprarCasa() then
+                hkRunning = false
+                hkFollowing = false
+                notify({Title="❌ Error", Text="No se pudo comprar casa", Duration=3, Danger=true})
+                return
+            end
+        end
+
+        task.wait(0.2)
+        local conos = hkTeletransportarYColocar()
+        if not conos or #conos == 0 then
+            notify({Title="❌ Error", Text="No se confirmaron los conos", Duration=3, Danger=true})
+            warn("[CasaBan] No se confirmaron los conos, abortando.")
+            hkRunning = false
+            hkFollowing = false
+            return
+        end
+        hkMyCones = conos
+
+        hkLoopThread = task.spawn(function()
+            while hkFollowing and hkRunning do
+                if not hkTarget or not hkTarget.Character then break end
+                if hkEstaSentado(hkTarget) then break end
+                local raiz = hkTarget.Character:FindFirstChild("HumanoidRootPart")
+                if raiz then hkMoverConos(hkMyCones, raiz.Position) end
+                task.wait(0.05)
+            end
+            hkFollowing = false
+            hkLoopThread = nil
+        end)
+
+        hkIniciarMonitor()
+        notify({Title="🏠 Casa Ban activo", Duration=3, Success=true})
+    end)
+end
+
+local function hkDetenerTodo()
+    hkRunning = false
+    hkFollowing = false
+    hkDesactivarAntiSentarse()
+    if hkLoopThread then task.cancel(hkLoopThread) hkLoopThread = nil end
+    if hkMonitorThread then task.cancel(hkMonitorThread) hkMonitorThread = nil end
+    hkMyCones = {}
+    notify({Title="⏹️ Casa Ban parado", Duration=2})
+end
+
+-- ═══════════════════════════════════════════════════════
+-- UI DEL TAB CASA BAN
+-- ═══════════════════════════════════════════════════════
+HouseTb:AddSection("🎭 Configuración")
+
+local function hkObtenerListaJugadores()
+    local lista = {}
+    for _, jugador in ipairs(hkPlayers:GetPlayers()) do
+        if jugador ~= hkMe then table.insert(lista, jugador.Name) end
+    end
+    table.sort(lista)
+    return lista
+end
+
+local hkDropdown = HouseTb:AddDropdown({
+    Name = "Seleccionar Jugador",
+    Description = "Busca por nombre",
+    Options = hkObtenerListaJugadores(),
+    Default = "",
+    Searchable = true,
+    Callback = function(valor)
+        if valor and valor ~= "" then
+            hkTarget = hkPlayers:FindFirstChild(valor)
+            if not hkTarget then
+                for _, jugador in ipairs(hkPlayers:GetPlayers()) do
+                    if jugador.Name:lower():find(valor:lower(), 1, true) then
+                        hkTarget = jugador
+                        break
+                    end
+                end
+            end
+            print("[CasaBan] Target:", hkTarget and hkTarget.Name or "nil")
+        else
+            hkTarget = nil
+        end
+    end
+})
+
+HouseTb:AddButton({
+    Name = "🔄 Actualizar Jugadores",
+    Description = "Actualiza la lista",
+    Callback = function()
+        if hkDropdown then
+            local lista = hkObtenerListaJugadores()
+            pcall(function() hkDropdown:Refresh(lista) end)
+            pcall(function() hkDropdown:Set(lista) end)
+        end
+        notify({Title="🔄", Text="Lista actualizada", Duration=2, Success=true})
+    end
+})
+
+HouseTb:AddSection("⚡ Acciones")
+HouseTb:AddButton({
+    Name = "▶️ Iniciar",
+    Description = "Compra casa, coloca conos y comienza el seguimiento",
+    Callback = function() hkIniciarTodo() end
+})
+HouseTb:AddButton({
+    Name = "⏹️ Parar",
+    Description = "Detiene todo y limpia los conos",
+    Callback = function() hkDetenerTodo() end
+})
+
+HouseTb:AddSection("🏠 Info Casa")
+HouseTb:AddButton({
+    Name = "🏠 Verificar mi Casa",
+    Callback = function()
+        local existe, info = hkVerificarCasa()
+        if existe then
+            hkHasHouse = true
+            hkHouseData = info
+            notify({Title="🏠 Casa", Text="Tienes casa: " .. info.Nombre, Duration=3, Success=true})
+        else
+            notify({Title="🏠 Casa", Text="No tienes casa comprada", Duration=3, Warning=true})
+        end
+    end
+})
+
+HouseTb:AddSection("ℹ️ Info")
+HouseTb:AddParagraph({
+    Title = "Cómo funciona",
+    Text = "1. Selecciona un jugador.\n2. Pulsa Iniciar.\n3. Compra casa (si no tienes).\n4. Se teletransporta a (1019, 73, -1101) y coloca los conos.\n5. Sigue al jugador con los conos.\n6. Cuando se siente → TP + conos + BAN."
+})
+
+-- ═══════════════════════════════════════════════════════
 -- ANTIS
 -- ═══════════════════════════════════════════════════════
 local antiPlayers = game:GetService("Players")
@@ -2179,495 +2715,976 @@ PropsTb:AddParagraph({
 })
 
 -- ═══════════════════════════════════════════════════════
--- TROLL: HOUSE BAN (con confirmación de conos) — ÚNICO
+-- TROLL TAB — TODO LO TROLL (sin House Ban)
 -- ═══════════════════════════════════════════════════════
-local trollPlayers = game:GetService("Players")
-local trollWorkspace = game:GetService("Workspace")
-local trollRS = game:GetService("ReplicatedStorage")
-local trollRunService = game:GetService("RunService")
-local trollMe = trollPlayers.LocalPlayer
 
-local posicionDestino = Vector3.new(1019.4299926758, 73, -1101.2436523438)
-local modeloSilla = "CornerHills"
+local trollPropTarget = nil
+local trollFlingConn, trollBringConn, trollKillConn, trollOrbitConn = nil, nil, nil, nil
+local trollGlobalFlingRunning = false
+local trollGlobalKillRunning = false
+local trollSpamFlingRunning = false
+local trollLoopTpRunning = false
+local trollSpectateConn = nil
+local trollKillMethod = "Bus"
+local trollCam = workspace.CurrentCamera
 
-local trollTarget = nil
-local following = false
-local loopThread = nil
-local monitorThread = nil
-local hasHouse = false
-local houseData = nil
-local myCones = {}
-local buyingHouse = false
-local antiSentarse = false
-local conexionesAntiSentarse = {}
-local running = false
-
-local function aplicarAntiSentarse(personaje)
-    if not personaje then return end
-    local humanoide = personaje:FindFirstChildOfClass("Humanoid")
-    local raiz = personaje:FindFirstChild("HumanoidRootPart")
-    if not humanoide or not raiz then return end
-    for _, conexion in pairs(conexionesAntiSentarse) do
-        pcall(function() conexion:Disconnect() end)
-    end
-    table.clear(conexionesAntiSentarse)
-    pcall(function() humanoide:SetStateEnabled(Enum.HumanoidStateType.Seated, false) end)
-    conexionesAntiSentarse[#conexionesAntiSentarse+1] = humanoide.StateChanged:Connect(function(_, nuevo)
-        if antiSentarse and nuevo == Enum.HumanoidStateType.Seated then
-            humanoide.Sit = false
-            humanoide:ChangeState(Enum.HumanoidStateType.Jumping)
-        end
-    end)
-    conexionesAntiSentarse[#conexionesAntiSentarse+1] = trollRunService.Heartbeat:Connect(function()
-        if not antiSentarse then return end
-        if not personaje or not personaje.Parent then return end
-        pcall(function()
-            humanoide.Sit = false
-            if humanoide:GetState() == Enum.HumanoidStateType.Seated then
-                humanoide:ChangeState(Enum.HumanoidStateType.Jumping)
-            end
-            for _, soldadura in pairs(raiz:GetChildren()) do
-                if (soldadura:IsA("Weld") or soldadura:IsA("WeldConstraint") or soldadura:IsA("Motor6D")) and
-                   (soldadura.Name == "SeatWeld" or soldadura.Name == "VehicleSeat") then
-                    soldadura:Destroy()
-                end
-            end
-            for _, objeto in pairs(personaje:GetDescendants()) do
-                if (objeto:IsA("Weld") or objeto:IsA("WeldConstraint")) and objeto.Name == "SeatWeld" then
-                    objeto:Destroy()
-                end
-            end
-        end)
-    end)
+local function trollGetTarget()
+    if trollPropTarget and trollPropTarget.Parent then return trollPropTarget end
+    if propsSelectedPlayer and propsSelectedPlayer.Parent then return propsSelectedPlayer end
+    return nil
 end
 
-local function activarAntiSentarse()
-    if antiSentarse then return end
-    antiSentarse = true
-    if trollMe.Character then aplicarAntiSentarse(trollMe.Character) end
+local function trollGetPlayerList()
+    local t = {}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player then table.insert(t, plr.Name) end
+    end
+    table.sort(t)
+    return t
 end
 
-local function desactivarAntiSentarse()
-    antiSentarse = false
-    for _, conexion in pairs(conexionesAntiSentarse) do
-        pcall(function() conexion:Disconnect() end)
-    end
-    table.clear(conexionesAntiSentarse)
+local function trollStopAllProps()
+    if trollFlingConn then trollFlingConn:Disconnect() trollFlingConn = nil end
+    if trollBringConn then trollBringConn:Disconnect() trollBringConn = nil end
+    if trollKillConn then trollKillConn:Disconnect() trollKillConn = nil end
+    if trollOrbitConn then trollOrbitConn:Disconnect() trollOrbitConn = nil end
+    trollGlobalFlingRunning = false
+    trollGlobalKillRunning = false
+    trollSpamFlingRunning = false
+    trollLoopTpRunning = false
 end
 
-trollMe.CharacterAdded:Connect(function(personaje)
-    if antiSentarse then task.wait(0.2) aplicarAntiSentarse(personaje) end
-end)
+-- ═══════════════════════════════════════════════════════
+-- TARGET
+-- ═══════════════════════════════════════════════════════
+TrollTb:AddSection("🎯 Target")
 
-local function estaSentado(jugador)
-    if not jugador or not jugador.Character then return false end
-    local personaje = jugador.Character
-    local humanoide = personaje:FindFirstChildOfClass("Humanoid")
-    if not humanoide then return false end
-    if humanoide.Sit == true or humanoide.PlatformStand == true or humanoide.SeatPart then return true end
-    local animador = personaje:FindFirstChildOfClass("Animator")
-    if animador then
-        for _, pista in pairs(animador:GetPlayingAnimationTracks()) do
-            if pista.Animation and string.find(string.lower(pista.Animation.Name), "sit") then
-                return true
-            end
-        end
-    end
-    return false
-end
-
-local function verificarCasa()
-    local lotes = trollWorkspace:FindFirstChild("001_Lots")
-    if not lotes then return false, nil end
-    local miCasa = lotes:FindFirstChild(trollMe.Name .. "House")
-    if not miCasa then return false, nil end
-    local info = {Nombre = miCasa.Name, Existe = true, Casa = miCasa}
-    for _, hijo in pairs(miCasa:GetDescendants()) do
-        if hijo:IsA("NumberValue") and hijo.Name == "Number" then
-            info.Numero = hijo.Value break
-        end
-    end
-    local spawn = miCasa:FindFirstChild("HouseSpawnPosition")
-    if spawn and spawn:IsA("BasePart") then
-        info.Posicion = spawn.Position
-        info.CFrame = spawn.CFrame
-    end
-    return true, info
-end
-
-local function comprarCasa()
-    if buyingHouse then return false end
-    buyingHouse = true
-    local personaje = trollMe.Character or trollMe.CharacterAdded:Wait()
-    local raiz = personaje:FindFirstChild("HumanoidRootPart")
-    local lotes = trollWorkspace:FindFirstChild("001_Lots")
-    if not lotes or not raiz then buyingHouse = false return false end
-    if lotes:FindFirstChild(trollMe.Name .. "House") then buyingHouse = false return true end
-
-    local disponibles = {}
-    for _, lote in pairs(lotes:GetChildren()) do
-        if lote.Name == "For Sale" then
-            for _, numero in pairs(lote:GetDescendants()) do
-                if numero:IsA("NumberValue") and numero.Name == "Number" and numero.Value < 25 and numero.Value > 10 then
-                    table.insert(disponibles, {Lote = lote, Numero = numero.Value}) break
-                end
-            end
-        end
-    end
-    if #disponibles == 0 then buyingHouse = false return false end
-
-    local seleccionado = disponibles[math.random(1, #disponibles)]
-    local loteElegido, numeroCasa = seleccionado.Lote, seleccionado.Numero
-
-    local detectorCompra = loteElegido:FindFirstChild("BuyHouse")
-    if detectorCompra and detectorCompra:IsA("BasePart") then
-        raiz.CFrame = detectorCompra.CFrame + Vector3.new(0, -6, 0)
-        task.wait(0.3)
-        local click = detectorCompra:FindFirstChild("ClickDetector")
-        if click then pcall(function() fireclickdetector(click) end) end
-    end
-    task.wait(0.3)
-
-    local remotos = trollRS:FindFirstChild("Remotes")
-    if remotos then
-        local construir = remotos:FindFirstChild("Lot:BuildProperty")
-        if construir then pcall(function() construir:InvokeServer(numeroCasa, "102_House") end) end
-    end
-    task.wait(0.5)
-
-    local casaPrevia = lotes:FindFirstChild(trollMe.Name .. "House")
-    if not casaPrevia then buyingHouse = false return false end
-
-    local valorNumero
-    for _, x in pairs(casaPrevia:GetDescendants()) do
-        if x.Name == "Number" and x:IsA("NumberValue") then valorNumero = x break end
-    end
-    if not valorNumero then buyingHouse = false return false end
-    task.wait(0.3)
-
-    local re = trollRS:FindFirstChild("RE")
-    if re then
-        local obtenerCasa = re:FindFirstChild("1Gettin1gHous1e")
-        if obtenerCasa then
-            pcall(function() obtenerCasa:InvokeServer("PickingCustomHouse", "049_House", valorNumero.Value) end)
-        end
-    end
-    buyingHouse = false
-
-    local exito, info = verificarCasa()
-    if exito then hasHouse = true houseData = info return true end
-    return false
-end
-
-local function obtenerConos()
-    local carpeta = trollWorkspace:FindFirstChild("WorkspaceCom")
-    if carpeta then carpeta = carpeta:FindFirstChild("001_TrafficCones") end
-    if not carpeta then return {} end
-    local conos = {}
-    for _, hijo in pairs(carpeta:GetChildren()) do
-        if string.find(hijo.Name, trollMe.Name) then
-            local evento = hijo:FindFirstChild("SetCurrentCFrame")
-            if evento then table.insert(conos, {Objeto = hijo, Evento = evento, Nombre = hijo.Name}) end
-        end
-    end
-    return conos
-end
-
-local function moverConos(conos, posicion)
-    for _, cono in ipairs(conos) do
-        pcall(function() cono.Evento:InvokeServer(CFrame.new(posicion)) end)
-    end
-end
-
-local function limpiarObjetos()
-    local evento = trollRS:FindFirstChild("RE")
-    if evento then evento = evento:FindFirstChild("1Clea1rTool1s") end
-    if not evento then return false end
-    pcall(function() evento:FireServer("ClearAllProps") end)
-    return true
-end
-
-local function equiparCreadorObjetos()
-    local personaje = trollMe.Character
-    if not personaje then return false end
-    local mochila = trollMe:FindFirstChild("Backpack")
-    local herramienta = personaje:FindFirstChild("PropMaker")
-    if herramienta then return true end
-    if mochila then
-        herramienta = mochila:FindFirstChild("PropMaker")
-        if herramienta then herramienta.Parent = personaje return true end
-    end
-    local re = trollRS:FindFirstChild("RE")
-    if re then
-        local seleccion = re:FindFirstChild("1Too1l")
-        if seleccion then
-            pcall(function() seleccion:InvokeServer("PickingTools", "PropMaker") end)
-            task.wait(0.15)
-            if mochila then
-                local nuevaHerramienta = mochila:FindFirstChild("PropMaker")
-                if nuevaHerramienta then nuevaHerramienta.Parent = personaje return true end
-            end
-        end
-    end
-    return false
-end
-
-local function solicitarSilla()
-    local evento = trollRS:FindFirstChild("RE")
-    if evento then evento = evento:FindFirstChild("1Clea1rTool1s") end
-    if not evento then return false end
-    pcall(function()
-        evento:FireServer("RequestingPropName", "FurnitureRockingChair", "Furniture", "Home")
-    end)
-    return true
-end
-
-local function colocarSilla(posicion)
-    local personaje = trollMe.Character
-    if not personaje then return false end
-    local herramienta = personaje:FindFirstChild("PropMaker")
-    if not herramienta then return false end
-    local evento = herramienta:FindFirstChild("Tool_PropMake")
-    if not evento then return false end
-    local carpetaModelos = trollWorkspace:FindFirstChild("Model")
-    if not carpetaModelos then return false end
-    local modelo = carpetaModelos:FindFirstChild(modeloSilla)
-    if not modelo then return false end
-    pcall(function() evento:FireServer(modelo, posicion) end)
-    return true
-end
-
-local function teletransportarYColocar()
-    activarAntiSentarse()
-    local personaje = trollMe.Character
-    if not personaje then desactivarAntiSentarse() return nil end
-    local raiz = personaje:FindFirstChild("HumanoidRootPart")
-    if not raiz then desactivarAntiSentarse() return nil end
-    local original = raiz.CFrame
-    raiz.CFrame = CFrame.new(posicionDestino)
-    task.wait(0.8)
-
-    local conos = nil
-    for intento = 1, 20 do
-        if not running then break end
-        equiparCreadorObjetos()
-        task.wait(0.5)
-        solicitarSilla()
-        task.wait(0.5)
-        colocarSilla(posicionDestino)
-        task.wait(1.0)
-        local encontrados = obtenerConos()
-        if #encontrados > 0 then conos = encontrados break end
-        task.wait(0.5)
-    end
-
-    raiz.CFrame = original
-    task.wait(0.5)
-    desactivarAntiSentarse()
-    return conos
-end
-
-local function banearDeCasa(jugador)
-    if not jugador or not houseData or not houseData.Casa then return false end
-    local miCasa = houseData.Casa
-    local bloquear
-    local elegida = miCasa:FindFirstChild("HousePickedByPlayer")
-    if elegida then
-        local modelo = elegida:FindFirstChild("HouseModel")
-        if modelo then bloquear = modelo:FindFirstChild("Permissions:Disallow") end
-    end
-    if not bloquear then
-        for _, hijo in pairs(miCasa:GetDescendants()) do
-            if hijo.Name == "Permissions:Disallow" then bloquear = hijo break end
-        end
-    end
-    if not bloquear then
-        notify({Title="❌ Error", Text="No se encontró Permissions:Disallow", Duration=3, Danger=true})
-        return false
-    end
-
-    pcall(function() bloquear:FireServer(jugador) end)
-    pcall(function()
-        local jugadorReal = trollPlayers:FindFirstChild(jugador.Name)
-        if jugadorReal then bloquear:FireServer(jugadorReal) end
-    end)
-
-    notify({Title="BANEADO!!!!", Text=jugador.Name .. " fuera de la casa", Duration=6, Danger=true})
-    print("[HouseBan] ✅ BANEADO: " .. jugador.Name)
-    return true
-end
-
-local function teletransportarACasa(jugador)
-    if not jugador or not jugador.Character then return false end
-    if not houseData or not houseData.CFrame then return false end
-    local raiz = jugador.Character:FindFirstChild("HumanoidRootPart")
-    if not raiz then return false end
-    pcall(function() raiz.CFrame = houseData.CFrame + Vector3.new(0, 3, 0) end)
-    task.wait(0.2)
-    if #myCones > 0 then
-        for _, cono in ipairs(myCones) do
-            pcall(function()
-                cono.Evento:InvokeServer(houseData.CFrame + Vector3.new(0, 0.5, 0))
-            end)
-        end
-    end
-    task.wait(0.2)
-    limpiarObjetos()
-    task.wait(0.2)
-    banearDeCasa(jugador)
-    return true
-end
-
-local function iniciarMonitor()
-    if monitorThread then task.cancel(monitorThread) monitorThread = nil end
-    if not trollTarget then return end
-    monitorThread = task.spawn(function()
-        while running and trollTarget and trollTarget.Parent do
-            if estaSentado(trollTarget) and hasHouse then
-                teletransportarACasa(trollTarget)
-                if following then
-                    following = false
-                    if loopThread then task.cancel(loopThread) loopThread = nil end
-                end
-                task.wait(0.3)
-            end
-            task.wait(0.3)
-        end
-        monitorThread = nil
-    end)
-end
-
-local function iniciarTodo()
-    if running then
-        notify({Title="⚠️ Ya corriendo", Duration=2, Warning=true})
-        return
-    end
-    if not trollTarget then
-        notify({Title="❌ Error", Text="Selecciona un jugador primero", Duration=3, Danger=true})
-        return
-    end
-    running = true
-    following = true
-    if loopThread then task.cancel(loopThread) loopThread = nil end
-    if monitorThread then task.cancel(monitorThread) monitorThread = nil end
-    notify({Title="🎭 Iniciando House Ban", Duration=2})
-
-    task.spawn(function()
-        local existe, info = verificarCasa()
-        if existe then
-            hasHouse = true
-            houseData = info
-        else
-            if not comprarCasa() then
-                running = false
-                following = false
-                notify({Title="❌ Error", Text="No se pudo comprar casa", Duration=3, Danger=true})
-                return
-            end
-        end
-
-        task.wait(0.2)
-        local conos = teletransportarYColocar()
-        if not conos or #conos == 0 then
-            notify({Title="❌ Error", Text="No se confirmaron los conos", Duration=3, Danger=true})
-            warn("[Troll] No se confirmaron los conos, abortando.")
-            running = false
-            following = false
-            return
-        end
-        myCones = conos
-
-        loopThread = task.spawn(function()
-            while following and running do
-                if not trollTarget or not trollTarget.Character then break end
-                if estaSentado(trollTarget) then break end
-                local raiz = trollTarget.Character:FindFirstChild("HumanoidRootPart")
-                if raiz then moverConos(myCones, raiz.Position) end
-                task.wait(0.05)
-            end
-            following = false
-            loopThread = nil
-        end)
-
-        iniciarMonitor()
-        notify({Title="🎭 House Ban activo", Duration=3, Success=true})
-    end)
-end
-
-local function detenerTodo()
-    running = false
-    following = false
-    desactivarAntiSentarse()
-    if loopThread then task.cancel(loopThread) loopThread = nil end
-    if monitorThread then task.cancel(monitorThread) monitorThread = nil end
-    myCones = {}
-    notify({Title="⏹️ Parado", Duration=2})
-end
-
-TrollTb:AddSection("🎭 Configuración")
-
-local function obtenerListaJugadores()
-    local lista = {}
-    for _, jugador in ipairs(trollPlayers:GetPlayers()) do
-        if jugador ~= trollMe then table.insert(lista, jugador.Name) end
-    end
-    table.sort(lista)
-    return lista
-end
-
-local desplegableObjetivo = TrollTb:AddDropdown({
+local trollTargetDropdown = TrollTb:AddDropdown({
     Name = "Seleccionar Jugador",
     Description = "Busca por nombre",
-    Options = obtenerListaJugadores(),
+    Options = trollGetPlayerList(),
     Default = "",
     Searchable = true,
     Callback = function(valor)
         if valor and valor ~= "" then
-            trollTarget = trollPlayers:FindFirstChild(valor)
-            if not trollTarget then
-                for _, jugador in ipairs(trollPlayers:GetPlayers()) do
+            trollPropTarget = Players:FindFirstChild(valor)
+            if not trollPropTarget then
+                for _, jugador in ipairs(Players:GetPlayers()) do
                     if jugador.Name:lower():find(valor:lower(), 1, true) then
-                        trollTarget = jugador
+                        trollPropTarget = jugador
                         break
                     end
                 end
             end
-            print("[HouseBan] Target:", trollTarget and trollTarget.Name or "nil")
+            if trollPropTarget then
+                propsSelectedPlayer = trollPropTarget
+                getgenv().Target = trollPropTarget
+            end
         else
-            trollTarget = nil
+            trollPropTarget = nil
         end
     end
 })
 
 TrollTb:AddButton({
     Name = "🔄 Actualizar Jugadores",
-    Description = "Actualiza la lista",
     Callback = function()
-        if desplegableObjetivo then
-            local lista = obtenerListaJugadores()
-            pcall(function() desplegableObjetivo:Refresh(lista) end)
-            pcall(function() desplegableObjetivo:Set(lista) end)
+        if trollTargetDropdown then
+            local lista = trollGetPlayerList()
+            pcall(function() trollTargetDropdown:Refresh(lista) end)
+            pcall(function() trollTargetDropdown:Set(lista) end)
         end
         notify({Title="🔄", Text="Lista actualizada", Duration=2, Success=true})
     end
 })
 
-TrollTb:AddSection("⚡ Acciones")
+-- ═══════════════════════════════════════════════════════
+-- TELEPORTS
+-- ═══════════════════════════════════════════════════════
+TrollTb:AddSection("🚀 Teleports")
+
 TrollTb:AddButton({
-    Name = "▶️ Iniciar",
-    Description = "Compra casa, coloca conos y comienza el seguimiento",
-    Callback = function() iniciarTodo() end
+    Name = "📍 TP a Jugador",
+    Description = "Teletranspórtate al target seleccionado",
+    Callback = function()
+        local t = trollGetTarget()
+        if not t or not t.Character then
+            notify({Title="❌", Text="Selecciona un jugador primero", Duration=2, Danger=true})
+            return
+        end
+        local root = t.Character:FindFirstChild("HumanoidRootPart")
+        local myRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if root and myRoot then
+            myRoot.CFrame = root.CFrame * CFrame.new(0, 0, 4)
+            notify({Title="📍 TP", Text="TP a " .. t.Name, Duration=2, Success=true})
+        end
+    end
 })
+
 TrollTb:AddButton({
-    Name = "⏹️ Parar",
-    Description = "Detiene todo y limpia los conos",
-    Callback = function() detenerTodo() end
+    Name = "📥 Traer Target a Mí",
+    Description = "Teletransporta al target a tu posición",
+    Callback = function()
+        local t = trollGetTarget()
+        if not t or not t.Character then
+            notify({Title="❌", Text="Sin target", Duration=2, Danger=true})
+            return
+        end
+        local myRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        local tRoot = t.Character:FindFirstChild("HumanoidRootPart")
+        if myRoot and tRoot then
+            pcall(function() tRoot.CFrame = myRoot.CFrame * CFrame.new(0, 0, 3) end)
+            notify({Title="📥", Text="Traje a " .. t.Name, Duration=2, Success=true})
+        end
+    end
+})
+
+TrollTb:AddToggle({
+    Name = "🔁 Loop TP al Target",
+    Description = "Sigue al target constantemente",
+    Default = false,
+    Callback = function(v)
+        trollLoopTpRunning = v
+        if v then
+            task.spawn(function()
+                while trollLoopTpRunning do
+                    local t = trollGetTarget()
+                    if t and t.Character then
+                        local root = t.Character:FindFirstChild("HumanoidRootPart")
+                        local myRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+                        if root and myRoot then
+                            pcall(function() myRoot.CFrame = root.CFrame * CFrame.new(0, 0, 4) end)
+                        end
+                    end
+                    task.wait(0.1)
+                end
+            end)
+        end
+    end
+})
+
+TrollTb:AddToggle({
+    Name = "👁️ Spectate Player",
+    Description = "Cámara sigue al target",
+    Default = false,
+    Callback = function(value)
+        local function UpdateCamera()
+            local t = trollGetTarget()
+            local targetHum = value and t and t.Character and t.Character:FindFirstChildOfClass("Humanoid")
+            trollCam.CameraSubject = targetHum or (player.Character and player.Character:FindFirstChildOfClass("Humanoid")) or trollCam.CameraSubject
+        end
+        if value then
+            if not trollSpectateConn then
+                trollSpectateConn = RunService.Heartbeat:Connect(UpdateCamera)
+            end
+        else
+            if trollSpectateConn then trollSpectateConn:Disconnect() trollSpectateConn = nil end
+            UpdateCamera()
+        end
+    end
+})
+
+-- ═══════════════════════════════════════════════════════
+-- KILL METHODS
+-- ═══════════════════════════════════════════════════════
+TrollTb:AddSection("💀 Kill Target")
+
+TrollTb:AddDropdown({
+    Name = "Método de Kill",
+    Options = {"Bus", "Couch V2"},
+    Default = "Bus",
+    Callback = function(value) trollKillMethod = value end
+})
+
+TrollTb:AddButton({
+    Name = "💀 Kill Player",
+    Callback = function()
+        local t = trollGetTarget()
+        if not t then
+            notify({Title="❌", Text="Selecciona un jugador primero", Duration=2, Danger=true})
+            return
+        end
+        if trollKillMethod == "Couch V2" then
+            notify({Title="⚠️", Text="Couch V2 no disponible en esta build", Duration=3, Warning=true})
+        else
+            local character = player.Character
+            local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
+            if not humanoidRootPart then return end
+            local originalPosition = humanoidRootPart.CFrame
+            local function GetBus()
+                local vehicles = workspace:FindFirstChild("Vehicles")
+                return vehicles and vehicles:FindFirstChild(player.Name .. "Car") or nil
+            end
+            local bus = GetBus()
+            if not bus then
+                humanoidRootPart.CFrame = CFrame.new(1118.81, 75.998, -1138.61)
+                task.wait(0.5)
+                CarRemote:FireServer("PickingCar", "SchoolBus")
+                task.wait(1)
+                bus = GetBus()
+            end
+            if bus then
+                local seat = bus:FindFirstChild("Body") and bus.Body:FindFirstChild("VehicleSeat")
+                if seat and character:FindFirstChildOfClass("Humanoid") and not character.Humanoid.Sit then
+                    repeat
+                        humanoidRootPart.CFrame = seat.CFrame * CFrame.new(0, 2, 0)
+                        task.wait()
+                    until character.Humanoid.Sit or not bus.Parent
+                    if character.Humanoid.Sit or not bus.Parent then
+                        for _, v in ipairs(bus.Body:GetChildren()) do
+                            if v:IsA("Seat") then v.CanTouch = false end
+                        end
+                    end
+                end
+            end
+            task.spawn(function()
+                while true do
+                    if t then
+                        if t.Character and t.Character:FindFirstChild("HumanoidRootPart") then
+                            local targetHumanoid = t.Character:FindFirstChildOfClass("Humanoid")
+                            if targetHumanoid and targetHumanoid.Sit then
+                                if character.Humanoid then
+                                    bus:PivotTo(CFrame.new(9999, -450, 9999))
+                                    task.wait(0.2)
+                                    if character and character:FindFirstChildWhichIsA("Humanoid") then
+                                        character:FindFirstChildWhichIsA("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+                                    end
+                                    task.wait(0.5)
+                                    humanoidRootPart.CFrame = originalPosition
+                                end
+                                break
+                            else
+                                local targetRoot = t.Character.HumanoidRootPart
+                                local time = tick() * 35
+                                bus:PivotTo(targetRoot.CFrame * CFrame.new(math.sin(time) * 4, 0, math.cos(time) * 20))
+                            end
+                        end
+                    end
+                    RunService.RenderStepped:Wait()
+                end
+            end)
+        end
+    end
+})
+
+-- ═══════════════════════════════════════════════════════
+-- AUTO FLING (target)
+-- ═══════════════════════════════════════════════════════
+TrollTb:AddSection("💥 Props contra el Target")
+
+local trollAutoFlingRunning = false
+
+TrollTb:AddToggle({
+    Name = "💥 Auto Fling (Target)",
+    Description = "Fling constante al target",
+    Default = false,
+    Callback = function(state)
+        trollAutoFlingRunning = state
+        if state then
+            local t = trollGetTarget()
+            if not t or not t.Character then return end
+            local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+            local tRoot = t.Character and t.Character:FindFirstChild("HumanoidRootPart")
+            if not root or not tRoot then return end
+            local char = player.Character
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            local original = root.CFrame
+            pcall(function() RE:FindFirstChild("1Clea1rTool1s"):FireServer("ClearAllTools") end)
+            task.wait(0.2)
+            pcall(function() RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch") end)
+            task.wait(0.3)
+            local tool = player.Backpack:FindFirstChild("Couch")
+            if tool then tool.Parent = char end
+            task.wait(0.2)
+            pcall(function() VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game) end)
+            task.wait(0.25)
+            workspace.FallenPartsDestroyHeight = 0/0
+            local bv = Instance.new("BodyVelocity")
+            bv.Name, bv.Velocity, bv.MaxForce = "FlingForce", Vector3.new(9e8, 9e8, 9e8), Vector3.new(math.huge, math.huge, math.huge)
+            bv.Parent = root
+            hum:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+            hum.PlatformStand = false
+            trollCam.CameraSubject = t.Character:FindFirstChild("Head") or tRoot or hum
+            task.spawn(function()
+                local angle = 0
+                while trollAutoFlingRunning and t and t.Character and t.Character:FindFirstChildOfClass("Humanoid") do
+                    local tHum = t.Character:FindFirstChildOfClass("Humanoid")
+                    if tHum.Sit then break end
+                    angle = 50
+                    local hrp = t.Character:FindFirstChild("HumanoidRootPart")
+                    if hrp then
+                        local pos = hrp.Position + (hrp.Velocity / 1.5)
+                        root.CFrame = CFrame.new(pos) * CFrame.Angles(math.rad(angle), 0, 0)
+                    end
+                    root.Velocity, root.RotVelocity = Vector3.new(9e8, 9e8, 9e8), Vector3.new(9e8, 9e8, 9e8)
+                    task.wait()
+                end
+                trollAutoFlingRunning = false
+                bv:Destroy()
+                hum:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+                hum.PlatformStand = false
+                root.CFrame = original
+                trollCam.CameraSubject = hum
+                for _, p in ipairs(char:GetDescendants()) do
+                    if p:IsA("BasePart") then p.Velocity, p.RotVelocity = Vector3.zero, Vector3.zero end
+                end
+                hum:UnequipTools()
+                pcall(function() RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch") end)
+            end)
+        end
+    end
+})
+
+TrollTb:AddToggle({
+    Name = "💥 Prop Fling (Target)",
+    Default = false,
+    Callback = function(v)
+        if trollFlingConn then trollFlingConn:Disconnect() trollFlingConn = nil end
+        if not v then return end
+        trollFlingConn = RunService.Heartbeat:Connect(function()
+            local t = trollGetTarget()
+            if not t or not t.Character then return end
+            local root = t.Character:FindFirstChild("HumanoidRootPart")
+            local hum = t.Character:FindFirstChildOfClass("Humanoid")
+            if not root or not hum then return end
+            if hum.Sit then
+                propsTeleport(CFrame.new(1082537, 81322368, -4719626.5))
+                task.delay(1.5, propsClearAll)
+            else
+                propsTeleport(root.CFrame * CFrame.new(0, -(hum.HipHeight + 2), 0))
+            end
+        end)
+    end
+})
+
+TrollTb:AddToggle({
+    Name = "📥 Prop Bring (Target)",
+    Default = false,
+    Callback = function(v)
+        if trollBringConn then trollBringConn:Disconnect() trollBringConn = nil end
+        if not v then return end
+        trollBringConn = RunService.Heartbeat:Connect(function()
+            local t = trollGetTarget()
+            if not t or not t.Character then return end
+            local root = t.Character:FindFirstChild("HumanoidRootPart")
+            local hum = t.Character:FindFirstChildOfClass("Humanoid")
+            local myChar = player.Character
+            if not root or not hum or not myChar then return end
+            local myRoot = myChar:FindFirstChild("HumanoidRootPart")
+            if not myRoot then return end
+            if hum.Sit then
+                propsTeleport(myRoot.CFrame * CFrame.new(0, 0, -3))
+                task.delay(1.5, propsClearAll)
+            else
+                propsTeleport(root.CFrame * CFrame.new(0, -(hum.HipHeight + 2), 0))
+            end
+        end)
+    end
+})
+
+TrollTb:AddToggle({
+    Name = "💀 Prop Kill (Target)",
+    Default = false,
+    Callback = function(v)
+        if trollKillConn then trollKillConn:Disconnect() trollKillConn = nil end
+        if not v then return end
+        trollKillConn = RunService.Heartbeat:Connect(function()
+            local t = trollGetTarget()
+            if not t or not t.Character then return end
+            local root = t.Character:FindFirstChild("HumanoidRootPart")
+            local hum = t.Character:FindFirstChildOfClass("Humanoid")
+            if not root or not hum then return end
+            if hum.Sit then
+                propsTeleport(CFrame.new(216.457, -1338.86, -477.942))
+                task.delay(1.5, propsClearAll)
+            else
+                propsTeleport(root.CFrame * CFrame.new(0, -(hum.HipHeight + 2), 0))
+            end
+        end)
+    end
+})
+
+TrollTb:AddButton({
+    Name = "💨 Fling Instantáneo (1 vez)",
+    Callback = function()
+        local t = trollGetTarget()
+        if not t or not t.Character then
+            notify({Title="❌", Text="Sin target", Duration=2, Danger=true})
+            return
+        end
+        local root = t.Character:FindFirstChild("HumanoidRootPart")
+        local hum = t.Character:FindFirstChildOfClass("Humanoid")
+        if not root or not hum then return end
+        propsTeleport(root.CFrame * CFrame.new(0, -(hum.HipHeight + 2), 0))
+        notify({Title="💨", Text="Fling a " .. t.Name, Duration=2, Success=true})
+        task.delay(1.5, propsClearAll)
+    end
+})
+
+-- ═══════════════════════════════════════════════════════
+-- TROLL GLOBAL
+-- ═══════════════════════════════════════════════════════
+TrollTb:AddSection("🌪️ Troll Global (a todos)")
+
+TrollTb:AddToggle({
+    Name = "🌪️ Fling Global (props)",
+    Default = false,
+    Callback = function(v)
+        trollGlobalFlingRunning = v
+        if v then
+            task.spawn(function()
+                while trollGlobalFlingRunning do
+                    for _, plr in ipairs(Players:GetPlayers()) do
+                        if plr ~= player and plr.Character then
+                            local root = plr.Character:FindFirstChild("HumanoidRootPart")
+                            local hum = plr.Character:FindFirstChildOfClass("Humanoid")
+                            if root and hum then
+                                pcall(function()
+                                    propsTeleport(root.CFrame * CFrame.new(0, -(hum.HipHeight + 2), 0))
+                                end)
+                            end
+                        end
+                    end
+                    task.wait(0.15)
+                end
+            end)
+        end
+    end
+})
+
+TrollTb:AddToggle({
+    Name = "💀 Kill Global (props)",
+    Default = false,
+    Callback = function(v)
+        trollGlobalKillRunning = v
+        if v then
+            task.spawn(function()
+                while trollGlobalKillRunning do
+                    for _, plr in ipairs(Players:GetPlayers()) do
+                        if plr ~= player and plr.Character then
+                            local root = plr.Character:FindFirstChild("HumanoidRootPart")
+                            local hum = plr.Character:FindFirstChildOfClass("Humanoid")
+                            if root and hum then
+                                pcall(function()
+                                    propsTeleport(root.CFrame * CFrame.new(0, -(hum.HipHeight + 2), 0))
+                                end)
+                            end
+                        end
+                    end
+                    task.wait(0.15)
+                end
+                task.delay(1.5, propsClearAll)
+            end)
+        end
+    end
+})
+
+TrollTb:AddButton({
+    Name = "🔥 Spam Fling (todos, 5s)",
+    Callback = function()
+        if trollSpamFlingRunning then return end
+        trollSpamFlingRunning = true
+        local t0 = tick()
+        task.spawn(function()
+            while trollSpamFlingRunning and (tick() - t0) < 5 do
+                for _, plr in ipairs(Players:GetPlayers()) do
+                    if plr ~= player and plr.Character then
+                        local root = plr.Character:FindFirstChild("HumanoidRootPart")
+                        local hum = plr.Character:FindFirstChildOfClass("Humanoid")
+                        if root and hum then
+                            pcall(function()
+                                propsTeleport(root.CFrame * CFrame.new(0, -(hum.HipHeight + 2), 0))
+                            end)
+                        end
+                    end
+                    task.wait(0.05)
+                end
+            end
+            trollSpamFlingRunning = false
+            propsClearAll()
+            notify({Title="🔥", Text="Spam Fling terminado", Duration=2})
+        end)
+    end
+})
+
+-- ═══════════════════════════════════════════════════════
+-- ORBIT PROPS
+-- ═══════════════════════════════════════════════════════
+TrollTb:AddSection("🌀 Props Orbit")
+
+TrollTb:AddToggle({
+    Name = "🌀 Orbit al Target",
+    Default = false,
+    Callback = function(v)
+        if trollOrbitConn then trollOrbitConn:Disconnect() trollOrbitConn = nil end
+        if not v then return end
+        local angle = 0
+        trollOrbitConn = RunService.Heartbeat:Connect(function(dt)
+            local t = trollGetTarget()
+            if not t or not t.Character then return end
+            local root = t.Character:FindFirstChild("HumanoidRootPart")
+            if not root then return end
+            local list = propsGetMyProps()
+            if #list == 0 then return end
+            angle += dt * 3
+            local spacing = (math.pi * 2) / #list
+            for i, prop in ipairs(list) do
+                if prop and prop.Parent then
+                    local a = angle + (i * spacing)
+                    local pos = root.Position + Vector3.new(math.cos(a) * 5, -2, math.sin(a) * 5)
+                    local cf = CFrame.lookAt(pos, root.Position)
+                    pcall(function() prop.SetCurrentCFrame:InvokeServer(cf) end)
+                end
+            end
+        end)
+    end
+})
+
+-- ═══════════════════════════════════════════════════════
+-- BLOQUEAR TARGET
+-- ═══════════════════════════════════════════════════════
+TrollTb:AddSection("🔒 Bloquear")
+
+TrollTb:AddButton({
+    Name = "🔒 Bloquear Target con Props",
+    Callback = function()
+        local t = trollGetTarget()
+        if not t or not t.Character then
+            notify({Title="❌", Text="Sin target", Duration=2, Danger=true})
+            return
+        end
+        local root = t.Character:FindFirstChild("HumanoidRootPart")
+        if not root then return end
+        local list = propsGetMyProps()
+        for i, prop in ipairs(list) do
+            if prop and prop.Parent then
+                local offset = CFrame.new(0, (i - 1) * 1.5, 0)
+                pcall(function() prop.SetCurrentCFrame:InvokeServer(root.CFrame * offset) end)
+            end
+        end
+        notify({Title="🔒", Text="Props encima de " .. t.Name, Duration=2, Success=true})
+    end
+})
+
+-- ═══════════════════════════════════════════════════════
+-- ALL METHODS (Bus / Boat / Ball)
+-- ═══════════════════════════════════════════════════════
+TrollTb:AddSection("🚌 All Methods")
+
+local killBusActive = false
+local flingBoatActive = false
+local flingBallActive = false
+local autoFlingAllActive = false
+
+TrollTb:AddToggle({
+    Name = "🚌 Kill All Bus",
+    Callback = function(state)
+        if state then
+            killBusActive = true
+            local destination = Vector3.new(145.51, -374.09, 21.58)
+            local originalPosition = nil
+            local function GetBus()
+                local vehicles = workspace:FindFirstChild("Vehicles")
+                return vehicles and vehicles:FindFirstChild(player.Name .. "Car") or nil
+            end
+            local function TrackPlayer(targetName, callback)
+                while killBusActive do
+                    local t = Players:FindFirstChild(targetName)
+                    if t and t.Character and t.Character:FindFirstChild("HumanoidRootPart") then
+                        local targetHumanoid = t.Character:FindFirstChildOfClass("Humanoid")
+                        if targetHumanoid and targetHumanoid.Sit then
+                            local bus = GetBus()
+                            if bus then
+                                bus:PivotTo(CFrame.new(destination))
+                                task.wait(0.2)
+                                local function simulateJump()
+                                    local h = player.Character and player.Character:FindFirstChildWhichIsA("Humanoid")
+                                    if h then h:ChangeState(Enum.HumanoidStateType.Jumping) end
+                                end
+                                simulateJump()
+                                task.wait(0.4)
+                                simulateJump()
+                                task.wait(0.5)
+                                if originalPosition then
+                                    player.Character.HumanoidRootPart.CFrame = originalPosition
+                                    task.wait(0.1)
+                                    CarRemote:FireServer("DeleteAllVehicles")
+                                end
+                            end
+                            break
+                        else
+                            local targetRoot = t.Character.HumanoidRootPart
+                            local time = tick() * 35
+                            local bus = GetBus()
+                            if bus then
+                                bus:PivotTo(targetRoot.CFrame * CFrame.new(0, 0, math.cos(time) * 20))
+                            end
+                        end
+                    end
+                    RunService.RenderStepped:Wait()
+                end
+                if callback and killBusActive then callback() end
+            end
+            local function StartKillBus(playerName, callback)
+                if not killBusActive then return end
+                local character = player.Character or player.CharacterAdded:Wait()
+                local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+                originalPosition = humanoidRootPart.CFrame
+                local bus = GetBus()
+                if not bus then
+                    humanoidRootPart.CFrame = CFrame.new(1118.81, 75.998, -1138.61)
+                    task.wait(0.5)
+                    CarRemote:FireServer("PickingCar", "SchoolBus")
+                    task.wait(1)
+                    bus = GetBus()
+                end
+                if bus then
+                    local seat = bus:FindFirstChild("Body") and bus.Body:FindFirstChild("VehicleSeat")
+                    if seat and character:FindFirstChildOfClass("Humanoid") and not character.Humanoid.Sit then
+                        repeat
+                            humanoidRootPart.CFrame = seat.CFrame * CFrame.new(0, 2, 0)
+                            task.wait()
+                        until character.Humanoid.Sit or not bus.Parent
+                    end
+                end
+                task.spawn(function() TrackPlayer(playerName, callback) end)
+            end
+            local function PerformActionForAllPlayers(playersList)
+                if not killBusActive or #playersList == 0 then return end
+                local p = table.remove(playersList, 1)
+                StartKillBus(p.Name, function()
+                    task.wait(0.5)
+                    if killBusActive then PerformActionForAllPlayers(playersList) end
+                end)
+            end
+            PerformActionForAllPlayers(Players:GetPlayers())
+        else
+            killBusActive = false
+            CarRemote:FireServer("DeleteAllVehicles")
+        end
+    end
+})
+
+TrollTb:AddToggle({
+    Name = "⛵ Fling Boat All",
+    Callback = function(state)
+        if state then
+            flingBoatActive = true
+            local Character = player.Character
+            local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+            local RootPart = Character:FindFirstChild("HumanoidRootPart")
+            local Vehicles = workspace:FindFirstChild("Vehicles")
+            local OldPos = RootPart.CFrame
+            local PCar = Vehicles:FindFirstChild(player.Name .. "Car")
+            if not PCar and RootPart then
+                RootPart.CFrame = CFrame.new(1754, -2, 58)
+                task.wait(0.5)
+                CarRemote:FireServer("PickingBoat", "MilitaryBoatFree")
+                task.wait(0.5)
+                PCar = Vehicles:FindFirstChild(player.Name .. "Car")
+                task.wait(0.5)
+                local Seat = PCar and PCar:FindFirstChild("Body") and PCar.Body:FindFirstChild("VehicleSeat")
+                if Seat then
+                    repeat task.wait(); RootPart.CFrame = Seat.CFrame * CFrame.new(0, math.random(-1, 1), 0) until Humanoid.Sit or not flingBoatActive
+                end
+            end
+            task.wait(0.5)
+            PCar = Vehicles:FindFirstChild(player.Name .. "Car")
+            if PCar and not Humanoid.Sit then
+                local Seat = PCar:FindFirstChild("Body") and PCar.Body:FindFirstChild("VehicleSeat")
+                if Seat then repeat task.wait(); RootPart.CFrame = Seat.CFrame * CFrame.new(0, math.random(-1, 1), 0) until Humanoid.Sit or not flingBoatActive end
+            end
+            local SpinGyro = Instance.new("BodyGyro")
+            SpinGyro.Parent = PCar.PrimaryPart
+            SpinGyro.MaxTorque = Vector3.new(1e7, 1e7, 1e7)
+            SpinGyro.P = 1e7
+            SpinGyro.CFrame = PCar.PrimaryPart.CFrame * CFrame.Angles(0, math.rad(90), 0)
+            local function flingPlayer(TargetC, TargetRP, TargetH)
+                local Angles = 0
+                local endTime = tick() + 1
+                while tick() < endTime and flingBoatActive do
+                    Angles = Angles + 100
+                    task.wait()
+                    local function kill(alvo, pos, angulo) PCar:PivotTo(CFrame.new(alvo.Position) * pos * angulo) end
+                    kill(TargetRP, CFrame.new(0, 3, 0), CFrame.Angles(math.rad(Angles), 0, 0))
+                    kill(TargetRP, CFrame.new(0, -1.5, 2), CFrame.Angles(math.rad(Angles), 0, 0))
+                    kill(TargetRP, CFrame.new(2, 1.5, 2.25), CFrame.Angles(math.rad(50), 0, 0))
+                    kill(TargetRP, CFrame.new(-2.25, -1.5, 2.25), CFrame.Angles(math.rad(30), 0, 0))
+                end
+            end
+            for _, Target in ipairs(Players:GetPlayers()) do
+                if Target ~= player and flingBoatActive then
+                    local TargetC = Target.Character
+                    local TargetH = TargetC and TargetC:FindFirstChildOfClass("Humanoid")
+                    local TargetRP = TargetC and TargetC:FindFirstChild("HumanoidRootPart")
+                    if TargetC and TargetH and TargetRP then flingPlayer(TargetC, TargetRP, TargetH) end
+                end
+            end
+            task.wait(0.5)
+            PCar:PivotTo(CFrame.new(0, 0, 0))
+            task.wait(0.5)
+            Humanoid.Sit = false
+            task.wait(0.5)
+            RootPart.CFrame = OldPos
+            SpinGyro:Destroy()
+        else
+            flingBoatActive = false
+        end
+    end
+})
+
+TrollTb:AddToggle({
+    Name = "⚽ Fling Ball All",
+    Default = false,
+    Callback = function(state)
+        flingBallActive = state
+        if state then
+            pcall(function() RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "SoccerBall") end)
+            task.spawn(function()
+                while flingBallActive do
+                    task.wait(3)
+                    local char = player.Character
+                    if not char then continue end
+                    local hrp = char:FindFirstChild("HumanoidRootPart")
+                    local ball = char:FindFirstChild("SoccerBall")
+                    if hrp and ball then
+                        pcall(function() ball:WaitForChild("FootballInteraction"):FireServer(hrp.CFrame * CFrame.new(0, -2, -3)) end)
+                    end
+                end
+            end)
+            task.spawn(function()
+                while flingBallActive do
+                    task.wait(7)
+                    local char = player.Character
+                    if char then
+                        local tool = char:FindFirstChild("SoccerBall")
+                        if tool then tool.Parent = player.Backpack end
+                        task.wait(2)
+                        local bt = player.Backpack:FindFirstChild("SoccerBall")
+                        if bt and flingBallActive then bt.Parent = player.Character end
+                    end
+                end
+            end)
+            for _, plr in ipairs(Players:GetPlayers()) do
+                if plr ~= player then
+                    task.spawn(function()
+                        local conn
+                        conn = RunService.Heartbeat:Connect(function()
+                            if not flingBallActive then
+                                if conn then conn:Disconnect() end
+                                return
+                            end
+                            local tChar = plr.Character
+                            if not tChar then return end
+                            local container = workspace.WorkspaceCom and workspace.WorkspaceCom["001_SoccerBalls"]
+                            if not container then return end
+                            local ball = nil
+                            for _, child in ipairs(container:GetChildren()) do
+                                if child.Name == "Soccer" .. player.Name then
+                                    ball = child break
+                                end
+                            end
+                            if not ball then
+                                for _, child in ipairs(container:GetChildren()) do
+                                    if string.find(child.Name, "Soccer") and string.find(child.Name, player.Name) then
+                                        ball = child break
+                                    end
+                                end
+                            end
+                            if not (tChar and ball and tChar:FindFirstChild("HumanoidRootPart")) then return end
+                            local hrp = tChar.HumanoidRootPart
+                            ball.AssemblyLinearVelocity = Vector3.zero
+                            ball.AssemblyAngularVelocity = Vector3.zero
+                            ball.CFrame = hrp.CFrame
+                            ball.AssemblyAngularVelocity = Vector3.new(500, 11000, 250)
+                            ball.AssemblyLinearVelocity = Vector3.new(0, -90000, 0)
+                        end)
+                    end)
+                end
+            end
+        else
+            flingBallActive = false
+        end
+    end
+})
+
+TrollTb:AddToggle({
+    Name = "💨 Auto Fling All",
+    Callback = function(state)
+        if state then
+            autoFlingAllActive = true
+            local function ProcessPlayer(target)
+                if not autoFlingAllActive or not target or not target.Character or target == player then return end
+                local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+                local tRoot = target.Character and target.Character:FindFirstChild("HumanoidRootPart")
+                if not root or not tRoot then return end
+                local char = player.Character
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                local original = root.CFrame
+                pcall(function() RE:FindFirstChild("1Clea1rTool1s"):FireServer("ClearAllTools") end)
+                task.wait(0.2)
+                pcall(function() RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch") end)
+                task.wait(0.3)
+                local tool = player.Backpack:FindFirstChild("Couch")
+                if tool then tool.Parent = char end
+                task.wait(0.1)
+                pcall(function() VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game) end)
+                task.wait(0.25)
+                workspace.FallenPartsDestroyHeight = 0/0
+                local bv = Instance.new("BodyVelocity")
+                bv.Name, bv.Velocity, bv.MaxForce = "FlingForce", Vector3.new(9e8, 9e8, 9e8), Vector3.new(math.huge, math.huge, math.huge)
+                bv.Parent = root
+                hum:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+                hum.PlatformStand = false
+                trollCam.CameraSubject = target.Character:FindFirstChild("Head") or tRoot or hum
+                task.spawn(function()
+                    local angle = 0
+                    while autoFlingAllActive and target and target.Character and target.Character:FindFirstChildOfClass("Humanoid") do
+                        local tHum = target.Character:FindFirstChildOfClass("Humanoid")
+                        if tHum.Sit then break end
+                        angle = angle + 50
+                        local hrp = target.Character:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            local pos = hrp.Position + hrp.Velocity / 1.5
+                            root.CFrame = CFrame.new(pos) * CFrame.Angles(math.rad(angle), 0, 0)
+                        end
+                        root.Velocity, root.RotVelocity = Vector3.new(9e8, 9e8, 9e8), Vector3.new(9e8, 9e8, 9e8)
+                        task.wait()
+                    end
+                    bv:Destroy()
+                    hum:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+                    hum.PlatformStand = false
+                    root.CFrame = original
+                    trollCam.CameraSubject = hum
+                    for _, p in ipairs(char:GetDescendants()) do
+                        if p:IsA("BasePart") then p.Velocity, p.RotVelocity = Vector3.zero, Vector3.zero end
+                    end
+                    hum:UnequipTools()
+                    pcall(function() RE:FindFirstChild("1Too1l"):InvokeServer("PickingTools", "Couch") end)
+                end)
+            end
+            for _, plr in ipairs(Players:GetPlayers()) do
+                if autoFlingAllActive then
+                    task.spawn(function() ProcessPlayer(plr) end)
+                end
+            end
+        else
+            autoFlingAllActive = false
+        end
+    end
+})
+
+-- ═══════════════════════════════════════════════════════
+-- DOORS AURA
+-- ═══════════════════════════════════════════════════════
+TrollTb:AddSection("🚪 Aura")
+
+TrollTb:AddToggle({
+    Name = "Doors Aura",
+    Default = false,
+    Callback = function(state)
+        if state then
+            local hrp = player.Character and player.Character:WaitForChild("HumanoidRootPart")
+            if not hrp then return end
+            local BlackHole = Instance.new("Part")
+            BlackHole.Size, BlackHole.Transparency, BlackHole.Anchored, BlackHole.CanCollide = Vector3.new(100000, 100000, 100000), 1, true, false
+            BlackHole.Name, BlackHole.Parent = "Kaze_BlackHoleTarget", workspace
+            local baseAttachment = Instance.new("Attachment", BlackHole)
+            baseAttachment.Name = "Kaze_BlackHoleAttachment"
+            RunService.Heartbeat:Connect(function() BlackHole.CFrame = hrp.CFrame end)
+            local ControlledDoors = {}
+            local function SetupPart(part)
+                if not part:IsA("BasePart") or part.Anchored or not string.find(part.Name, "Door") then return end
+                if part:FindFirstChild("Kaze_Attached") then return end
+                part.CanCollide = false
+                for _, obj in ipairs(part:GetChildren()) do
+                    if obj:IsA("AlignPosition") or obj:IsA("Torque") or obj:IsA("Attachment") then obj:Destroy() end
+                end
+                local marker = Instance.new("BoolValue", part)
+                marker.Name = "Kaze_Attached"
+                local a1 = Instance.new("Attachment", part)
+                local align = Instance.new("AlignPosition", part)
+                align.Attachment0, align.Attachment1 = a1, baseAttachment
+                align.MaxForce, align.MaxVelocity, align.Responsiveness = 1e20, math.huge, 99999
+                local torque = Instance.new("Torque", part)
+                torque.Attachment0, torque.RelativeTo = a1, Enum.ActuatorRelativeTo.World
+                torque.Torque = Vector3.new(math.random(-10e5, 10e5)*10000, math.random(-10e5, 10e5)*10000, math.random(-10e5, 10e5)*10000)
+                table.insert(ControlledDoors, {Part = part, Align = align})
+            end
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if obj:IsA("BasePart") and string.find(obj.Name, "Door") then SetupPart(obj) end
+            end
+            workspace.DescendantAdded:Connect(function(obj)
+                if obj:IsA("BasePart") and string.find(obj.Name, "Door") then SetupPart(obj) end
+            end)
+            local function FlingPlayer(p)
+                local char = p.Character
+                if not char then return end
+                local targetHRP = char:FindFirstChild("HumanoidRootPart")
+                if not targetHRP then return end
+                local targetAttachment = targetHRP:FindFirstChild("Kaze_TargetAttachment") or Instance.new("Attachment", targetHRP)
+                targetAttachment.Name = "Kaze_TargetAttachment"
+                for _, data in ipairs(ControlledDoors) do if data.Align then data.Align.Attachment1 = targetAttachment end end
+                local start = tick()
+                while tick() - start < 5 do
+                    if targetHRP.Velocity.Magnitude >= 20 then break end
+                    RunService.Heartbeat:Wait()
+                end
+                for _, data in ipairs(ControlledDoors) do if data.Align then data.Align.Attachment1 = baseAttachment end end
+            end
+            UserInputService.TouchTap:Connect(function(touchPositions, processed)
+                if processed then return end
+                local pos = touchPositions[1]
+                local unitRay = trollCam:ScreenPointToRay(pos.X, pos.Y)
+                local raycast = workspace:Raycast(unitRay.Origin, unitRay.Direction * 1000)
+                if raycast and raycast.Instance then
+                    local p = Players:GetPlayerFromCharacter(raycast.Instance:FindFirstAncestorOfClass("Model"))
+                    if p and p ~= player then FlingPlayer(p) end
+                end
+            end)
+        else
+            local bh = workspace:FindFirstChild("Kaze_BlackHoleTarget")
+            if bh then bh:Destroy() end
+            for _, part in ipairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") and string.find(part.Name, "Door") then
+                    local marker = part:FindFirstChild("Kaze_Attached")
+                    if marker then marker:Destroy() end
+                    for _, obj in ipairs(part:GetChildren()) do
+                        if obj:IsA("AlignPosition") or obj:IsA("Torque") or obj:IsA("Attachment") then
+                            obj:Destroy()
+                        end
+                    end
+                    part.CanCollide = true
+                end
+            end
+        end
+    end
+})
+
+-- ═══════════════════════════════════════════════════════
+-- PARAR TODO
+-- ═══════════════════════════════════════════════════════
+TrollTb:AddSection("🛑 Parar Todo")
+TrollTb:AddButton({
+    Name = "🛑 Detener TODO el Troll",
+    Description = "Apaga todos los toggles y limpia props",
+    Callback = function()
+        trollStopAllProps()
+        trollAutoFlingRunning = false
+        killBusActive = false
+        flingBoatActive = false
+        flingBallActive = false
+        autoFlingAllActive = false
+        pcall(function() CarRemote:FireServer("DeleteAllVehicles") end)
+        propsClearAll()
+        notify({Title="🛑", Text="Todo el Troll detenido", Duration=3, Success=true})
+    end
 })
 
 TrollTb:AddSection("ℹ️ Info")
 TrollTb:AddParagraph({
-    Title = "Cómo funciona",
-    Text = "1. Selecciona un jugador.\n2. Pulsa Iniciar.\n3. Compra casa (si no tienes).\n4. Se teletransporta a (1019, 73, -1101) y coloca los conos.\n5. Sigue al jugador con los conos.\n6. Cuando se siente → TP + conos + BAN."
+    Title = "Cómo usar",
+    Text = "1. Coloca tus props TÚ MISMO con PropMaker (para prop troll).\n2. Selecciona un jugador en el dropdown.\n3. Activa los toggles que quieras.\n4. Usa 🛑 Detener TODO al terminar."
 })
 
 -- ═══════════════════════════════════════════════════════
